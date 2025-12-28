@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="figs/banner.png" alt="LazyingArt banner" />
+</p>
+
 <p>
   <b>Languages:</b>
   <a href="README.md">English</a>
