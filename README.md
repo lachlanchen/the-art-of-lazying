@@ -1,9 +1,7 @@
 [English](README.md) · [العربية](i18n/README.ar.md) · [Español](i18n/README.es.md) · [Français](i18n/README.fr.md) · [日本語](i18n/README.ja.md) · [한국어](i18n/README.ko.md) · [Tiếng Việt](i18n/README.vi.md) · [中文 (简体)](i18n/README.zh-Hans.md) · [中文（繁體）](i18n/README.zh-Hant.md) · [Deutsch](i18n/README.de.md) · [Русский](i18n/README.ru.md)
 
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/lachlanchen/lachlanchen/main/logos/banner.png" alt="LazyingArt banner" />
-</p>
+[![LazyingArt banner](https://github.com/lachlanchen/lachlanchen/raw/main/figs/banner.png)](https://github.com/lachlanchen/lachlanchen/blob/main/figs/banner.png)
 
 > Note: This repository has been migrated. Active development continues at https://github.com/lachlanchen/the-art-of-lazying
 > 本仓库已迁移：请前往 https://github.com/lachlanchen/the-art-of-lazying 关注更新
@@ -15,6 +13,9 @@
 [![Repository Status](https://img.shields.io/badge/status-legacy%20archive-orange)](https://github.com/lachlanchen/the-art-of-lazying)
 [![Migration](https://img.shields.io/badge/active_repo-the--art--of--lazying-success)](https://github.com/lachlanchen/the-art-of-lazying)
 [![Legacy Repo](https://img.shields.io/badge/repo-the--art--of--lazying--legacy-lightgrey)](https://github.com/lachlanchen/the-art-of-lazying-legacy)
+[![GitHub last commit](https://img.shields.io/github/last-commit/lachlanchen/the-art-of-lazying-legacy?label=last%20commit)](https://github.com/lachlanchen/the-art-of-lazying-legacy/commits/main)
+[![Open Issues](https://img.shields.io/github/issues/lachlanchen/the-art-of-lazying-legacy?label=issues)](https://github.com/lachlanchen/the-art-of-lazying-legacy/issues)
+[![Maintainer](https://img.shields.io/badge/maintainer-lachlanchen-2f80ed)](https://github.com/lachlanchen)
 
 A repository that promotes strategic laziness for a simplified, productive life, encompassing AI agents, language learning, and vlogs with practical tips and real-life use cases.
 
@@ -46,6 +47,16 @@ A repository that promotes strategic laziness for a simplified, productive life,
 - [Acknowledgments](#acknowledgments)
 - [Connect](#connect)
 
+## Quick Links
+
+| Need | Start here |
+|---|---|
+| Browse the main content map | [Overview](#overview) |
+| Install dependencies | [Prerequisites](#prerequisites) |
+| Run examples | [Usage](#usage) |
+| Fix common problems | [Troubleshooting](#troubleshooting) |
+| Get involved | [Contributing](#contributing) |
+
 ## Overview
 
 `the-art-of-lazying-legacy` is a curated umbrella repository around strategic laziness:
@@ -62,8 +73,12 @@ A repository that promotes strategic laziness for a simplified, productive life,
 | Active development | https://github.com/lachlanchen/the-art-of-lazying |
 | Multilingual README files | `README.md`, `README_CN.md`, `README_EN.md` |
 | i18n directory | `i18n/` (present) |
+| Language learning | Spaced repetition + GPT workflows |
+| Automation focus | Scripts, captions, publishing, and hardware workflows |
 
 This repository remains useful as a legacy archive and idea map, while active development has moved to the migrated repository linked above.
+
+---
 
 ## Projects
 
@@ -395,6 +410,12 @@ You can also contribute by:
 - Suggesting improvements to strategic laziness workflows.
 - Reporting issues in scripts or documentation.
 - Improving setup reproducibility for hardware/software paths.
+
+## ❤️ Support
+
+| Donate | PayPal | Stripe |
+| --- | --- | --- |
+| [![Donate](https://camo.githubusercontent.com/24a4914f0b42c6f435f9e101621f1e52535b02c225764b2f6cc99416926004b7/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f446f6e6174652d4c617a79696e674172742d3045413545393f7374796c653d666f722d7468652d6261646765266c6f676f3d6b6f2d6669266c6f676f436f6c6f723d7768697465)](https://chat.lazying.art/donate) | [![PayPal](https://camo.githubusercontent.com/d0f57e8b016517a4b06961b24d0ca87d62fdba16e18bbdb6aba28e978dc0ea21/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f50617950616c2d526f6e677a686f754368656e2d3030343537433f7374796c653d666f722d7468652d6261646765266c6f676f3d70617970616c266c6f676f436f6c6f723d7768697465)](https://paypal.me/RongzhouChen) | [![Stripe](https://camo.githubusercontent.com/1152dfe04b6943afe3a8d2953676749603fb9f95e24088c92c97a01a897b4942/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f5374726970652d446f6e6174652d3633354246463f7374796c653d666f722d7468652d6261646765266c6f676f3d737472697065266c6f676f436f6c6f723d7768697465)](https://buy.stripe.com/aFadR8gIaflgfQV6T4fw400) |
 
 ## License
 
