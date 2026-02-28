@@ -1,9 +1,7 @@
 [English](README.md) · [العربية](i18n/README.ar.md) · [Español](i18n/README.es.md) · [Français](i18n/README.fr.md) · [日本語](i18n/README.ja.md) · [한국어](i18n/README.ko.md) · [Tiếng Việt](i18n/README.vi.md) · [中文 (简体)](i18n/README.zh-Hans.md) · [中文（繁體）](i18n/README.zh-Hant.md) · [Deutsch](i18n/README.de.md) · [Русский](i18n/README.ru.md)
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/lachlanchen/lachlanchen/main/logos/banner.png" alt="LazyingArt banner" />
-</p>
 
+[![LazyingArt banner](https://github.com/lachlanchen/lachlanchen/raw/main/figs/banner.png)](https://github.com/lachlanchen/lachlanchen/blob/main/figs/banner.png)
 
 # The Art of Lazying
 
@@ -12,8 +10,17 @@
 [![Website](https://img.shields.io/badge/Website-lazying.art-0a7ea4)](https://lazying.art)
 ![Docs](https://img.shields.io/badge/Docs-Multilingual-1f883d)
 ![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)
+[![GitHub stars](https://img.shields.io/github/stars/lachlanchen/the-art-of-lazying?style=social)](https://github.com/lachlanchen/the-art-of-lazying/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/lachlanchen/the-art-of-lazying?style=social)](https://github.com/lachlanchen/the-art-of-lazying/network/members)
+[![Last commit](https://img.shields.io/github/last-commit/lachlanchen/the-art-of-lazying)](https://github.com/lachlanchen/the-art-of-lazying/commits/main)
 
 A repository focused on strategic laziness for a simpler, higher-leverage life, covering AI agents, language learning, practical automation, and vlog-driven real-world workflows.
+
+| Focus | What this README contains |
+|---|---|
+| 🤖 Automation | Core tools, scripts, and practical workflows you can run locally |
+| 🧠 Learning | Language-first projects and examples for efficient study habits |
+| 📚 Sharing | Multilingual docs, project links, and contribution guidance |
 
 ![EinkWordsGPT Demo](https://raw.githubusercontent.com/lachlanchen/the-art-of-lazying/refs/heads/main/code/EinkWordsGPT/demo.jpg)
 
@@ -38,8 +45,8 @@ A repository focused on strategic laziness for a simpler, higher-leverage life, 
 - [AI Agents and Automation](#ai-agents-and-automation)
 - [Language Learning and Vlogs](#language-learning-and-vlogs)
 - [Community Contributions](#community-contributions)
+- [❤️ Support](#-support)
 - [Connect](#connect)
-- [Support / Donate](#support--donate)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -169,6 +176,7 @@ For `scripts/lazy-care/SafeShell`:
 Clone the repository:
 
 ```bash
+
 git clone https://github.com/lachlanchen/the-art-of-lazying.git
 cd the-art-of-lazying
 ```
@@ -364,48 +372,6 @@ Share your own experiences, tips, and ideas on strategic laziness:
 - GitHub: [lachlanchen](https://github.com/lachlanchen)
 - Email: lach@lazying.art
 
----
-
-## Support / Donate
-
-<div align="center">
-<table style="margin:0 auto; text-align:center; border-collapse:collapse;">
-  <tr>
-    <td style="text-align:center; vertical-align:middle; padding:6px 12px;">
-      <a href="https://chat.lazying.art/donate">https://chat.lazying.art/donate</a>
-    </td>
-    <td style="text-align:center; vertical-align:middle; padding:6px 12px;">
-      <a href="https://chat.lazying.art/donate"><img src="figs/donate_button.svg" alt="Donate" height="44"></a>
-    </td>
-  </tr>
-  <tr>
-    <td style="text-align:center; vertical-align:middle; padding:6px 12px;">
-      <a href="https://paypal.me/RongzhouChen">
-        <img src="https://img.shields.io/badge/PayPal-Donate-003087?logo=paypal&logoColor=white" alt="Donate with PayPal">
-      </a>
-    </td>
-    <td style="text-align:center; vertical-align:middle; padding:6px 12px;">
-      <a href="https://buy.stripe.com/aFadR8gIaflgfQV6T4fw400">
-        <img src="https://img.shields.io/badge/Stripe-Donate-635bff?logo=stripe&logoColor=white" alt="Donate with Stripe">
-      </a>
-    </td>
-  </tr>
-  <tr>
-    <td style="text-align:center; vertical-align:middle; padding:6px 12px;"><strong>WeChat</strong></td>
-    <td style="text-align:center; vertical-align:middle; padding:6px 12px;"><strong>Alipay</strong></td>
-  </tr>
-  <tr>
-    <td style="text-align:center; vertical-align:middle; padding:6px 12px;"><img alt="WeChat QR" src="figs/donate_wechat.png" width="240"/></td>
-    <td style="text-align:center; vertical-align:middle; padding:6px 12px;"><img alt="Alipay QR" src="figs/donate_alipay.png" width="240"/></td>
-  </tr>
-</table>
-</div>
-
-Additional funding links from `.github/FUNDING.yml`:
-- GitHub Sponsors: https://github.com/sponsors/lachlanchen
-- chat.lazying.art: https://chat.lazying.art
-- onlyideas.art: https://onlyideas.art
-
 ## Contributing
 
 Contributions are welcome across code, docs, examples, and translations.
@@ -420,8 +386,14 @@ If you are unsure where to start:
 - Add tests or validation scripts for existing utilities.
 - Improve parity/quality for one `i18n/README.*.md` variant.
 
+## ❤️ Support
+
+| Donate | PayPal | Stripe |
+| --- | --- | --- |
+| [![Donate](https://camo.githubusercontent.com/24a4914f0b42c6f435f9e101621f1e52535b02c225764b2f6cc99416926004b7/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f446f6e6174652d4c617a79696e674172742d3045413545393f7374796c653d666f722d7468652d6261646765266c6f676f3d6b6f2d6669266c6f676f436f6c6f723d7768697465)](https://chat.lazying.art/donate) | [![PayPal](https://camo.githubusercontent.com/d0f57e8b016517a4b06961b24d0ca87d62fdba16e18bbdb6aba28e978dc0ea21/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f50617950616c2d526f6e677a686f754368656e2d3030343537433f7374796c653d666f722d7468652d6261646765266c6f676f3d70617970616c266c6f676f436f6c6f723d7768697465)](https://paypal.me/RongzhouChen) | [![Stripe](https://camo.githubusercontent.com/1152dfe04b6943afe3a8d2953676749603fb9f95e24088c92c97a01a897b4942/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f5374726970652d446f6e6174652d3633354246463f7374796c653d666f722d7468652d6261646765266c6f676f3d737472697065266c6f676f436f6c6f723d7768697465)](https://buy.stripe.com/aFadR8gIaflgfQV6T4fw400) |
+
 ## License
 
 This repository includes GPLv3 license text at the root (`LICENSE`) and in several subfolders.
 
-Note: Some subproject READMEs mention MIT. Until each submodule is clarified, treat the root repository as GPLv3-governed and verify per subproject if you plan to redistribute code independently.
+Note: Some subproject READMEs mention MIT. Until each subproject is clarified, treat the root repository as GPLv3-governed and verify per subproject if you plan to redistribute code independently.
