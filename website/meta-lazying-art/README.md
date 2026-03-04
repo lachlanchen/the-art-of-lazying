@@ -41,3 +41,4 @@ What to do once:
 3. Push changes to `main` under `website/meta-lazying-art/`.
 
 The workflow deploys this folder to Pages and applies `meta.lazying.art` as custom domain.
+
