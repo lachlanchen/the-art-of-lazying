@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>meta.lazying.art</title>
+  <meta name="description" content="The Art of Lazying: practical automation, language learning, and AI workflows.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="bg-orb orb-a" aria-hidden="true"></div>
+  <div class="bg-orb orb-b" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a class="brand" href="#top">meta.lazying.art</a>
+    <nav>
+      <a href="#projects">Projects</a>
+      <a href="#local">Local Tools</a>
+      <a href="#hacks">Lazy Hacks</a>
+      <a href="#deploy">Deploy</a>
+    </nav>
+  </header>
+
+  <main id="top" class="container">
+    <section class="hero reveal">
+      <p class="kicker">THE ART OF LAZYING</p>
+      <h1>
+        Strategic laziness,
+        <span>beautifully executed.</span>
+      </h1>
+      <p class="lead">
+        A self-referential home for your automation philosophy. Build less friction,
+        ship more useful systems, and keep the workflow lightweight.
+      </p>
+      <div class="hero-actions">
+        <a class="btn primary" href="https://github.com/lachlanchen/the-art-of-lazying" target="_blank" rel="noreferrer">Open Repository</a>
+        <a class="btn ghost" href="#deploy">Deploy meta.lazying.art</a>
+      </div>
+    </section>
+
+    <section id="projects" class="reveal">
+      <div class="section-title-wrap">
+        <h2>Flagship Projects</h2>
+        <p>AI-powered creative tools linked from this repo.</p>
+      </div>
+      <div class="grid cards-3">
+        <article class="card">
+          <h3>LazyEdit</h3>
+          <p>Automatic editing pipeline with transcription, subtitles, highlights, and metadata generation.</p>
+          <a href="https://github.com/lachlanchen/LazyEdit" target="_blank" rel="noreferrer">View project</a>
+        </article>
+        <article class="card">
+          <h3>AutoPubMonitor</h3>
+          <p>Monitoring and multi-platform publication workflow with queue-oriented automation.</p>
+          <a href="https://github.com/lachlanchen/AutoPubMonitor" target="_blank" rel="noreferrer">View project</a>
+        </article>
+        <article class="card">
+          <h3>EinkWordsGPT</h3>
+          <p>E-ink language learning display with GPT-powered word cards and compact study loops.</p>
+          <a href="../../code/EinkWordsGPT/README.md">View local docs</a>
+        </article>
+      </div>
+    </section>
+
+    <section id="local" class="reveal">
+      <div class="section-title-wrap">
+        <h2>Local Tooling Inside This Repo</h2>
+        <p>Small practical systems you can run directly.</p>
+      </div>
+      <div class="grid cards-2">
+        <article class="card wide">
+          <h3>SafeShell</h3>
+          <p>Safer delete and restore shell functions for daily terminal work.</p>
+          <a href="../../scripts/lazy-care/SafeShell/README.md">Open SafeShell docs</a>
+        </article>
+        <article class="card wide">
+          <h3>Vlog Utilities</h3>
+          <p>Traffic helpers and repo-to-text conversion scripts for AI-assisted analysis.</p>
+          <a href="../../vlogs/">Open vlog tools</a>
+        </article>
+      </div>
+    </section>
+
+    <section id="hacks" class="reveal">
+      <div class="section-title-wrap">
+        <h2>Lazy Hacks</h2>
+        <p>Operational tricks for fast, stable daily workflow.</p>
+      </div>
+      <div class="grid cards-3">
+        <article class="card">
+          <h3>codex / codexr</h3>
+          <p>Robust CLI overrides with enforced full access and no approval prompts.</p>
+          <a href="../../lazy-hacks/codex-cli/codex-and-codexr.md">Read guide</a>
+        </article>
+        <article class="card">
+          <h3>codexmv</h3>
+          <p>Migrate Codex session paths after folder rename/move and resume cleanly.</p>
+          <a href="../../lazy-hacks/codex-cli/codexmv-session-migration.md">Read guide</a>
+        </article>
+        <article class="card">
+          <h3>Multi-language Docs</h3>
+          <p>Localized READMEs for broader accessibility and publishing workflows.</p>
+          <a href="../../i18n/">Browse i18n docs</a>
+        </article>
+      </div>
+    </section>
+
+    <section id="deploy" class="reveal deploy-box">
+      <h2>Deploy to <code>meta.lazying.art</code></h2>
+      <p>Static files are ready. Point your web root to this folder and set your DNS A/AAAA records.</p>
+      <pre><code>website/meta-lazying-art/
+├── index.html
+├── styles.css
+└── app.js</code></pre>
+      <p class="small">Tip: configure your server root to this directory directly, or copy these files into your existing static host directory.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>meta.lazying.art · self site of The Art of Lazying</p>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -58,7 +58,7 @@ A repository focused on strategic laziness for a simpler, higher-leverage life, 
 |---|---|
 | 🎯 Core theme | Strategic laziness for productivity, learning, and creative output |
 | 🧩 Repository style | Hybrid of local tools + curated external projects |
-| 🛠️ Local highlights | `code/EinkWordsGPT`, `scripts/lazy-care/SafeShell`, `vlogs/chatgpt-traffic`, `vlogs/repo2text` |
+| 🛠️ Local highlights | `code/EinkWordsGPT`, `scripts/lazy-care/SafeShell`, `lazy-hacks/codex-cli`, `vlogs/chatgpt-traffic`, `vlogs/repo2text` |
 | 🌍 Documentation | Root README + multilingual `i18n/` variants |
 
 This repo contains both:
@@ -90,6 +90,7 @@ This repo contains both:
 ### ⚙️ Automation Tools (Local in This Repository)
 
 - `scripts/lazy-care/SafeShell/safeshell_functions.sh`: safer shell deletion (`saferm`), restore (`unrm`), and explicit permanent deletion (`removeitanyway`).
+- `lazy-hacks/codex-cli/`: practical Codex CLI operational hacks (`codex`, `codexr`, `codexmv`) for stable resume workflows after path changes.
 - `vlogs/chatgpt-traffic/chatgpt-traffic.py`: domain-to-IP resolver and deduplicated output generator.
 - `vlogs/repo2text/convert-repo-to-merged-text.py`: merges Python files by directory into text bundles for AI-assisted analysis.
 
@@ -130,6 +131,12 @@ the-art-of-lazying/
 │       └── SafeShell/
 │           ├── README.md
 │           └── safeshell_functions.sh
+├── lazy-hacks/
+│   ├── README.md
+│   └── codex-cli/
+│       ├── README.md
+│       ├── codex-and-codexr.md
+│       └── codexmv-session-migration.md
 ├── examples/
 │   └── lazy-learning/BuildChachaGPTWithChatGPT/
 ├── books/
