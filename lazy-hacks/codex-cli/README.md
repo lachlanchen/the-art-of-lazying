@@ -10,6 +10,10 @@ This folder stores practical Codex CLI workflow tweaks used on this machine.
 - [codexmv-session-migration.md](./codexmv-session-migration.md)
   - Migrate Codex session cwd mappings from old path to new path
   - Resume picker by default, latest with `-l/--latest`
+- [codexmv-macos-zsh.md](./codexmv-macos-zsh.md)
+  - macOS `zsh` tutorial for `codexmv`
+  - Includes the exact `~/.zshrc` helper and function block
 
 ## Scope
-These docs assume Bash and Codex local state under `~/.codex`.
+These docs assume Codex local state under `~/.codex`.
+Bash and macOS `zsh` examples are both included.

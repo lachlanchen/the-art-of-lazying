@@ -1,49 +1,51 @@
-# `codexmv`: Migrate Session Path and Resume in New Folder
+# `codexmv` on macOS `zsh`
 
 ## Goal
-When a project folder moves/renames, Codex session picker (cwd-filtered) may hide old sessions.
+When a project folder moves or gets renamed on macOS, Codex session resume may stop showing the old sessions because the stored cwd no longer matches.
 
-`codexmv` rewrites stored session cwd from old path to new path, then opens resume in new location.
-
-For a macOS `zsh` version that matches a `~/.zshrc` setup, see [codexmv-macos-zsh.md](./codexmv-macos-zsh.md).
+This `zsh` version of `codexmv` rewrites the stored cwd prefix in `~/.codex/state_5.sqlite`, then opens `codex resume` in the new folder.
 
 ## Command
 
-```bash
+```zsh
 codexmv [--latest|-l] <oldpath> [newpath]
 ```
 
 - `oldpath`: required
 - `newpath`: optional, defaults to `.`
-- default mode: open normal resume picker in new/current folder
-- `-l` / `--latest`: auto-resume latest migrated session
+- default mode: migrate, then open the normal resume picker in the new/current folder
+- `-l` / `--latest`: migrate, then auto-resume the latest migrated session
 
-## Supported path styles
-- relative: `../oldpath`, `oldpath`
-- current folder: `.`, `./`
-- home: `~/xxx`
-- absolute: `/home/xxx`
+## Requirements
+- `sqlite3`
+- `python3`
+- Codex local state at `~/.codex/state_5.sqlite`
 
-## What it updates
-- DB: `~/.codex/state_5.sqlite`
-- Table: `threads`
-- Field: `cwd`
+## Install in `~/.zshrc`
+Put this next to your existing `codex` and `codexr` wrappers.
 
-It updates both:
-- exact match: `cwd == oldpath`
-- subtree: `cwd LIKE oldpath/%`
+If you already have `__codex_real_bin()` from the `codex`/`codexr` guide, keep a single copy and only add `codexmv()`.
 
-Subpaths are preserved (prefix replacement).
+```zsh
+unalias codexmv 2>/dev/null
 
-## `.bashrc` implementation
+__codex_real_bin() {
+  emulate -L zsh
+  local real
 
-```bash
+  real="$(whence -p codex 2>/dev/null)" || return 1
+  [[ -n "$real" ]] || return 1
+  print -r -- "$real"
+}
+
 codexmv() {
+  emulate -L zsh
   local old_raw new_raw old_abs new_abs db old_q new_q count resume_id latest_mode real
+
   db="$HOME/.codex/state_5.sqlite"
   latest_mode=0
 
-  while [ "$#" -gt 0 ]; do
+  while (( $# )); do
     case "$1" in
       -l|--latest)
         latest_mode=1
@@ -69,16 +71,18 @@ codexmv() {
     esac
   done
 
-  if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
+  if (( $# < 1 || $# > 2 )); then
     echo "Usage: codexmv [--latest|-l] <oldpath> [newpath]" >&2
     echo "Examples: codexmv ../oldpath  |  codexmv ../oldpath .  |  codexmv -l ~/old ~/new" >&2
     return 2
   fi
+
   command -v sqlite3 >/dev/null 2>&1 || { echo "codexmv error: sqlite3 not found" >&2; return 127; }
-  [ -f "$db" ] || { echo "codexmv error: codex state db not found at $db" >&2; return 1; }
+  command -v python3 >/dev/null 2>&1 || { echo "codexmv error: python3 not found" >&2; return 127; }
+  [[ -f "$db" ]] || { echo "codexmv error: codex state db not found at $db" >&2; return 1; }
 
   old_raw="$1"
-  if [ "$#" -eq 2 ]; then
+  if (( $# == 2 )); then
     new_raw="$2"
   else
     new_raw="."
@@ -91,12 +95,12 @@ codexmv() {
   new_q="${new_abs//\'/\'\'}"
 
   count="$(sqlite3 "$db" "SELECT COUNT(*) FROM threads WHERE cwd='${old_q}' OR cwd LIKE '${old_q}/%';")" || return 1
-  if [ "${count:-0}" -eq 0 ]; then
+  if [[ "${count:-0}" -eq 0 ]]; then
     echo "codexmv: no sessions found under old path: $old_abs"
     return 1
   fi
 
-  resume_id="$(sqlite3 "$db" "SELECT id FROM threads WHERE cwd='${old_q}' OR cwd LIKE '${old_q}/%' ORDER BY updated_at DESC LIMIT 1;")"
+  resume_id="$(sqlite3 "$db" "SELECT id FROM threads WHERE cwd='${old_q}' OR cwd LIKE '${old_q}/%' ORDER BY updated_at DESC LIMIT 1;")" || return 1
 
   sqlite3 "$db" "BEGIN;
 UPDATE threads
@@ -111,10 +115,11 @@ COMMIT;" || return 1
   echo "codexmv: migrated ${count} session(s)"
   echo "  old: ${old_abs}"
   echo "  new: ${new_abs}"
+
   real="$(__codex_real_bin)" || { echo "codexmv error: real codex binary not found" >&2; return 127; }
 
-  if [ "$latest_mode" -eq 1 ]; then
-    [ -n "$resume_id" ] || { echo "codexmv: migration done, but no resume id found" >&2; return 1; }
+  if (( latest_mode == 1 )); then
+    [[ -n "$resume_id" ]] || { echo "codexmv: migration done, but no resume id found" >&2; return 1; }
     echo "codexmv: resuming latest migrated session: ${resume_id}"
     command "$real" -s danger-full-access -a never resume "$resume_id" -C "$new_abs"
   else
@@ -124,19 +129,38 @@ COMMIT;" || return 1
 }
 ```
 
-## Examples
+## Reload and verify
 
-```bash
-# migrate old -> current, then picker
-codexmv ../oldpath
-
-# migrate old -> explicit new, then picker
-codexmv ~/Projects/old ~/Projects/new
-
-# migrate and auto-resume latest migrated session
-codexmv -l ../oldpath ./newpath
+```zsh
+source ~/.zshrc
+codexmv -h
 ```
 
+## Examples
+
+```zsh
+# migrate old -> current folder, then open picker
+codexmv ../oldpath
+
+# migrate old -> explicit new folder, then open picker
+codexmv ~/Projects/old ~/Local/new-project
+
+# migrate and auto-resume the latest migrated session
+codexmv -l ~/Projects/old ~/Local/new-project
+```
+
+## What it updates
+- DB: `~/.codex/state_5.sqlite`
+- Table: `threads`
+- Field: `cwd`
+
+It updates both:
+- exact match: `cwd == oldpath`
+- subtree: `cwd LIKE oldpath/%`
+
+Subpaths are preserved by replacing only the old leading prefix.
+
 ## Notes
-- Default mode is safer when multiple sessions exist (you choose manually).
-- `--latest` is faster when you know you want most recent context.
+- The default picker flow is safer when multiple sessions exist under the old path.
+- `--latest` is faster when you know the newest session is the one you want.
+- This is a direct DB rewrite. Use it when a project folder was moved or renamed, not as a general session management tool.

@@ -136,6 +136,7 @@ the-art-of-lazying/
 │   └── codex-cli/
 │       ├── README.md
 │       ├── codex-and-codexr.md
+│       ├── codexmv-macos-zsh.md
 │       └── codexmv-session-migration.md
 ├── examples/
 │   └── lazy-learning/BuildChachaGPTWithChatGPT/
