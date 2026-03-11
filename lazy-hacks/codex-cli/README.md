@@ -3,6 +3,9 @@
 This folder stores practical Codex CLI workflow tweaks used on this machine.
 
 ## Files
+- [macos-zsh-full-setup.md](./macos-zsh-full-setup.md)
+  - self-contained macOS `zsh` setup for `codex`, `codexr`, and `codexmv`
+  - includes repo remotes, clone commands, exact shell block, and verification
 - [codex-and-codexr.md](./codex-and-codexr.md)
   - Robust shell overrides for `codex` and `codexr`
   - Enforces `-s danger-full-access -a never`
