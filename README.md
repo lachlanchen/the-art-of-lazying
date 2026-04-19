@@ -91,6 +91,7 @@ This repo contains both:
 
 - `scripts/lazy-care/SafeShell/safeshell_functions.sh`: safer shell deletion (`saferm`), restore (`unrm`), and explicit permanent deletion (`removeitanyway`).
 - `lazy-hacks/codex-cli/`: practical Codex CLI operational hacks (`codex`, `codexr`, `codexmv`) for stable resume workflows after path changes.
+- `lazy-hacks/android-file-transfer-reconnect-macos.md`: quick macOS recovery steps when Android File Transfer gets stuck after a bad disconnect.
 - `vlogs/chatgpt-traffic/chatgpt-traffic.py`: domain-to-IP resolver and deduplicated output generator.
 - `vlogs/repo2text/convert-repo-to-merged-text.py`: merges Python files by directory into text bundles for AI-assisted analysis.
 
@@ -133,6 +134,7 @@ the-art-of-lazying/
 │           └── safeshell_functions.sh
 ├── lazy-hacks/
 │   ├── README.md
+│   ├── android-file-transfer-reconnect-macos.md
 │   └── codex-cli/
 │       ├── README.md
 │       ├── codex-and-codexr.md
