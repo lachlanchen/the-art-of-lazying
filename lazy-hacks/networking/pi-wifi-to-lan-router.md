@@ -74,6 +74,47 @@ sudo netfilter-persistent save
 
 Then consider adding a small systemd watchdog that pings the upstream gateway and restarts the Wi-Fi connection plus `dnsmasq` if forwarding breaks.
 
+## Applied Fix Result
+
+After running the safe apply mode, the intended final state is:
+
+```text
+net.ipv4.ip_forward: 1
+Wi-Fi powersave: disabled for the upstream NetworkManager connection
+eth0: static LAN gateway, 192.168.2.1/24
+wlan0: upstream Wi-Fi, DHCP/default route from the Wi-Fi network
+dnsmasq: active and enabled
+```
+
+The firewall should have one clean forwarding and NAT rule set:
+
+```text
+FORWARD:
+-A FORWARD -i eth0 -o wlan0 -j ACCEPT
+-A FORWARD -i wlan0 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+NAT POSTROUTING:
+-A POSTROUTING -o wlan0 -j MASQUERADE
+```
+
+Verification should include:
+
+```bash
+cat /proc/sys/net/ipv4/ip_forward
+nmcli -f 802-11-wireless.powersave connection show YOUR_WIFI_CONNECTION
+ip -brief addr show eth0
+ip -brief addr show wlan0
+systemctl is-active dnsmasq
+sudo iptables -S FORWARD
+sudo iptables -t nat -S POSTROUTING
+ping -c 2 8.8.8.8
+getent hosts google.com
+```
+
+If those checks match the shape above, the fix does not need to be rerun.
+
+One display-only bug was also fixed in the helper script: the status command should query `eth0` and `wlan0` separately instead of passing both interface names to one `ip -brief addr show` call.
+
 ## Full Script
 
 This is the observed active script. It installs and uninstalls the Wi-Fi-to-LAN NAT router setup.
