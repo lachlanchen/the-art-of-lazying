@@ -115,9 +115,81 @@ If those checks match the shape above, the fix does not need to be rerun.
 
 One display-only bug was also fixed in the helper script: the status command should query `eth0` and `wlan0` separately instead of passing both interface names to one `ip -brief addr show` call.
 
-## Full Script
+## Confirmed Script Flaw
 
-This is the observed active script. It installs and uninstalls the Wi-Fi-to-LAN NAT router setup.
+The old `bridge_final.sh` works for first-time setup, but it has a real idempotency flaw:
+
+```bash
+iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
+```
+
+Every install run appends another matching NAT rule. That is why duplicate `MASQUERADE` entries can appear after running the script more than once.
+
+The uninstall path also removes only one matching rule:
+
+```bash
+iptables -t nat -D POSTROUTING -o wlan0 -j MASQUERADE || true
+```
+
+So if two or more duplicate rules exist, one uninstall run leaves extras behind. The corrected pattern is to delete all matching copies first, then add exactly one rule:
+
+```bash
+iptables_rule_exists() {
+  local table="$1"
+  shift
+  if [ -n "$table" ]; then
+    iptables -t "$table" -C "$@" >/dev/null 2>&1
+  else
+    iptables -C "$@" >/dev/null 2>&1
+  fi
+}
+
+iptables_delete_rule() {
+  local table="$1"
+  shift
+  if [ -n "$table" ]; then
+    iptables -t "$table" -D "$@"
+  else
+    iptables -D "$@"
+  fi
+}
+
+iptables_add_rule() {
+  local table="$1"
+  shift
+  if [ -n "$table" ]; then
+    iptables -t "$table" -A "$@"
+  else
+    iptables -A "$@"
+  fi
+}
+
+iptables_ensure_one() {
+  local table="$1"
+  shift
+  while iptables_rule_exists "$table" "$@"; do
+    iptables_delete_rule "$table" "$@"
+  done
+  iptables_add_rule "$table" "$@"
+}
+
+iptables_ensure_one "" FORWARD -i eth0 -o wlan0 -j ACCEPT
+iptables_ensure_one "" FORWARD -i wlan0 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables_ensure_one nat POSTROUTING -o wlan0 -j MASQUERADE
+netfilter-persistent save
+```
+
+For the live Pi, the safer helper is the idempotent repair script:
+
+```bash
+sudo /home/lachlan/scripts/pi-wifi-to-lan-router-fix.sh apply
+```
+
+Do not use the old install mode repeatedly as a repair command unless it has been hardened with the idempotent rule pattern above.
+
+## Legacy Full Script
+
+This is the observed legacy script. It installs and uninstalls the Wi-Fi-to-LAN NAT router setup, but it is kept here as a reference rather than as the recommended repair path.
 
 ```bash
 #!/usr/bin/env bash
