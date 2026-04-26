@@ -3,425 +3,394 @@
 
 [![LazyingArt banner](https://github.com/lachlanchen/lachlanchen/raw/main/figs/banner.png)](https://github.com/lachlanchen/lachlanchen/blob/main/figs/banner.png)
 
-> 注意：本倉庫已遷移，持續更新請前往 https://github.com/lachlanchen/the-art-of-lazying
+# 懶惰的藝術
 
-# The Art of Lazying
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-GitHub-%23ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/lachlanchen)
+[![Website](https://img.shields.io/badge/Website-lazying.art-0a7ea4)](https://lazying.art)
+![Docs](https://img.shields.io/badge/Docs-Multilingual-1f883d)
+![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)
+[![GitHub stars](https://img.shields.io/github/stars/lachlanchen/the-art-of-lazying?style=social)](https://github.com/lachlanchen/the-art-of-lazying/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/lachlanchen/the-art-of-lazying?style=social)](https://github.com/lachlanchen/the-art-of-lazying/network/members)
+[![Last commit](https://img.shields.io/github/last-commit/lachlanchen/the-art-of-lazying)](https://github.com/lachlanchen/the-art-of-lazying/commits/main)
 
-[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
-[![Repository Status](https://img.shields.io/badge/status-legacy%20archive-orange)](https://github.com/lachlanchen/the-art-of-lazying)
-[![Migration](https://img.shields.io/badge/active_repo-the--art--of--lazying-success)](https://github.com/lachlanchen/the-art-of-lazying)
-[![Legacy Repo](https://img.shields.io/badge/repo-the--art--of--lazying--legacy-lightgrey)](https://github.com/lachlanchen/the-art-of-lazying-legacy)
-[![GitHub last commit](https://img.shields.io/github/last-commit/lachlanchen/the-art-of-lazying-legacy?label=last%20commit)](https://github.com/lachlanchen/the-art-of-lazying-legacy/commits/main)
-[![Open Issues](https://img.shields.io/github/issues/lachlanchen/the-art-of-lazying-legacy?label=issues)](https://github.com/lachlanchen/the-art-of-lazying-legacy/issues)
-[![Maintainer](https://img.shields.io/badge/maintainer-lachlanchen-2f80ed)](https://github.com/lachlanchen)
+這是一個以「戰略性懶惰」為核心的倉庫，透過更簡單且更有槓桿的方式，涵蓋 AI 代理、語言學習、實用自動化，以及以 vlog 驅動的真實工作流程。
 
-一個以「策略性偷懶」為核心的倉庫，目標是以更精簡的方式提升生活與工作的效率，內容涵蓋 AI 代理、語言學習與 Vlog，並提供可落地的技巧與真實應用案例。
+| 聚焦 | 本 README 的內容 |
+|---|---|
+| 🤖 自動化 | 可在本地執行的核心工具、腳本與實務流程 |
+| 🧠 學習 | 以語言為先的專案與範例，建立高效的學習習慣 |
+| 📚 分享 | 多語系文件、專案連結與貢獻指南 |
 
 ![EinkWordsGPT Demo](https://raw.githubusercontent.com/lachlanchen/the-art-of-lazying/refs/heads/main/code/EinkWordsGPT/demo.jpg)
 
 ## 目錄
 
-- [總覽](#總覽)
+- [概覽](#概覽)
 - [專案](#專案)
-- [自動化工具](#自動化工具)
-- [資料夾結構](#資料夾結構)
-- [簡介](#簡介)
-- [懶惰理論](#懶惰理論)
-- [實用技巧與訣竅](#實用技巧與訣竅)
-- [使用案例](#使用案例)
-- [AI 代理與自動化](#ai-代理與自動化)
-- [語言學習與 Vlog](#語言學習與-vlog)
-- [社群貢獻](#社群貢獻)
-- [前置需求](#前置需求)
+- [倉庫結構](#倉庫結構)
+- [功能](#功能)
+- [先決條件](#先決條件)
 - [安裝](#安裝)
 - [使用方式](#使用方式)
 - [設定](#設定)
 - [範例](#範例)
-- [開發筆記](#開發筆記)
-- [疑難排解](#疑難排解)
+- [開發說明](#開發說明)
+- [故障排除](#故障排除)
 - [路線圖](#路線圖)
+- [引言](#引言)
+- [懶惰理論](#懶惰理論)
+- [實用技巧](#實用技巧)
+- [應用情境](#應用情境)
+- [AI 代理與自動化](#ai-代理與自動化)
+- [語言學習與 Vlog](#語言學習與-vlog)
+- [社群貢獻](#社群貢獻)
+- [❤️ Support](#-support)
+- [聯繫](#聯繫)
 - [參與貢獻](#參與貢獻)
 - [授權](#授權)
-- [致謝](#致謝)
-- [聯繫](#聯繫)
 
-## 快速入口
+## 概覽
 
-| 場景 | 從這裡開始 |
+`the-art-of-lazying` 是一個專注於實務導向「戰略性懶惰」的核心倉庫：自動化重複性的工作、優化語言學習流程，並透過腳本與 vlog 記錄真實世界中的實驗。
+
+| 一覽 | 細節 |
 |---|---|
-| 瀏覽主內容地圖 | [總覽](#總覽) |
-| 安裝前置套件 | [前置需求](#前置需求) |
-| 運行範例 | [使用方式](#使用方式) |
-| 處理常見問題 | [疑難排解](#疑難排解) |
-| 參與專案 | [參與貢獻](#參與貢獻) |
+| 🎯 核心主題 | 提升生產力、學習與創作輸出的戰略性懶惰思維 |
+| 🧩 倉庫風格 | 本地工具與精選外部專案的混合模型 |
+| 🛠️ 本地重點 | `code/EinkWordsGPT`, `scripts/lazy-care/SafeShell`, `vlogs/chatgpt-traffic`, `vlogs/repo2text` |
+| 🌍 文件 | 根 README + 多語系 `i18n/` 版本 |
 
-## 總覽
-
-`the-art-of-lazying-legacy` 是一個圍繞「策略性偷懶」建立的精選匯總型倉庫：
-
-- 探討如何將「lazying」理念套用到工作與生活中的思考內容。
-- 可直接使用或參考的程式成果，包含電子紙 + GPT 語言學習專案（`code/EinkWordsGPT`）。
-- 提升安全性的工作流腳本（`scripts/lazy-care/SafeShell`）。
-- 與 Vlog 相關的工具與自動化片段（`vlogs/`）。
-- 示範素材與範例（`demos/`、`examples/`、`figs/`）。
-
-| 摘要 | 說明 |
-|---|---|
-| 倉庫定位 | 遺留歸檔與思路地圖 |
-| 活躍開發倉庫 | https://github.com/lachlanchen/the-art-of-lazying |
-| 多語言 README 檔案 | `README.md`, `README_CN.md`, `README_EN.md` |
-| i18n 目錄 | `i18n/`（目前存在） |
-| 語言學習 | 間隔重複 + GPT 工作流 |
-| 自動化重點 | 腳本、字幕、發佈與硬體工作流 |
-
-這個倉庫作為歷史歸檔與思路地圖繼續保留，同時活躍開發已移轉至上方連結的新倉庫。
-
----
+本倉庫包含兩類內容：
+- 外部關聯專案的精選連結。
+- 本地工具與程式碼，尤其是：
+  - `code/EinkWordsGPT`（Raspberry Pi + Waveshare 墨水屏 + OpenAI 單字學習展示）。
+  - `scripts/lazy-care/SafeShell`（安全刪除/復原的 shell 函式）。
+  - `vlogs/chatgpt-traffic` 與 `vlogs/repo2text`（輕量 Python 工具）。
 
 ## 專案
 
-### 🤖 AI 驅動創意工具
+### 🚀 AI 驅動的創作工具
 
-| 專案 | 說明 | 示範 |
-|---|---|---|
-| [EinkWordsGPT](https://github.com/lachlanchen/the-art-of-lazying/tree/main/code/EinkWordsGPT) | 使用 GPT 的電子紙詞彙學習方案 | ![WordsOrigin](demos/words_card_arabic.JPG) |
-| [WordsOrigin](https://github.com/lachlanchen/WordOrigins) | 詞源分析並以圖譜方式展示。 | ![WordsOrigin](demos/words_origin.jpg) |
-| [LazyLanguageLearner](https://github.com/lachlanchen/lazylanguagelearner) | 以最少投入實踐高效語言學習的工具 | |
-| [VideoCaptionerWithClip](https://github.com/lachlanchen/VideoCaptionerWithClip) | 結合 OpenAI CLIP embeddings 與 GPT decoder 的影音字幕工具 | ![AutoCaption](demos/autocaption.PNG) |
-| [VideoCaptionerWithVit](https://github.com/lachlanchen/VideoCaptionerWithVit) | 影片字幕工具：使用 Katna/OpenCV 擷取關鍵影格，並用 ViT+GPT-2 模型產生字幕 | |
-| [AutoTranscription - MultilingualWhisper](https://github.com/lachlanchen/MultilingualWhisper) | 具備細粒度語言識別的多語轉錄流程 | ![AutoTranscription](demos/autotranscription.PNG) |
-| [**AutoTranslation**](https://github.com/lachlanchen/LazyEdit/blob/master/lazyedit/subtitle_translate.py) | 打破語言壁壘，促進全球創作交流 | ![AutoTranslation](demos/autotranslation.JPG) |
-| [**AutoMeta**](https://github.com/lachlanchen/LazyEdit/blob/master/lazyedit/subtitle_metadata.py) | 自動生成影片中繼資料 | |
-| [LazyEdit](https://github.com/lachlanchen/LazyEdit) | AI 驅動的自動化影音編輯工具，整合轉錄、自動字幕、重點標註與元資料生成 | |
+| 專案 | 描述 | 示範 |
+|---------|-------------|------|
+| [EinkWordsGPT](https://github.com/lachlanchen/the-art-of-lazying/tree/main/code/EinkWordsGPT) | GPT 驅動的電子紙單字學習顯示器 | ![WordsOrigin](demos/words_card_arabic.JPG) |
+| [WordsOrigin](https://github.com/lachlanchen/WordOrigins) | 詞源分析與圖譜化呈現 | ![WordsOrigin](demos/words_origin.jpg) |
+| [LazyLanguageLearner](https://github.com/lachlanchen/lazylanguagelearner) | 用最小投入實現高效語言學習的工具 | |
+| [VideoCaptionerWithClip](https://github.com/lachlanchen/VideoCaptionerWithClip) | 結合 OpenAI CLIP embedding 與 GPT 解碼器的影片與影像字幕工具 | ![AutoCaption](demos/autocaption.PNG) |
+| [VideoCaptionerWithVit](https://github.com/lachlanchen/VideoCaptionerWithVit) | 影片字幕工具：使用 Katna/OpenCV 擷取關鍵影格，並以 ViT+GPT-2 生成字幕 | |
+| [AutoTranscription - MultilingualWhisper](https://github.com/lachlanchen/MultilingualWhisper) | 支援精細語言偵測的多語轉寫流程 | ![AutoTranscription](demos/autotranscription.PNG) |
+| [**AutoTranslation**](https://github.com/lachlanchen/LazyEdit/blob/master/lazyedit/subtitle_translate.py) | 打破語言隔閡，促進跨語言創意交流 | ![AutoTranslation](demos/autotranslation.JPG) |
+| [**AutoMeta**](https://github.com/lachlanchen/LazyEdit/blob/master/lazyedit/subtitle_metadata.py) | 影片中繼資料自動生成 | |
+| [LazyEdit](https://github.com/lachlanchen/LazyEdit) | AI 自動化影片編輯工具，含逐字稿、字幕自動生成、重點標註與中繼資料製作 | |
 | [AutoPublication](https://github.com/lachlanchen/AutoPublication) | 簡化內容發佈工作流 | ![AutoPublication](demos/autopublication.png) |
-| [AutoPubMonitor](https://github.com/lachlanchen/AutoPubMonitor) | 自動監控、處理並將影音內容發佈到多平台的系統 | |
-| [Grilling ChatGPT](https://github.com/lachlanchen/grilling_chatgpt) | 使用 AI 助手的進階技巧 | |
+| [AutoPubMonitor](https://github.com/lachlanchen/AutoPubMonitor) | 自動監控、處理並將影片內容發布到多個平台的系統 | |
+| [Grilling ChatGPT](https://github.com/lachlanchen/grilling_chatgpt) | 更有效率使用 AI 助理的進階技巧 | |
 
-## 自動化工具
+### ⚙️ 自動化工具（本倉庫本地）
 
-本倉庫包含可直接在本機執行的自動化實用工具：
+- `scripts/lazy-care/SafeShell/safeshell_functions.sh`：較安全的 shell 刪除（`saferm`）、還原（`unrm`）與明確的永久刪除（`removeitanyway`）。
+- `vlogs/chatgpt-traffic/chatgpt-traffic.py`：網域到 IP 的解析器與去重輸出產生器。
+- `vlogs/repo2text/convert-repo-to-merged-text.py`：依目錄將 Python 檔案合併為文字包，便於 AI 輔助分析。
 
-| 路徑 | 用途 |
-|---|---|
-| `code/EinkWordsGPT/words_gpt.py` | 持續執行的電子紙單字卡渲染迴圈（預設每 300 秒重新整理） |
-| `code/EinkWordsGPT/words_update.py` | 基於 OpenAI 後端邏輯的批次與目標式單字詳情刷新 |
-| `code/EinkWordsGPT/epd_7in3f_test.py` | Waveshare 7.3 吋電子紙硬體測試 |
-| `scripts/lazy-care/SafeShell/safeshell_functions.sh` | `saferm`、`unrm` 與 `removeitanyway` shell 函式 |
-| `vlogs/chatgpt-traffic/chatgpt-traffic.py` | 網域到 IP 解析與結果去重輸出 |
-| `vlogs/repo2text/convert-repo-to-merged-text.py` | 依子目錄合併 `.py` 檔為 `.txt` |
-
-## 資料夾結構
-
-### 當前倉庫結構（精準）
+## 倉庫結構
 
 ```text
-the-art-of-lazying-legacy/
+the-art-of-lazying/
 ├── README.md
 ├── README_EN.md
 ├── README_CN.md
 ├── LICENSE
-├── books/
+├── .github/
+│   └── FUNDING.yml
+├── i18n/
+│   ├── README.ar.md
+│   ├── README.es.md
+│   ├── README.fr.md
+│   ├── README.ja.md
+│   ├── README.ko.md
+│   ├── README.vi.md
+│   ├── README.zh-Hans.md
+│   └── README.zh-Hant.md
 ├── code/
 │   └── EinkWordsGPT/
-├── demos/
-├── examples/
-├── figs/
-├── i18n/                      # currently present
+│       ├── README.md
+│       ├── README_CN.md
+│       ├── words_gpt.py
+│       ├── words_data.py
+│       ├── words_update.py
+│       ├── epd_7in3f_test.py
+│       ├── words_phonetics.db
+│       ├── data/
+│       ├── font/
+│       └── pic/
 ├── scripts/
 │   └── lazy-care/
+│       ├── README.md
+│       └── SafeShell/
+│           ├── README.md
+│           └── safeshell_functions.sh
+├── examples/
+│   └── lazy-learning/BuildChachaGPTWithChatGPT/
+├── books/
+├── demos/
+├── figs/
 └── vlogs/
+    ├── chatgpt-traffic/
+    ├── repo2text/
+    └── google-framework/
 ```
 
-### 原始概念結構（保留）
+說明：先前 README 版本中的通用目錄圖曾使用抽象路徑（例如 `book/`, `code/ai-agents/`），與目前的倉庫樹不完全一致。上方結構反映目前實際檔案佈局。
 
-```text
-the-art-of-lazying/
-│
-├───code/
-│ ├───ai-agents/
-│ ├───automation/
-│ └───language-learning/
-│
-├───book/
-│ ├───manuscript/
-│ └───resources/
-│
-├───examples/
-│ ├───practical-tips/
-│ ├───use-cases/
-│ └───community-contributions/
-│
-└───vlogs/
-  ├───language-learning/
-  └───lazy-lifestyle/
-```
+## 功能
 
-> 註：以上概念結構有意保留自早期 README；上方「當前倉庫結構」程式碼區塊才是本遺留倉庫的實際目錄樹。
+- 以戰略性懶惰作為生產力、學習與內容工作流的核心框架。
+- 精選 AI 專案組合，橫跨轉錄、字幕、翻譯與發佈自動化。
+- 硬體整合式語言學習：`EinkWordsGPT` 搭配 GPT 輔助選詞與顯示。
+- 實用 shell 安全工具，支援可逆刪除流程。
+- 腳本優先的實用工具，包含 DNS/網域流量檢查與 repo-to-text 轉換。
+- 透過 `i18n/` 提供多語言文件支援。
 
-## 簡介
+## 先決條件
 
-The Art of Lazying 將「策略性偷懶」視為一種分配能量、專注於真正重要事務的方法。這個倉庫探討如何透過有意識地「偷懶」，達成更高的生產力、創造力與福祉。
-
-## 懶惰理論
-
-本節全面介紹策略性偷懶的核心原則，著重於透過優先排序、委外與自動化，最大化輸出與福祉。
-
-核心原則在於將帕累托 80/20 法則套用到日常生活：找出 20% 的活動，卻能產生 80% 的預期成果。
-
-## 實用技巧與訣竅
-
-以下提供可直接採用的建議，將 lazying 理念應用到工作、人際關係與自我照護：
-
-- 自動化重複性任務
-- 用番茄鐘法做時間管理
-- 建立減少決策疲勞的系統
-- 善用 AI 工具作為協作助理
-
-## 使用案例
-
-以下是真實案例，展示 lazying 原則如何解決問題並提升效率：
-
-- 創業者如何透過委外與自動化，更專注於業務成長
-- 學術研究者如何精簡研究流程
-- 內容創作者如何最佳化製作流程
-
-## AI 代理與自動化
-
-探索 AI 代理與自動化工具的開發，藉此簡化各種任務：
-
-- 將 ChatGPT 當作個人助理使用
-- 建立客製化的自動化流程
-- 製作用於被動學習的電子紙顯示介面
-
-## 語言學習與 Vlog
-
-提供高效語言學習資源與技巧，並紀錄 lazying 實踐旅程的 Vlog：
-
-- 用間隔重複法建立個人化學習流程
-- 落實沉浸式學習技巧
-- 建立鼓勵被動學習的專案
-
-## 社群貢獻
-
-歡迎分享你在策略性偷懶上的經驗、技巧與想法：
-
-- 交換效率黑客的討論區
-- 提供日常流程工具與模板
-- 面向「以偷懶求效率」理念的協作專案
-
-## 前置需求
-
-本倉庫含有多個彼此獨立的腳本，前置需求會依模組不同而異。
-
-一般基準：
-
-- Python 3.9+
-- `pip`
+共通：
 - Git
+- 建議 Python 3.9+
 
-專案原始檔中可見的套件名稱：
+對 `code/EinkWordsGPT`：
+- Raspberry Pi（專案文件提及 Raspberry Pi 5）
+- Waveshare 7.3 吋七色電子紙螢幕（需支援 `waveshare_epd` 的 Python 驅動）
+- 程式碼中使用的 Python 套件：`openai`, `Pillow`, `pytz`, `pykakasi`
+- SQLite（使用 Python 標準函式庫 `sqlite3`）
+- 在環境變數中設定 OpenAI API key（程式碼直接使用 `OpenAI()` 初始化）
 
-- `openai`
-- `Pillow`
-- `pytz`
-- `pykakasi`
+對 `vlogs/chatgpt-traffic`：
 - `dnspython`
-- `waveshare_epd`（用於電子紙硬體流程）
-- `sqlite3`（標準函式庫）
 
-啟用完整 `EinkWordsGPT` 運行所需硬體：
-
-- Raspberry Pi（專案文件提到 Raspberry Pi 5）
-- Waveshare 7.3 吋七彩電子紙螢幕
+對 `scripts/lazy-care/SafeShell`：
+- 可使用 `realpath`, `mv`, `/bin/rm` 的 Bash 或 Zsh 環境
 
 ## 安裝
 
-本倉庫未提供統一的依賴清單，請依你要執行的模組手動安裝相應套件。
+克隆倉庫：
 
 ```bash
-git clone https://github.com/lachlanchen/the-art-of-lazying-legacy.git
-cd the-art-of-lazying-legacy
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
-pip install openai pillow pytz pykakasi dnspython
+
+git clone https://github.com/lachlanchen/the-art-of-lazying.git
+cd the-art-of-lazying
 ```
 
-可選／硬體相依套件：
+安裝常用 Python 依賴（倉庫全域基線）：
 
 ```bash
-# Required for EinkWordsGPT display scripts on supported hardware
-pip install waveshare-epd
+pip install openai Pillow pytz pykakasi dnspython
 ```
 
-SafeShell 初始化：
-
-```bash
-source scripts/lazy-care/SafeShell/safeshell_functions.sh
-```
+說明：`code/EinkWordsGPT/README.md` 提到 `requirements.txt`，但目前此倉庫根目錄並未提供 `requirements.txt`。請依上方指令手動安裝。
 
 ## 使用方式
 
-### 1) 運行 EinkWordsGPT 顯示迴圈
+### 1) EinkWordsGPT（本機硬體流程）
 
 ```bash
 cd code/EinkWordsGPT
-python words_gpt.py
+python epd_7in3f_test.py   # optional hardware/display test
+python words_gpt.py        # run the display loop (refreshes approximately every 300s)
 ```
 
-### 2) 重新檢查並更新單字詳情
+可選的資料庫維護腳本：
 
 ```bash
 cd code/EinkWordsGPT
 python words_update.py
 ```
 
-### 3) 測試 Waveshare 7.3 吋螢幕
+### 2) SafeShell（安全刪除流程）
+
+載入 shell 函式：
 
 ```bash
-cd code/EinkWordsGPT
-python epd_7in3f_test.py
+cd scripts/lazy-care/SafeShell
+cat safeshell_functions.sh >> ~/.bashrc   # or ~/.zshrc
+source ~/.bashrc                          # or source ~/.zshrc
 ```
 
-### 4) 解析 ChatGPT 相關網域並輸出 IP
+執行指令：
+
+```bash
+saferm /path/to/file_or_directory
+unrm /path/to/file_or_directory
+removeitanyway /path/to/file_or_directory
+```
+
+### 3) ChatGPT Traffic 解析器
 
 ```bash
 cd vlogs/chatgpt-traffic
 python chatgpt-traffic.py
 ```
 
-### 5) 依目錄合併 Python 檔並輸出 AI 友善文字包
+### 4) Repo-to-text 合併器
 
 ```bash
 cd vlogs/repo2text
 python convert-repo-to-merged-text.py
 ```
 
-### 6) 使用更安全的檔案刪除流程
-
-```bash
-source scripts/lazy-care/SafeShell/safeshell_functions.sh
-saferm path/to/file
-unrm path/to/file
-removeitanyway path/to/file
-```
+說明：`convert-repo-to-merged-text.py` 目前使用硬編碼路徑（`source_directory = 'diffraction'`, `target_directory = 'merged_py_files'`）。請在使用其他倉庫前先修改這些常數。
 
 ## 設定
 
-### OpenAI 憑證
+### OpenAI 設定（`code/EinkWordsGPT`）
 
-`EinkWordsGPT` 與更新腳本使用官方 SDK 的 `OpenAI()`，並要求在環境變數中設定憑證。
+程式碼建立客戶端的方式如下：
 
-建議做法（推薦）：
-
-```bash
-export OPENAI_API_KEY="your_api_key_here"
+```python
+client = OpenAI()
 ```
 
-### 資料庫位置
+因此請在執行腳本前，按照 OpenAI 標準方式，在環境變數中設定 API 憑證。
 
-`code/EinkWordsGPT/words_gpt.py` 與 `words_update.py` 使用：
+### 資料庫路徑（`code/EinkWordsGPT`）
 
-- `db_path = 'words_phonetics.db'`
+程式碼預設值：
 
-請從 `code/EinkWordsGPT` 目錄執行這些腳本，或在其他目錄執行時同步調整路徑。
+```python
+db_path = 'words_phonetics.db'
+```
 
-### SafeShell 回收桶根目錄
+確認 `code/EinkWordsGPT/` 中存在 `words_phonetics.db`（目前倉庫已包含此檔案）。
 
-`saferm`、`unrm`、`removeitanyway` 目前使用固定的基礎路徑：
+### SafeShell 回收站位置
 
-- `/mnt/disk/BIN/ROOT`
+`saferm`/`unrm`/`removeitanyway` 使用固定基底路徑：
 
-請確保在依賴 `saferm` 前先建立此路徑並設定可寫權限。
+```bash
+/mnt/disk/BIN/ROOT
+```
 
-### Repo2Text 路徑
-
-`vlogs/repo2text/convert-repo-to-merged-text.py` 目前使用硬編碼路徑：
-
-- `source_directory = 'diffraction'`
-- `target_directory = 'merged_py_files'`
-
-請依你的本機專案調整這些常數。
+若你的環境不同，請在 `scripts/lazy-care/SafeShell/safeshell_functions.sh` 中調整這個路徑。
 
 ## 範例
 
-### 範例：電子紙學習卡循環
+- `demos/` 中的電子紙單字卡示範：
+  - `demos/words_card_arabic.JPG`
+  - `demos/words_origin.jpg`
+  - `demos/autocaption.PNG`
+  - `demos/autotranscription.PNG`
+  - `demos/autotranslation.JPG`
+  - `demos/autopublication.png`
+- ChachaGPT 的建置說明與素材：
+  - `examples/lazy-learning/BuildChachaGPTWithChatGPT/plain_transformer.ipynb`
+  - `examples/lazy-learning/BuildChachaGPTWithChatGPT/Prompts of ChachaGPT.pdf`
 
-- 腳本會選取（或抓取）單字詳情。
-- 詞卡會渲染音標、音節切分與日語同義提示。
-- 畫面每 5 分鐘更新一次（`time.sleep(300)`）。
+## 開發說明
 
-### 範例：安全刪除流程
+- 這是個多專案展示型倉庫，結合本地程式碼與外部專案連結。
+- 根目錄目前沒有提供統一的套件管理或建構清單（`pyproject.toml`, `package.json`, `requirements.txt`, `Makefile` 目前不存在）。
+- 部分子目錄 README 呈現模板化，可能與目前實際檔案結構略有不同；本 README 的指令以目前實際存在的路徑／腳本為準。
+- `README_EN.md` 與 `README_CN.md` 為歷史版本；目前以 `README.md` + `i18n/*` 作為主要多語系結構。
 
-```bash
-source scripts/lazy-care/SafeShell/safeshell_functions.sh
-saferm ~/Downloads/large_file.zip
-unrm ~/Downloads/large_file.zip
-```
+## 故障排除
 
-### 範例：網域/IP 輸出檔
+- `ModuleNotFoundError`（Python 套件缺少）：
+  - 使用 `pip install openai Pillow pytz pykakasi dnspython` 重新安裝。
 
-```bash
-cd vlogs/chatgpt-traffic
-python chatgpt-traffic.py > traffic_hosts.txt
-```
+- `ImportError: waveshare_epd`（出現在 `EinkWordsGPT`）：
+  - 在 Raspberry Pi 環境安裝 Waveshare 電子紙 Python 驅動程式/函式庫。
 
-## 開發筆記
+- OpenAI 驗證錯誤：
+  - 在執行 `words_gpt.py` 或 `words_update.py` 前，先確認環境變數已設定 OpenAI API key。
 
-- 這是 legacy 倉庫；活躍開發可參考：https://github.com/lachlanchen/the-art-of-lazying
-- 頂層內容主要為策展型，並連到多個外部倉庫。
-- `i18n/` 已存在，但目前為空，語言 README 目前仍放在頂層。
-- 倉庫根目錄沒有 `requirements.txt` 或 `pyproject.toml`。
+- 設定後找不到 `saferm`/`unrm`：
+  - 確認已正確載入 shell rc 檔，且成功將 `safeshell_functions.sh` 追加到設定檔。
 
-相容性保留說明：
+- `unrm` 無法還原檔案：
+  - 確認還原路徑與 SafeShell 在 `/mnt/disk/BIN/ROOT` 下的鏡像回收桶配置一致。
 
-- 子目錄中的舊文件可能提到腳本（`saferm.sh`、`unrm.sh`、`removeitanyway.sh`），這些現在已整合到 `scripts/lazy-care/SafeShell/safeshell_functions.sh`。
-
-## 疑難排解
-
-- `ModuleNotFoundError`：安裝[前置需求](#前置需求)中缺少的 Python 套件。
-- `openai` 認證錯誤：確認當前 shell 已匯出 `OPENAI_API_KEY`。
-- Waveshare 執行問題：在樹莓派上確認 SPI/裝置設定，並安裝廠商相依套件。
-- `saferm` 看起來沒反應：檢查 `/mnt/disk/BIN/ROOT` 是否存在且有寫入權限。
-- `repo2text` 沒有產生檔案：確認 `source_directory` 指向存在且含有 `.py` 檔案的目錄。
-- `chatgpt-traffic` 出現網域異常：上線前先檢查並清理腳本中的 `domains` 清單。
+- `repo2text` 腳本沒有輸出：
+  - 將 `convert-repo-to-merged-text.py` 中的 `source_directory` 調整為現有資料夾。
 
 ## 路線圖
 
-- 維持本倉庫作為穩定歷史歸檔，並清楚導向活躍專案。
-- 為每個可執行子模組補齊完整依賴清單。
-- 在未來版本中，為 `/i18n` 建立一致的多語言版面。
-- 擴充更多實務範例，補齊硬體與非硬體流程的可重現設定教學。
+- 擴展根 README 與所有 i18n 檔案之間的內容一致性（目前多數語言仍偏摘要）。
+- 補充 Waveshare 電子紙驅動在不同環境下的設定文件。
+- 為本地工具補齊根目錄可複現的依賴清單。
+- 為關鍵工具加入驗證／測試腳本。
+- 持續整合外部專案連結，補上更豐富的本地示範。
 
-## 參與貢獻
+## 引言
 
-歡迎貢獻。
+`The Art of Lazying` 將「戰略性懶惰」視為優化精力配置、聚焦真正重要事務的一種方式。本倉庫探討了有意識的「偷懶」如何帶來更高的生產力、創造力與身心健康。
 
-1. Fork 本專案。
-2. 建立你的功能分支（`git checkout -b feature/AmazingFeature`）。
-3. 提交修改（`git commit -m 'Add some AmazingFeature'`）。
-4. 推送到你的分支（`git push origin feature/AmazingFeature`）。
-5. 發起 Pull Request。
+## 懶惰理論
 
-你也可以從以下方式參與：
+這是一篇關於戰略性懶惰原則的完整介紹，核心在於透過優先排序、委派與自動化，在提升產能與幸福感的同時降低無效消耗。
 
-- 提出策略性偷懶工作流的改進建議。
-- 回報腳本或文件問題。
-- 提升軟硬體流程的環境可重現性。
+核心原則是將帕雷托 80/20 法則應用於日常生活：找出那 20% 的行為，卻能產生 80% 想要的結果。
 
-## 授權
+## 實用技巧
 
-本倉庫依 GNU General Public License v3.0 授權，詳見 [LICENSE](LICENSE)。
+一組可直接執行的建議，協助你把懶惰原則應用到工作、人際關係與自我照顧：
+- 自動化重複性任務
+- 使用番茄鐘法則（Pomodoro）進行時間管理
+- 建立能減少決策疲勞的系統
+- 善用 AI 工具輔助工作
 
-## 致謝
+## 應用情境
 
-特別感謝貢獻者、OpenAI 團隊，以及支援低摩擦學習系統實驗的 Raspberry Pi 與創客社群。
+透過真實案例展示懶惰原則如何解決問題並提升效率：
+- 創業者如何透過委派與自動化專注於事業成長
+- 學術研究者如何簡化研究流程
+- 內容創作者如何優化其製作流程
+
+## AI 代理與自動化
+
+探索可簡化任務的 AI 代理與自動化工具：
+- 將 ChatGPT 當作個人助理使用
+- 建立自訂自動化工作流
+- 建置被動學習用的電子紙顯示器
+
+## 語言學習與 Vlog
+
+提供高效語言學習資源與方法，並以 vlog 記錄懶惰實踐：
+- 建立個人化、使用間隔重複法的語言學習系統
+- 落實沉浸式學習技巧
+- 打造鼓勵被動學習的專案
+
+## 社群貢獻
+
+歡迎分享你在戰略性懶惰上的經驗、技巧與想法：
+- 交流生產力技巧的討論空間
+- 日常流程工具與範本
+- 围繞「高效懶惰」的協作專案
 
 ## 聯繫
 
 - 網站：[lazying.art](https://lazying.art)
 - GitHub：[lachlanchen](https://github.com/lachlanchen)
-- Email：lach@lazying.art
+- 電子郵件：lach@lazying.art
+
+## 參與貢獻
+
+歡迎在程式碼、文件、範例與翻譯上作出貢獻。
+
+1. Fork 這個倉庫。
+2. 建立分支（`git checkout -b feature/your-feature`）。
+3. 用清楚的提交訊息提交變更。
+4. 開啟一個 Pull Request，說明動機與影響。
+
+如果你不確定從哪裡開始：
+- 改善某個本地工具的安裝文件。
+- 為現有工具補上測試或驗證腳本。
+- 提升某個 `i18n/README.*.md` 版本的一致性與品質。
+
+## 授權
+
+本倉庫在根目錄的 `LICENSE` 以及多個子目錄中包含 GPLv3 授權條款。
+
+說明：部分子專案的 README 提及 MIT。直到每個子專案的授權狀態確認前，請以根倉庫 GPLv3 為準；若要單獨再分發某個子專案程式碼，請先逐一核對對應授權。
 
 
 ## ❤️ Support

@@ -3,427 +3,394 @@
 
 [![LazyingArt banner](https://github.com/lachlanchen/lachlanchen/raw/main/figs/banner.png)](https://github.com/lachlanchen/lachlanchen/blob/main/figs/banner.png)
 
-> Nota: Este repositorio se ha migrado. El desarrollo activo continúa en https://github.com/lachlanchen/the-art-of-lazying
-> 本仓库已迁移：请前往 https://github.com/lachlanchen/the-art-of-lazying 关注更新
-> このリポジトリは移行しました → https://github.com/lachlanchen/the-art-of-lazying
+# El arte de la pereza estratégica
 
-# The Art of Lazying
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](../LICENSE)
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-GitHub-%23ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/lachlanchen)
+[![Website](https://img.shields.io/badge/Website-lazying.art-0a7ea4)](https://lazying.art)
+![Docs](https://img.shields.io/badge/Docs-Multilingual-1f883d)
+![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)
+[![GitHub stars](https://img.shields.io/github/stars/lachlanchen/the-art-of-lazying?style=social)](https://github.com/lachlanchen/the-art-of-lazying/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/lachlanchen/the-art-of-lazying?style=social)](https://github.com/lachlanchen/the-art-of-lazying/network/members)
+[![Last commit](https://img.shields.io/github/last-commit/lachlanchen/the-art-of-lazying)](https://github.com/lachlanchen/the-art-of-lazying/commits/main)
 
-[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](../LICENSE)
-[![Repository Status](https://img.shields.io/badge/status-legacy%20archive-orange)](https://github.com/lachlanchen/the-art-of-lazying)
-[![Migration](https://img.shields.io/badge/active_repo-the--art--of--lazying-success)](https://github.com/lachlanchen/the-art-of-lazying)
-[![Legacy Repo](https://img.shields.io/badge/repo-the--art--of--lazying--legacy-lightgrey)](https://github.com/lachlanchen/the-art-of-lazying-legacy)
-[![GitHub last commit](https://img.shields.io/github/last-commit/lachlanchen/the-art-of-lazying-legacy?label=last%20commit)](https://github.com/lachlanchen/the-art-of-lazying-legacy/commits/main)
-[![Open Issues](https://img.shields.io/github/issues/lachlanchen/the-art-of-lazying-legacy?label=issues)](https://github.com/lachlanchen/the-art-of-lazying-legacy/issues)
-[![Maintainer](https://img.shields.io/badge/maintainer-lachlanchen-2f80ed)](https://github.com/lachlanchen)
+Un repositorio centrado en la pereza estratégica para una vida más simple y de mayor rendimiento, que abarca agentes de IA, aprendizaje de idiomas, automatización práctica y flujos de trabajo reales impulsados por vlogs.
 
-Un repositorio que promueve la pereza estratégica para una vida simplificada y productiva, que abarca agentes de IA, aprendizaje de idiomas y vlogs con consejos prácticos y casos de uso reales.
+| Enfoque | Lo que contiene este README |
+|---|---|
+| 🤖 Automatización | Herramientas, scripts y flujos de trabajo prácticos que puedes ejecutar localmente |
+| 🧠 Aprendizaje | Proyectos y ejemplos con enfoque de idioma para hábitos de estudio eficientes |
+| 📚 Compartir | Documentación multilingüe, enlaces de proyectos y pautas de contribución |
 
-![Demo de EinkWordsGPT](https://raw.githubusercontent.com/lachlanchen/the-art-of-lazying/refs/heads/main/code/EinkWordsGPT/demo.jpg)
+![EinkWordsGPT Demo](https://raw.githubusercontent.com/lachlanchen/the-art-of-lazying/refs/heads/main/code/EinkWordsGPT/demo.jpg)
 
 ## Tabla de contenidos
 
 - [Resumen](#resumen)
 - [Proyectos](#proyectos)
-- [Herramientas de automatización](#herramientas-de-automatizacion)
-- [Estructura de carpetas](#estructura-de-carpetas)
-- [Introducción](#introduccion)
-- [La teoría de la pereza](#la-teoria-de-la-pereza)
-- [Consejos y trucos prácticos](#consejos-y-trucos-practicos)
-- [Casos de uso](#casos-de-uso)
-- [Agentes de IA y automatización](#agentes-de-ia-y-automatizacion)
-- [Aprendizaje de idiomas y vlogs](#aprendizaje-de-idiomas-y-vlogs)
-- [Contribuciones de la comunidad](#contribuciones-de-la-comunidad)
+- [Estructura del repositorio](#estructura-del-repositorio)
+- [Características](#características)
 - [Requisitos previos](#requisitos-previos)
-- [Instalación](#instalacion)
+- [Instalación](#instalación)
 - [Uso](#uso)
-- [Configuración](#configuracion)
+- [Configuración](#configuración)
 - [Ejemplos](#ejemplos)
 - [Notas de desarrollo](#notas-de-desarrollo)
-- [Solución de problemas](#solucion-de-problemas)
+- [Solución de problemas](#solución-de-problemas)
 - [Hoja de ruta](#hoja-de-ruta)
+- [Introducción](#introducción)
+- [La teoría de la pereza estratégica](#la-teoría-de-la-pereza-estratégica)
+- [Consejos y trucos prácticos](#consejos-y-trucos-prácticos)
+- [Casos de uso](#casos-de-uso)
+- [Agentes de IA y automatización](#agentes-de-ia-y-automatización)
+- [Aprendizaje de idiomas y vlogs](#aprendizaje-de-idiomas-y-vlogs)
+- [Contribuciones de la comunidad](#contribuciones-de-la-comunidad)
+- [❤️ Support](#-support)
+- [Conectar](#conectar)
 - [Contribuir](#contribuir)
 - [Licencia](#licencia)
-- [Agradecimientos](#agradecimientos)
-- [Conectar](#conectar)
-
-## Enlaces rápidos
-
-| Necesidad | Empieza aquí |
-|---|---|
-| Ver el mapa de contenido principal | [Resumen](#resumen) |
-| Instalar dependencias | [Requisitos previos](#requisitos-previos) |
-| Ejecutar ejemplos | [Uso](#uso) |
-| Solucionar problemas comunes | [Solución de problemas](#solucion-de-problemas) |
-| Involucrarte | [Contribuir](#contribuir) |
 
 ## Resumen
 
-`the-art-of-lazying-legacy` es un repositorio curado en torno a la pereza estratégica:
+`the-art-of-lazying` es un repositorio central para la pereza estratégica práctica: automatizar trabajo repetitivo, mejorar flujos de aprendizaje de idiomas y documentar experimentos del mundo real mediante scripts y vlogs.
 
-- Contenido conceptual sobre la aplicación de la filosofía de la pereza a la vida y al trabajo.
-- Artefactos prácticos de código, incluido aprendizaje de idiomas con e-ink + GPT (`code/EinkWordsGPT`).
-- Scripts utilitarios para flujos de trabajo más seguros (`scripts/lazy-care/SafeShell`).
-- Herramientas de vlogs y fragmentos de automatización (`vlogs/`).
-- Recursos y demos (`demos/`, `examples/`, `figs/`).
-
-| Snapshot | Valor |
+| A primera vista | Detalles |
 |---|---|
-| Rol del repositorio | Archivo legado + mapa de ideas |
-| Desarrollo activo | https://github.com/lachlanchen/the-art-of-lazying |
-| Archivos README multilingües | `README.md`, `README_CN.md`, `README_EN.md` |
-| Directorio i18n | `i18n/` (presente) |
-| Aprendizaje de idiomas | Repetición espaciada + flujos de trabajo con GPT |
-| Enfoque de automatización | Scripts, subtitulado, publicación y flujos de hardware |
+| 🎯 Tema central | Pereza estratégica para productividad, aprendizaje y creación de contenido |
+| 🧩 Estilo del repositorio | Híbrido de herramientas locales + proyectos externos curados |
+| 🛠️ Destacados locales | `code/EinkWordsGPT`, `scripts/lazy-care/SafeShell`, `vlogs/chatgpt-traffic`, `vlogs/repo2text` |
+| 🌍 Documentación | README principal + variantes multilingües en `i18n/` |
 
-Este repositorio sigue siendo útil como archivo legado y mapa de ideas, mientras que el desarrollo activo se ha trasladado al repositorio migrado enlazado arriba.
-
----
+Este repositorio contiene ambos:
+- Enlaces curados a proyectos externos relacionados.
+- Herramientas y código locales, especialmente:
+  - `code/EinkWordsGPT` (Raspberry Pi + Waveshare e-ink + pantalla de aprendizaje de vocabulario con OpenAI).
+  - `scripts/lazy-care/SafeShell` (funciones de shell para borrar/restaurar de forma segura).
+  - `vlogs/chatgpt-traffic` y `vlogs/repo2text` (pequeñas utilidades en Python).
 
 ## Proyectos
 
-### 🤖 Herramientas creativas impulsadas por IA
+### 🚀 Herramientas creativas impulsadas por IA
 
 | Proyecto | Descripción | Demo |
-|---|---|---|
-| [EinkWordsGPT](https://github.com/lachlanchen/the-art-of-lazying/tree/main/code/EinkWordsGPT) | Pantalla de tinta electrónica con aprendizaje de vocabulario potenciado por GPT | ![WordsOrigin](../demos/words_card_arabic.JPG) |
-| [WordsOrigin](https://github.com/lachlanchen/WordOrigins) | Análisis del origen de palabras y presentación en grafo. | ![WordsOrigin](../demos/words_origin.jpg) |
+|---------|-------------|------|
+| [EinkWordsGPT](https://github.com/lachlanchen/the-art-of-lazying/tree/main/code/EinkWordsGPT) | Pantalla e-ink con aprendizaje de vocabulario con GPT | ![WordsOrigin](../demos/words_card_arabic.JPG) |
+| [WordsOrigin](https://github.com/lachlanchen/WordOrigins) | Análisis del origen de palabras y presentación en gráfico | ![WordsOrigin](../demos/words_origin.jpg) |
 | [LazyLanguageLearner](https://github.com/lachlanchen/lazylanguagelearner) | Herramientas para aprender idiomas con poco esfuerzo | |
-| [VideoCaptionerWithClip](https://github.com/lachlanchen/VideoCaptionerWithClip) | Subtítulos de vídeo e imagen con embeddings de OpenAI CLIP + decodificador GPT | ![AutoCaption](../demos/autocaption.PNG) |
-| [VideoCaptionerWithVit](https://github.com/lachlanchen/VideoCaptionerWithVit) | Herramienta de subtitulado de vídeo: extrae fotogramas clave con Katna/OpenCV y genera subtítulos con un modelo ViT+GPT-2 | |
-| [AutoTranscription - MultilingualWhisper](https://github.com/lachlanchen/MultilingualWhisper) | Canalización de transcripción multilingüe con detección de idioma detallada | ![AutoTranscription](../demos/autotranscription.PNG) |
-| [**AutoTranslation**](https://github.com/lachlanchen/LazyEdit/blob/master/lazyedit/subtitle_translate.py) | Romper barreras lingüísticas para el intercambio creativo global | ![AutoTranslation](../demos/autotranslation.JPG) |
+| [VideoCaptionerWithClip](https://github.com/lachlanchen/VideoCaptionerWithClip) | Subtitulación de video e imágenes con incrustaciones OpenAI CLIP + decodificador GPT | ![AutoCaption](../demos/autocaption.PNG) |
+| [VideoCaptionerWithVit](https://github.com/lachlanchen/VideoCaptionerWithVit) | Herramienta de subtitulado de video: extrae fotogramas clave con Katna/OpenCV y genera subtítulos con un modelo ViT+GPT-2 | |
+| [AutoTranscription - MultilingualWhisper](https://github.com/lachlanchen/MultilingualWhisper) | Pipeline de transcripción multilingüe con detección de idioma granular | ![AutoTranscription](../demos/autotranscription.PNG) |
+| [**AutoTranslation**](https://github.com/lachlanchen/LazyEdit/blob/master/lazyedit/subtitle_translate.py) | Romper barreras de idioma para el intercambio creativo global | ![AutoTranslation](../demos/autotranslation.JPG) |
 | [**AutoMeta**](https://github.com/lachlanchen/LazyEdit/blob/master/lazyedit/subtitle_metadata.py) | Generación automática de metadatos para vídeos | |
-| [LazyEdit](https://github.com/lachlanchen/LazyEdit) | Herramienta de edición automática de vídeo impulsada por IA con transcripción, subtítulos automáticos, resaltado y generación de metadatos | |
-| [AutoPublication](https://github.com/lachlanchen/AutoPublication) | Simplificación de flujos de publicación de contenido | ![AutoPublication](../demos/autopublication.png) |
-| [AutoPubMonitor](https://github.com/lachlanchen/AutoPubMonitor) | Sistema automatizado para supervisar, procesar y publicar contenidos de vídeo en múltiples plataformas | |
-| [Grilling ChatGPT](https://github.com/lachlanchen/grilling_chatgpt) | Técnicas avanzadas para usar asistentes de IA de forma eficaz | |
+| [LazyEdit](https://github.com/lachlanchen/LazyEdit) | Herramienta de edición de vídeo automática con transcripción, subtitulado automático, resaltado y generación de metadatos | |
+| [AutoPublication](https://github.com/lachlanchen/AutoPublication) | Optimización de flujos de publicación de contenido | ![AutoPublication](../demos/autopublication.png) |
+| [AutoPubMonitor](https://github.com/lachlanchen/AutoPubMonitor) | Sistema automatizado para monitorear, procesar y publicar contenidos de vídeo en múltiples plataformas | |
+| [Grilling ChatGPT](https://github.com/lachlanchen/grilling_chatgpt) | Técnicas avanzadas para usar asistentes de IA con eficacia | |
 
-## Herramientas de automatización
+### ⚙️ Herramientas de automatización (locales en este repositorio)
 
-El repositorio incluye utilidades de automatización local de ejecución directa:
+- `scripts/lazy-care/SafeShell/safeshell_functions.sh`: borrado seguro en shell (`saferm`), restauración (`unrm`) y borrado permanente explícito (`removeitanyway`).
+- `vlogs/chatgpt-traffic/chatgpt-traffic.py`: resolutor dominio a IP y generador de salida deduplicada.
+- `vlogs/repo2text/convert-repo-to-merged-text.py`: combina archivos Python por directorio en paquetes de texto para análisis asistido por IA.
 
-| Ruta | Propósito |
-|---|---|
-| `code/EinkWordsGPT/words_gpt.py` | Bucle continuo de renderizado de tarjetas de palabras en e-ink (actualización predeterminada cada 300 s). |
-| `code/EinkWordsGPT/words_update.py` | Actualización por lotes y por objetivo de detalles de palabras con lógica basada en OpenAI. |
-| `code/EinkWordsGPT/epd_7in3f_test.py` | Prueba de hardware de e-paper de 7.3 pulgadas de Waveshare. |
-| `scripts/lazy-care/SafeShell/safeshell_functions.sh` | Funciones de shell `saferm`, `unrm` y `removeitanyway`. |
-| `vlogs/chatgpt-traffic/chatgpt-traffic.py` | Resolución dominio-IP + salida deduplicada. |
-| `vlogs/repo2text/convert-repo-to-merged-text.py` | Fusiona archivos `.py` por subdirectorio en archivos `.txt`. |
-
-## Estructura de carpetas
-
-### Estructura actual del repositorio (exacta)
+## Estructura del repositorio
 
 ```text
-the-art-of-lazying-legacy/
+the-art-of-lazying/
 ├── README.md
 ├── README_EN.md
 ├── README_CN.md
 ├── LICENSE
-├── books/
+├── .github/
+│   └── FUNDING.yml
+├── i18n/
+│   ├── README.ar.md
+│   ├── README.es.md
+│   ├── README.fr.md
+│   ├── README.ja.md
+│   ├── README.ko.md
+│   ├── README.vi.md
+│   ├── README.zh-Hans.md
+│   └── README.zh-Hant.md
 ├── code/
 │   └── EinkWordsGPT/
-├── demos/
-├── examples/
-├── figs/
-├── i18n/                      # currently present
+│       ├── README.md
+│       ├── README_CN.md
+│       ├── words_gpt.py
+│       ├── words_data.py
+│       ├── words_update.py
+│       ├── epd_7in3f_test.py
+│       ├── words_phonetics.db
+│       ├── data/
+│       ├── font/
+│       └── pic/
 ├── scripts/
 │   └── lazy-care/
+│       ├── README.md
+│       └── SafeShell/
+│           ├── README.md
+│           └── safeshell_functions.sh
+├── examples/
+│   └── lazy-learning/BuildChachaGPTWithChatGPT/
+├── books/
+├── demos/
+├── figs/
 └── vlogs/
+    ├── chatgpt-traffic/
+    ├── repo2text/
+    └── google-framework/
 ```
 
-### Estructura conceptual original (conservada)
+Nota: Las variantes de README anteriores incluían diagramas de carpetas genéricos con rutas abstractas (por ejemplo `book/`, `code/ai-agents/`) que no coinciden exactamente con el árbol real del repositorio actual. La estructura anterior refleja los archivos actuales.
 
-```text
-the-art-of-lazying/
-│
-├───code/
-│ ├───ai-agents/
-│ ├───automation/
-│ └───language-learning/
-│
-├───book/
-│ ├───manuscript/
-│ └───resources/
-│
-├───examples/
-│ ├───practical-tips/
-│ ├───use-cases/
-│ └───community-contributions/
-│
-└───vlogs/
-  ├───language-learning/
-  └───lazy-lifestyle/
-```
+## Características
 
-> Nota: El mapa conceptual anterior se conserva deliberadamente de versiones anteriores del README. El bloque "Estructura actual del repositorio" refleja el árbol real de este repositorio legado.
-
-## Introducción
-
-El arte de la pereza presenta la pereza estratégica como una forma de optimizar la energía y centrarse en lo que realmente importa. Este repositorio explora cómo una pereza intencional puede conducir a una mayor productividad, creatividad y bienestar.
-
-## La teoría de la pereza
-
-Una introducción completa a los principios de la pereza estratégica, centrada en cómo maximizar la productividad y el bienestar priorizando, delegando y automatizando tareas.
-
-El principio clave es aplicar la regla 80/20 de Pareto a la vida diaria: identificar el 20% de actividades que producen el 80% de los resultados deseados.
-
-## Consejos y trucos prácticos
-
-Una colección de consejos prácticos para aplicar principios de pereza en el trabajo, relaciones y autocuidado:
-
-- Automatizar tareas repetitivas
-- Usar la técnica Pomodoro para la gestión del tiempo
-- Crear sistemas que reduzcan la fatiga de decisiones
-- Aprovechar herramientas de IA como ayuda
-
-## Casos de uso
-
-Ejemplos del mundo real que muestran cómo los principios de pereza resuelven problemas y mejoran la eficiencia:
-
-- Cómo emprendedores usan la delegación y automatización para centrarse en el crecimiento del negocio
-- Cómo investigadores agilizan flujos de trabajo de investigación
-- Cómo creadores de contenido optimizan su proceso de producción
-
-## Agentes de IA y automatización
-
-Explora el desarrollo de agentes de IA y herramientas de automatización que simplifican tareas:
-
-- Usar ChatGPT como asistente personal
-- Construir flujos de automatización personalizados
-- Crear pantallas de tinta electrónica para aprendizaje pasivo
-
-## Aprendizaje de idiomas y vlogs
-
-Recursos y técnicas para un aprendizaje eficiente de idiomas, además de vlogs que documentan el recorrido de la pereza:
-
-- Crear aprendizaje personalizado de idiomas con repetición espaciada
-- Implementar técnicas de aprendizaje inmersivo
-- Construir proyectos que fomenten el aprendizaje pasivo
-
-## Contribuciones de la comunidad
-
-Comparte tus propias experiencias, consejos e ideas sobre la pereza estratégica:
-
-- Foro para intercambiar trucos de productividad
-- Herramientas y plantillas para rutinas diarias
-- Proyectos colaborativos para una eficiencia con mínimo esfuerzo
+- Marco de pereza estratégica para productividad, aprendizaje y flujos de contenido.
+- Portafolio curado de proyectos de IA que cubre transcripción, subtitulado, traducción y automatización de publicación.
+- Aprendizaje de idiomas integrado con hardware y selección de vocabulario asistida por GPT (`EinkWordsGPT`).
+- Herramientas prácticas de seguridad en shell para eliminar y restaurar archivos.
+- Utilidades basadas en scripts para comprobaciones DNS/tráfico de dominio y conversión de repositorio a texto.
+- Soporte de documentación multilingüe vía `i18n/`.
 
 ## Requisitos previos
 
-El repositorio contiene múltiples scripts independientes, por lo que los requisitos previos varían por módulo.
-
-Base común:
-
-- Python 3.9+
-- `pip`
+General:
 - Git
+- Python 3.9+ recomendado
 
-Señales específicas por proyecto desde archivos fuente:
-
-- `openai`
-- `Pillow`
-- `pytz`
-- `pykakasi`
-- `dnspython`
-- `waveshare_epd` (para flujos de hardware de pantalla e-paper)
-- `sqlite3` (librería estándar)
-
-Requisitos de hardware para ejecución completa de `EinkWordsGPT`:
-
+Para `code/EinkWordsGPT`:
 - Raspberry Pi (la documentación del proyecto menciona Raspberry Pi 5)
-- Panel Waveshare de tinta electrónica de 7 colores y 7.3 pulgadas
+- Pantalla e-ink Waveshare de 7,3 pulgadas y 7 colores con soporte de controlador Python (`waveshare_epd`)
+- Paquetes de Python usados en el código: `openai`, `Pillow`, `pytz`, `pykakasi`
+- SQLite (se usa `sqlite3` de la biblioteca estándar de Python)
+- Clave de API de OpenAI configurada en el entorno (el código inicializa `OpenAI()` directamente)
+
+Para `vlogs/chatgpt-traffic`:
+- `dnspython`
+
+Para `scripts/lazy-care/SafeShell`:
+- Shell Bash o Zsh con acceso a `realpath`, `mv` y `/bin/rm`
 
 ## Instalación
 
-Como no existe un manifiesto raíz de dependencias, instala manualmente las dependencias del módulo que quieres ejecutar.
+Clonar el repositorio:
 
 ```bash
-git clone https://github.com/lachlanchen/the-art-of-lazying-legacy.git
-cd the-art-of-lazying-legacy
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
-pip install openai pillow pytz pykakasi dnspython
+
+git clone https://github.com/lachlanchen/the-art-of-lazying.git
+cd the-art-of-lazying
 ```
 
-Dependencia opcional/hardware:
+Instalar dependencias comunes de Python (base recomendada para el repositorio):
 
 ```bash
-# Required for EinkWordsGPT display scripts on supported hardware
-pip install waveshare-epd
+pip install openai Pillow pytz pykakasi dnspython
 ```
 
-Configuración de SafeShell:
-
-```bash
-source scripts/lazy-care/SafeShell/safeshell_functions.sh
-```
+Nota: `code/EinkWordsGPT/README.md` menciona `requirements.txt`, pero actualmente no existe `requirements.txt` en este repositorio. Instala paquetes manualmente como arriba.
 
 ## Uso
 
-### 1) Ejecutar el bucle de visualización de EinkWordsGPT
+### 1) EinkWordsGPT (flujo local con hardware)
 
 ```bash
 cd code/EinkWordsGPT
-python words_gpt.py
+python epd_7in3f_test.py   # prueba opcional de hardware/pantalla
+python words_gpt.py        # ejecuta el bucle de pantalla (refresca aproximadamente cada 300s)
 ```
 
-### 2) Revisar/actualizar detalles de palabras
+Script opcional de mantenimiento de base de datos:
 
 ```bash
 cd code/EinkWordsGPT
 python words_update.py
 ```
 
-### 3) Probar el panel Waveshare de 7.3 pulgadas
+### 2) SafeShell (flujo de borrado más seguro)
+
+Carga las funciones de shell:
 
 ```bash
-cd code/EinkWordsGPT
-python epd_7in3f_test.py
+cd scripts/lazy-care/SafeShell
+cat safeshell_functions.sh >> ~/.bashrc   # o ~/.zshrc
+source ~/.bashrc                          # o source ~/.zshrc
 ```
 
-### 4) Resolver dominios relacionados con ChatGPT y salida IP
+Usa estos comandos:
+
+```bash
+saferm /path/to/file_or_directory
+unrm /path/to/file_or_directory
+removeitanyway /path/to/file_or_directory
+```
+
+### 3) Resolver de tráfico ChatGPT
 
 ```bash
 cd vlogs/chatgpt-traffic
 python chatgpt-traffic.py
 ```
 
-### 5) Fusionar archivos Python por directorio para paquetes de texto para IA
+### 4) Conversor repositorio-a-texto
 
 ```bash
 cd vlogs/repo2text
 python convert-repo-to-merged-text.py
 ```
 
-### 6) Usar un flujo de eliminación de archivos más seguro
-
-```bash
-source scripts/lazy-care/SafeShell/safeshell_functions.sh
-saferm path/to/file
-unrm path/to/file
-removeitanyway path/to/file
-```
+Nota: `convert-repo-to-merged-text.py` usa rutas fijas actualmente (`source_directory = 'diffraction'`, `target_directory = 'merged_py_files'`). Edita estas constantes antes de ejecutarlo con otro repositorio.
 
 ## Configuración
 
-### Credenciales de OpenAI
+### Configuración de OpenAI (`code/EinkWordsGPT`)
 
-`EinkWordsGPT` y los scripts de actualización usan `OpenAI()` desde el SDK oficial y esperan credenciales configuradas en tu entorno.
+El código crea el cliente con:
 
-Suposición (recomendada):
-
-```bash
-export OPENAI_API_KEY="your_api_key_here"
+```python
+client = OpenAI()
 ```
 
-### Ubicación de la base de datos
+Por eso, configura tus credenciales de API con el enfoque estándar de variables de entorno de OpenAI antes de ejecutar los scripts.
 
-`code/EinkWordsGPT/words_gpt.py` y `words_update.py` usan:
+### Ruta de base de datos (`code/EinkWordsGPT`)
 
-- `db_path = 'words_phonetics.db'`
+Valor predeterminado en el código:
 
-Ejecuta los scripts desde `code/EinkWordsGPT` o actualiza rutas si se lanzan desde otro lugar.
+```python
+db_path = 'words_phonetics.db'
+```
 
-### Raíz de la papelera de SafeShell
+Asegúrate de que `words_phonetics.db` exista en `code/EinkWordsGPT/` (actualmente se incluye en este repositorio).
 
-`saferm`/`unrm`/`removeitanyway` usan actualmente una ruta base fija:
+### Ubicación de la papelera de SafeShell
 
-- `/mnt/disk/BIN/ROOT`
+`saferm`/`unrm`/`removeitanyway` usan una ruta base fija:
 
-Asegúrate de que esta ruta exista y tenga permisos de escritura antes de depender de `saferm`.
+```bash
+/mnt/disk/BIN/ROOT
+```
 
-### Rutas de Repo2Text
-
-`vlogs/repo2text/convert-repo-to-merged-text.py` tiene rutas codificadas:
-
-- `source_directory = 'diffraction'`
-- `target_directory = 'merged_py_files'`
-
-Edita estas constantes para que coincidan con tu proyecto local.
+Ajusta esta ruta en `scripts/lazy-care/SafeShell/safeshell_functions.sh` si tu entorno es distinto.
 
 ## Ejemplos
 
-### Ejemplo: Ciclo de tarjetas de aprendizaje en e-ink
-
-- El script elige (o recupera) detalles de palabras.
-- La tarjeta de aprendizaje renderiza fonética, segmentación silábica y pistas de sinónimos en japonés.
-- La pantalla se actualiza cada 5 minutos (`time.sleep(300)`).
-
-### Ejemplo: Flujo de eliminación segura
-
-```bash
-source scripts/lazy-care/SafeShell/safeshell_functions.sh
-saferm ~/Downloads/large_file.zip
-unrm ~/Downloads/large_file.zip
-```
-
-### Ejemplo: Archivo de salida de dominio/IP
-
-```bash
-cd vlogs/chatgpt-traffic
-python chatgpt-traffic.py > traffic_hosts.txt
-```
+- Demos de tarjetas de palabras en e-ink en `demos/`:
+  - `demos/words_card_arabic.JPG`
+  - `demos/words_origin.jpg`
+  - `demos/autocaption.PNG`
+  - `demos/autotranscription.PNG`
+  - `demos/autotranslation.JPG`
+  - `demos/autopublication.png`
+- Notas/materiales de construcción para ChachaGPT:
+  - `examples/lazy-learning/BuildChachaGPTWithChatGPT/plain_transformer.ipynb`
+  - `examples/lazy-learning/BuildChachaGPTWithChatGPT/Prompts of ChachaGPT.pdf`
 
 ## Notas de desarrollo
 
-- Este es un repositorio legado; el desarrollo activo está en: https://github.com/lachlanchen/the-art-of-lazying
-- El contenido de nivel superior es curatorial y enlaza a muchos repositorios externos.
-- `i18n/` existe pero actualmente está vacío; los README de idiomas viven actualmente en el nivel superior.
-- No existe un `requirements.txt` ni un `pyproject.toml` en la raíz.
-
-Nota de compatibilidad preservada:
-
-- Documentos anteriores en subcarpetas pueden mencionar scripts (`saferm.sh`, `unrm.sh`, `removeitanyway.sh`) que ahora están consolidados en `scripts/lazy-care/SafeShell/safeshell_functions.sh`.
+- Este es un repositorio tipo escaparate con múltiples proyectos y con código local junto a enlaces de proyectos externos.
+- No existe en la raíz un gestor de paquetes o manifiesto de compilación (`pyproject.toml`, `package.json`, `requirements.txt`, `Makefile` no están presentes).
+- Varios README de subproyectos tienen formato de plantilla y pueden estar algo desactualizados respecto al diseño actual del repositorio; los comandos de este README están alineados con las rutas y scripts que sí existen.
+- `README_EN.md` y `README_CN.md` siguen existiendo como variantes heredadas; `README.md` + `i18n/*` es la estructura multilingüe activa.
 
 ## Solución de problemas
 
-- `ModuleNotFoundError`: Instala los paquetes de Python faltantes listados en [Requisitos previos](#requisitos-previos).
-- Errores de autenticación de `openai`: confirma que `OPENAI_API_KEY` esté exportada en tu shell.
-- Problemas de ejecución de Waveshare: verifica la configuración SPI/dispositivo e instala dependencias del proveedor en la Pi.
-- `saferm` parece no hacer nada: verifica que `/mnt/disk/BIN/ROOT` exista y tenga permisos de escritura.
-- `repo2text` no genera archivos: asegúrate de que `source_directory` apunte a una carpeta existente con archivos `.py`.
-- Anomalías de dominio en `chatgpt-traffic`: revisa y limpia la lista `domains` del script antes de su uso en producción.
+- `ModuleNotFoundError` para paquetes de Python:
+  - Reinstala dependencias con `pip install openai Pillow pytz pykakasi dnspython`.
+
+- `ImportError: waveshare_epd` en `EinkWordsGPT`:
+  - Instala el controlador/biblioteca Python de e-paper de Waveshare en tu entorno Raspberry Pi.
+
+- Errores de autenticación de OpenAI:
+  - Verifica que tu clave de API de OpenAI esté configurada en variables de entorno antes de ejecutar `words_gpt.py` o `words_update.py`.
+
+- `saferm`/`unrm` no se encuentran después de la configuración:
+  - Comprueba que has cargado el archivo rc correcto de la shell y que añadiste `safeshell_functions.sh` correctamente.
+
+- `unrm` no puede restaurar archivos:
+  - Comprueba que la ruta de restauración coincida con la estructura de papelera espejo de SafeShell en `/mnt/disk/BIN/ROOT`.
+
+- `repo2text` no genera salida:
+  - Actualiza `source_directory` en `convert-repo-to-merged-text.py` a una carpeta existente.
 
 ## Hoja de ruta
 
-- Mantener este repositorio como un archivo legado estable con referencias claras a proyectos activos.
-- Mejorar manifiestos de dependencias para cada submódulo ejecutable.
-- Añadir un diseño i18n consistente en futuras revisiones bajo `/i18n`.
-- Ampliar ejemplos prácticos y guías de configuración reproducibles para flujos con y sin hardware.
+- Expandir la paridad del README principal en todas las traducciones `i18n` (actualmente muchos resúmenes en varios idiomas).
+- Añadir documentación de configuración según entorno para los controladores de e-ink de Waveshare.
+- Añadir manifiestos reproducibles de dependencias para herramientas locales.
+- Añadir scripts de validación y pruebas para utilidades críticas.
+- Seguir consolidando enlaces de proyectos externos con demos locales más detallados.
 
-## Contribuir
+## Introducción
 
-Las contribuciones son bienvenidas.
+The Art of Lazying presenta la pereza estratégica como una forma de optimizar el uso de energía y centrarse en lo que realmente importa. Este repositorio explora cómo la pereza intencional puede conducir a mayor productividad, creatividad y bienestar.
 
-1. Haz un fork del proyecto.
-2. Crea tu rama de características (`git checkout -b feature/AmazingFeature`).
-3. Haz commit de tus cambios (`git commit -m 'Add some AmazingFeature'`).
-4. Haz push a la rama (`git push origin feature/AmazingFeature`).
-5. Abre una Pull Request.
+## La teoría de la pereza estratégica
 
-También puedes contribuir:
+Introducción completa a los principios de la pereza estratégica, centrada en cómo maximizar productividad y bienestar priorizando, delegando y automatizando tareas.
 
-- Sugiriendo mejoras a flujos de pereza estratégica.
-- Informando de problemas en scripts o documentación.
-- Mejorando la reproducibilidad de configuración en rutas de hardware/software.
+El principio clave es aplicar la regla 80/20 de Pareto a la vida diaria: identificar el 20% de actividades que generan el 80% de los resultados deseados.
 
-## Licencia
+## Consejos y trucos prácticos
 
-Este repositorio está licenciado bajo la Licencia Pública General GNU v3.0. Consulta [LICENSE](../LICENSE).
+Una colección de consejos prácticos para aplicar principios de pereza en el trabajo, las relaciones y el autocuidado:
+- Automatizar tareas repetitivas
+- Usar la técnica Pomodoro para la gestión del tiempo
+- Crear sistemas que reduzcan la fatiga de decisión
+- Aprovechar herramientas de IA como asistencia
 
-## Agradecimientos
+## Casos de uso
 
-Agradecimiento especial a los contribuyentes, al equipo de OpenAI y a las comunidades de Raspberry Pi / makers que apoyan la experimentación en torno a sistemas de aprendizaje de baja fricción.
+Ejemplos reales que muestran cómo los principios de la pereza resuelven problemas y mejoran la eficiencia:
+- Cómo emprendedores usan delegación y automatización para centrarse en el crecimiento del negocio
+- Cómo académicos optimizan flujos de investigación
+- Cómo creadores de contenido optimizan su proceso de producción
+
+## Agentes de IA y automatización
+
+Se exploran los agentes de IA y herramientas de automatización que simplifican tareas:
+- Usar ChatGPT como asistente personal
+- Construir flujos de automatización personalizados
+- Crear pantallas e-ink para aprendizaje pasivo
+
+## Aprendizaje de idiomas y vlogs
+
+Recursos y técnicas para aprender idiomas de forma eficiente, además de vlogs que documentan el camino de la pereza:
+- Crear aprendizaje de idiomas personalizado con repetición espaciada
+- Aplicar técnicas de aprendizaje inmersivo
+- Construir proyectos que promuevan el aprendizaje pasivo
+
+## Contribuciones de la comunidad
+
+Comparte tus propias experiencias, consejos e ideas sobre la pereza estratégica:
+- Foro para intercambiar trucos de productividad
+- Herramientas y plantillas para rutinas diarias
+- Proyectos colaborativos para eficiencia perezosa
 
 ## Conectar
 
 - Sitio web: [lazying.art](https://lazying.art)
 - GitHub: [lachlanchen](https://github.com/lachlanchen)
 - Email: lach@lazying.art
+
+## Contribuir
+
+Las contribuciones son bienvenidas en código, documentación, ejemplos y traducciones.
+
+1. Haz un fork del repositorio.
+2. Crea una rama (`git checkout -b feature/your-feature`).
+3. Haz cambios con mensajes de commit claros.
+4. Abre un pull request describiendo motivación e impacto.
+
+Si no sabes por dónde empezar:
+- Mejora la documentación de configuración de una herramienta local.
+- Añade pruebas o scripts de validación para utilidades existentes.
+- Mejora la paridad o calidad de una variante `i18n/README.*.md`.
+
+## Licencia
+
+Este repositorio incluye el texto de la licencia GPLv3 en la raíz (`../LICENSE`) y en varias subcarpetas.
+
+Nota: Algunos README de subproyectos mencionan MIT. Hasta que se clarifique cada subproyecto, trata el repositorio raíz como regido por GPLv3 y verifica por subproyecto si planeas redistribuir código de forma independiente.
 
 
 ## ❤️ Support
