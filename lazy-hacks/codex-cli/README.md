@@ -15,6 +15,8 @@ This folder stores practical Codex CLI workflow tweaks used on this machine.
   - self-contained macOS `zsh` setup for `codex`, `codexr`, and `codexmv`
 - [codexmv-macos-zsh.md](./codexmv-macos-zsh.md)
   - macOS `zsh` tutorial for `codexmv`
+- [image-drag-drop-paths.md](./image-drag-drop-paths.md)
+  - notes on Codex image drag/drop including local path metadata
 
 ## Scope
 These docs assume Codex local state under:
