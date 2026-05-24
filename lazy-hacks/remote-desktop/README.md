@@ -23,6 +23,11 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
   - how to make Ubuntu XRDP use `applealu_jis` + `jp(mac)` instead of plain `pc105/us`
   - why this should be an XRDP-only override instead of a whole-machine keyboard change
 
+- [xrdp-caps-lock-all-uppercase-fix-on-ubuntu-24-04.md](./xrdp-caps-lock-all-uppercase-fix-on-ubuntu-24-04.md)
+  - why Ubuntu can show Caps Lock off while XRDP still types uppercase
+  - how to diagnose Caps Lock, Shift, and XRDP keymap state separately
+  - how to patch XRDP keymaps so client-side Caps Lock is ignored while normal `Shift` still works
+
 ## Scope
 
 - Ubuntu 24.04
