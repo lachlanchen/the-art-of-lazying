@@ -9,6 +9,7 @@ Small, practical workflows and shell tricks that improve daily engineering speed
 - [linux-hardware](./linux-hardware/README.md): workstation hardware fixes such as USB webcam access inside RDP.
 - [linux-shutdown](./linux-shutdown/README.md): systemd ordering and busy-unmount fixes for mounted home subpaths.
 - [remote-desktop](./remote-desktop/README.md): GNOME native RDP vs XRDP, with practical remote-session stability notes for Ubuntu 24.04.
+- [uuremote-mouse-axis.md](./uuremote-mouse-axis.md): quick fix for GameViewer/UURemote reversed horizontal mouse movement.
 
 ## Convention
 - Put short, concrete, copy-safe operational tricks here.
