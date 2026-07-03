@@ -115,6 +115,90 @@ If those checks match the shape above, the fix does not need to be rerun.
 
 One display-only bug was also fixed in the helper script: the status command should query `eth0` and `wlan0` separately instead of passing both interface names to one `ip -brief addr show` call.
 
+## TTL 65 Setting
+
+Some upstream networks identify tethered or routed traffic by seeing that packets arrive with a lower TTL than traffic originating from the router itself. For a Pi used as a Wi-Fi-to-LAN NAT router, one practical mitigation is:
+
+```text
+default host TTL: 65
+outbound forwarded packets on wlan0: force TTL to 65
+```
+
+Use a dedicated sysctl file instead of editing the large default `/etc/sysctl.conf`:
+
+```bash
+sudo install -d -m 0755 /etc/sysctl.d
+printf '%s\n' \
+  'net.ipv4.ip_forward=1' \
+  'net.ipv4.ip_default_ttl=65' \
+  | sudo tee /etc/sysctl.d/99-wifi-lan-router.conf >/dev/null
+
+sudo sysctl -w net.ipv4.ip_forward=1 net.ipv4.ip_default_ttl=65
+```
+
+Then make the mangle rule idempotent and scoped to the upstream Wi-Fi interface:
+
+```bash
+while sudo iptables -t mangle -D POSTROUTING -j TTL --ttl-set 65 2>/dev/null; do
+  echo 'removed broad TTL POSTROUTING rule'
+done
+
+while sudo iptables -t mangle -D POSTROUTING -o wlan0 -j TTL --ttl-set 65 2>/dev/null; do
+  echo 'removed duplicate scoped TTL POSTROUTING rule'
+done
+
+sudo iptables -t mangle -A POSTROUTING -o wlan0 -j TTL --ttl-set 65
+sudo netfilter-persistent save
+```
+
+The final rule should be exactly one scoped rule:
+
+```text
+-A POSTROUTING -o wlan0 -j TTL --ttl-set 65
+```
+
+Verification:
+
+```bash
+sysctl net.ipv4.ip_forward net.ipv4.ip_default_ttl
+sudo iptables-save -t mangle | sed -n '/\*mangle/,/COMMIT/p'
+sudo iptables-save -t nat | sed -n '/\*nat/,/COMMIT/p'
+ip -brief addr show dev wlan0
+ip -brief addr show dev eth0
+ip route
+ping -c 2 8.8.8.8
+getent hosts google.com
+```
+
+## Two Pis With The Same LAN IP
+
+It is possible to have two different Pi routers both using `192.168.2.1` on their downstream Ethernet side, but only if they are reached through separated network paths.
+
+Example workstation shape:
+
+```text
+eno2      -> wired upstream router 192.168.1.1
+wlp0s20f3 -> Wi-Fi upstream router 192.168.24.1
+```
+
+If both upstream paths can eventually reach a Pi at `192.168.2.1`, the local workstation routing table decides which Pi is reached. Before changing the Pi, confirm the path:
+
+```bash
+ip route get 192.168.2.1 from 192.168.1.99
+ip route get 192.168.2.1 from 192.168.24.108
+```
+
+To force SSH over the wired source address:
+
+```bash
+ssh -b 192.168.1.99 \
+  -o UserKnownHostsFile=/tmp/pi-wired-known_hosts \
+  -o StrictHostKeyChecking=accept-new \
+  lachlan@192.168.2.1
+```
+
+Use a throwaway `UserKnownHostsFile` when intentionally reaching same-IP devices through different paths, otherwise SSH host-key checks can become confusing.
+
 ## Confirmed Script Flaw
 
 The old `bridge_final.sh` works for first-time setup, but it has a real idempotency flaw:
