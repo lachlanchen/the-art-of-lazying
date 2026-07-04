@@ -6,3 +6,7 @@ Practical small-networking notes for workstation and home-lab reliability.
 
 - [Raspberry Pi Wi-Fi To LAN Router](./pi-wifi-to-lan-router.md): a Raspberry Pi NAT router pattern using `wlan0`, `eth0`, `dnsmasq`, IPv4 forwarding, and masquerade rules.
 - [Workstation Internet Route Switcher](./workstation-internet-route-switcher.md): a small `netswitch` CLI and GNOME launcher for choosing wired or Wi-Fi as the workstation default route.
+
+## Reusable Scripts
+
+- [pi-wifi-to-lan-router-fix.sh](./pi-wifi-to-lan-router-fix.sh): hardened boot-time/manual repair script for another Pi, including Wi-Fi powersave disablement, clean NAT/FORWARD rules, TTL 65, dnsmasq refresh, and status checks.

@@ -28,6 +28,171 @@ Traffic flow:
 4. The Pi forwards packets from `eth0` to `wlan0`.
 5. NAT masquerade rewrites traffic so it can leave through the upstream Wi-Fi.
 
+## Confirmed Stable Snapshot
+
+This is the confirmed stable shape from the working Pi inspected on 2026-07-04. It is a useful target state for another Pi.
+
+```text
+hostname: raspberrypi
+machine-id prefix: 3d603ac7...
+upstream interface: wlan0
+downstream interface: eth0
+eth0: 192.168.2.1/24
+wlan0: DHCP address from upstream Wi-Fi
+default route: via upstream Wi-Fi gateway on wlan0
+dnsmasq: active and enabled
+netfilter-persistent: enabled
+networking.service: masked
+pi-wifi-to-lan-router-fix.service: enabled oneshot
+pi-router-health-monitor.service: inactive/not installed as an active unit
+```
+
+The live status matched:
+
+```text
+net.ipv4.ip_forward = 1
+net.ipv4.ip_default_ttl = 65
+NetworkManager Wi-Fi powersave = disable
+runtime power control = on
+driver Wi-Fi power save = off
+```
+
+The final saved firewall state should be exactly:
+
+```text
+MANGLE:
+-A POSTROUTING -o wlan0 -j TTL --ttl-set 65
+
+FILTER:
+-A FORWARD -i eth0 -o wlan0 -j ACCEPT
+-A FORWARD -i wlan0 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+NAT:
+-A POSTROUTING -o wlan0 -j MASQUERADE
+```
+
+There should not be duplicate `MASQUERADE`, duplicate `FORWARD`, or duplicate TTL rules.
+
+The current Pi has two historical sysctl files:
+
+```text
+/etc/sysctl.d/99-wifi-lan-router.conf      -> ip_forward + default_ttl
+/etc/sysctl.d/99-wifi-to-lan-router.conf   -> ip_forward only
+```
+
+That split is harmless because both set `ip_forward=1`, but for a new Pi use one clean file only:
+
+```text
+/etc/sysctl.d/99-wifi-lan-router.conf
+```
+
+## Current Active Script
+
+The current Pi has the final active helper at:
+
+```text
+/home/lachlan/scripts/pi-wifi-to-lan-router-fix.sh
+```
+
+It is installed as a boot-time oneshot service:
+
+```ini
+[Unit]
+Description=Ensure Raspberry Pi Wi-Fi-to-LAN router settings
+Documentation=file:/home/lachlan/scripts/pi-wifi-to-lan-router-fix.sh
+Wants=network-online.target
+After=NetworkManager.service dnsmasq.service network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/lachlan/scripts/pi-wifi-to-lan-router-fix.sh apply
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+```
+
+The important design choice is that this is not a loop. It runs once at boot, makes the router state correct, and exits.
+
+The reusable repo version is:
+
+```text
+lazy-hacks/networking/pi-wifi-to-lan-router-fix.sh
+```
+
+The inspected live script is the stable base, but TTL was added later as a separate manual step. The repo version folds that later TTL fix into the script itself, so a new Pi does not need separate manual TTL commands after the boot service is installed.
+
+Use the repo version for a new Pi. Do not copy the current Pi's historical two-file sysctl split as a pattern.
+
+## Apply To Another Pi
+
+Copy the script to the target Pi:
+
+```bash
+scp lazy-hacks/networking/pi-wifi-to-lan-router-fix.sh \
+  lachlan@192.168.2.1:/tmp/pi-wifi-to-lan-router-fix.sh
+```
+
+Install it:
+
+```bash
+ssh lachlan@192.168.2.1
+sudo install -D -o root -g root -m 0755 \
+  /tmp/pi-wifi-to-lan-router-fix.sh \
+  /home/lachlan/scripts/pi-wifi-to-lan-router-fix.sh
+```
+
+Create the oneshot service:
+
+```bash
+sudo tee /etc/systemd/system/pi-wifi-to-lan-router-fix.service >/dev/null <<'EOF'
+[Unit]
+Description=Ensure Raspberry Pi Wi-Fi-to-LAN router settings
+Documentation=file:/home/lachlan/scripts/pi-wifi-to-lan-router-fix.sh
+Wants=network-online.target
+After=NetworkManager.service dnsmasq.service network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/lachlan/scripts/pi-wifi-to-lan-router-fix.sh apply
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+Run once manually first:
+
+```bash
+sudo /home/lachlan/scripts/pi-wifi-to-lan-router-fix.sh status
+sudo /home/lachlan/scripts/pi-wifi-to-lan-router-fix.sh apply
+```
+
+If the upstream Wi-Fi connection name is not `HKU`, override it:
+
+```bash
+sudo UPSTREAM_CONN='YOUR_WIFI_NAME' \
+  /home/lachlan/scripts/pi-wifi-to-lan-router-fix.sh apply
+```
+
+If the interface names differ:
+
+```bash
+sudo UPSTREAM_CONN='YOUR_WIFI_NAME' WAN_IF=wlan0 LAN_IF=eth0 \
+  /home/lachlan/scripts/pi-wifi-to-lan-router-fix.sh apply
+```
+
+Enable at boot only after manual `apply` succeeds:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now pi-wifi-to-lan-router-fix.service
+sudo systemctl status pi-wifi-to-lan-router-fix.service --no-pager
+```
+
+Expected status is `active (exited)`, not a long-running process.
+
 ## Failure Mode Seen
 
 The Pi had a long-running uptime and then became unreachable or appeared frozen after several days.
@@ -48,6 +213,34 @@ For an always-on router, two weak points matter most:
 
 - Enterprise or campus Wi-Fi can force roaming, reauthentication, and DHCP renewal.
 - Wi-Fi power saving can make an always-on forwarding path less reliable.
+
+## Lessons Learned
+
+The first stabilization attempt became too complicated. Repeated monitoring and restart loops can make a small router less reliable because they keep touching exactly the fragile parts:
+
+- Wi-Fi reconnect
+- `dnsmasq` restart
+- firewall reload
+- route state
+- logging every minute
+
+The better stable pattern is:
+
+- one clean boot-time apply
+- no active repair loop by default
+- no repeated Wi-Fi restart unless requested manually
+- no duplicate iptables rules
+- no repeated `apt update` or package install as part of normal repair
+- no periodic log spam on the SD card
+- use `status` for diagnosis, not a permanent watcher
+
+The old diagnostic monitor may be useful for a temporary investigation:
+
+```text
+/home/lachlan/pi-router-fix-work/pi-router-health-monitor.sh
+```
+
+But it should stay disabled unless actively debugging an outage. It loops forever, writes `/var/log/pi-router-health.log`, and pings every 60 seconds. That is useful evidence collection, not the normal stable operating mode.
 
 ## First Stabilization Steps
 
