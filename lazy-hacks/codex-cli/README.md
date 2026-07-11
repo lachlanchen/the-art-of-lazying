@@ -13,6 +13,8 @@ This folder stores practical Codex CLI workflow tweaks used on this machine.
   - includes the `nhi_reconstruction -> OpenHI` example
 - [macos-zsh-full-setup.md](./macos-zsh-full-setup.md)
   - self-contained macOS `zsh` setup for `codex`, `codexr`, and `codexmv`
+- [windows-powershell-full-setup.md](./windows-powershell-full-setup.md)
+  - self-contained Windows PowerShell setup and installer for `codex`, `codexr`, `cr`, and `codexmv`
 - [codexmv-macos-zsh.md](./codexmv-macos-zsh.md)
   - macOS `zsh` tutorial for `codexmv`
 - [image-drag-drop-paths.md](./image-drag-drop-paths.md)
@@ -24,3 +26,7 @@ These docs assume Codex local state under:
 
 The Linux `bash` docs reflect the wrappers currently used from:
 - `~/.bashrc`
+
+The Windows PowerShell docs install wrappers into:
+- `%USERPROFILE%\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
+- `%USERPROFILE%\Documents\PowerShell\Microsoft.PowerShell_profile.ps1`
