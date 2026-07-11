@@ -95,7 +95,8 @@ function codexmv {
   $newRaw = if ($rest.Count -eq 2) { $rest[1] } else { '.' }
 
   $python = @"
-import os, sys, sqlite3, time
+import os, sys, sqlite3, time, json, shutil
+from pathlib import Path
 
 def abspath(p):
     p = os.path.expanduser(p)
@@ -127,42 +128,116 @@ def match_prefix(cwd, old_vars):
                 return ov, cwd[len(ov):]
     return None, None
 
+def migrate_cwd_value(cwd, old_vars, new_abs):
+    if not isinstance(cwd, str):
+        return cwd, False
+    prefix = '\\\\\\\\?\\\\'
+    had_win32_prefix = cwd.startswith(prefix)
+    norm = cwd[4:] if had_win32_prefix else cwd
+    ov, suffix = match_prefix(norm, old_vars)
+    if ov is None:
+        return cwd, False
+    return new_abs + suffix, True
+
+def migrate_json_obj(obj, old_vars, new_abs):
+    changed = 0
+    if isinstance(obj, dict):
+        for k, v in list(obj.items()):
+            if k == 'cwd' and isinstance(v, str):
+                new_v, did = migrate_cwd_value(v, old_vars, new_abs)
+                if did:
+                    obj[k] = new_v
+                    changed += 1
+            else:
+                changed += migrate_json_obj(v, old_vars, new_abs)
+    elif isinstance(obj, list):
+        for item in obj:
+            changed += migrate_json_obj(item, old_vars, new_abs)
+    return changed
+
+def migrate_session_jsonl(codex_home, old_vars, new_abs):
+    sessions_dir = codex_home / 'sessions'
+    changed_files = 0
+    changed_fields = 0
+    latest_id = ''
+    if not sessions_dir.exists():
+        return changed_files, changed_fields, latest_id
+    for path in sessions_dir.rglob('*.jsonl'):
+        try:
+            lines = path.read_text(encoding='utf-8').splitlines()
+        except Exception:
+            continue
+        out = []
+        file_changed = 0
+        session_id = ''
+        timestamp_key = ''
+        for line in lines:
+            try:
+                obj = json.loads(line)
+            except Exception:
+                out.append(line)
+                continue
+            if obj.get('type') == 'session_meta':
+                payload = obj.get('payload') or {}
+                session_id = str(payload.get('id') or session_id)
+                timestamp_key = str(payload.get('timestamp') or timestamp_key)
+            file_changed += migrate_json_obj(obj, old_vars, new_abs)
+            out.append(json.dumps(obj, ensure_ascii=False, separators=(',', ':')))
+        if file_changed:
+            backup = path.with_suffix(path.suffix + '.bak.codexmv.' + time.strftime('%Y%m%d-%H%M%S'))
+            shutil.copy2(path, backup)
+            path.write_text('\\n'.join(out) + '\\n', encoding='utf-8')
+            changed_files += 1
+            changed_fields += file_changed
+            if session_id and (not latest_id or timestamp_key):
+                latest_id = session_id
+    return changed_files, changed_fields, latest_id
+
 db, old_raw, new_raw = sys.argv[1:4]
 old_abs = abspath(old_raw)
 new_abs = abspath(new_raw)
 old_vars = variants(old_abs)
+codex_home = Path(db).parent
 backup = db + '.bak.' + time.strftime('%Y%m%d-%H%M%S')
-con = sqlite3.connect(db)
-bak = sqlite3.connect(backup)
-con.backup(bak)
-bak.close()
-cur = con.cursor()
+sqlite_updates = []
+sqlite_latest_id = ''
 try:
+    con = sqlite3.connect(db)
+    bak = sqlite3.connect(backup)
+    con.backup(bak)
+    bak.close()
+    cur = con.cursor()
     rows = cur.execute('SELECT id, cwd, updated_at FROM threads').fetchall()
+    for sid, cwd, updated in rows:
+        newcwd, did = migrate_cwd_value(cwd, old_vars, new_abs)
+        if did:
+            sqlite_updates.append((newcwd, sid, updated, cwd))
+    if sqlite_updates:
+        cur.execute('BEGIN')
+        for newcwd, sid, updated, oldcwd in sqlite_updates:
+            cur.execute('UPDATE threads SET cwd=? WHERE id=?', (newcwd, sid))
+        con.commit()
+        sqlite_latest_id = sorted(sqlite_updates, key=lambda x: x[2] if x[2] is not None else '', reverse=True)[0][1]
+    con.close()
 except sqlite3.Error as e:
-    raise SystemExit(f'codexmv error: cannot read threads table: {e}')
-updates = []
-for sid, cwd, updated in rows:
-    if not cwd:
-        continue
-    ov, suffix = match_prefix(cwd, old_vars)
-    if ov is not None:
-        updates.append((new_abs + suffix, sid, updated, cwd))
-if not updates:
+    raise SystemExit(f'codexmv error: cannot read/update threads table: {e}')
+
+jsonl_files, jsonl_fields, jsonl_latest_id = migrate_session_jsonl(codex_home, old_vars, new_abs)
+latest_id = sqlite_latest_id or jsonl_latest_id
+
+if not sqlite_updates and not jsonl_fields:
     print('NO_MATCH')
     print(f'old={old_abs}')
     print(f'new={new_abs}')
-    print(f'backup={backup}')
+    print(f'sqlite_backup={backup}')
     raise SystemExit(3)
-cur.execute('BEGIN')
-for newcwd, sid, updated, oldcwd in updates:
-    cur.execute('UPDATE threads SET cwd=? WHERE id=?', (newcwd, sid))
-con.commit()
-latest_id = sorted(updates, key=lambda x: x[2] if x[2] is not None else '', reverse=True)[0][1]
-print(f'MIGRATED={len(updates)}')
+
+print(f'MIGRATED_SQLITE={len(sqlite_updates)}')
+print(f'MIGRATED_JSONL_FILES={jsonl_files}')
+print(f'MIGRATED_JSONL_CWD_FIELDS={jsonl_fields}')
 print(f'old={old_abs}')
 print(f'new={new_abs}')
-print(f'backup={backup}')
+print(f'sqlite_backup={backup}')
 print(f'latest_id={latest_id}')
 "@
 

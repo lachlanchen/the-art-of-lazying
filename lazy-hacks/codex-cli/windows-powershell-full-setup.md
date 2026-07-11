@@ -68,24 +68,54 @@ codexmv --latest C:\Users\Administrator\Projects\old C:\Users\Administrator\Proj
 
 ## What `codexmv` Edits
 
-`codexmv` edits only local Codex session metadata:
+`codexmv` edits only local Codex session metadata. On current Codex builds, resume state can appear in two places:
 
 ```text
 %USERPROFILE%\.codex\state_5.sqlite
+%USERPROFILE%\.codex\sessions\YYYY\MM\DD\rollout-*.jsonl
 ```
 
-It updates the `threads.cwd` field for exact matches and subtree matches. Before updating, it creates a SQLite backup next to the database:
+It updates:
+
+- `threads.cwd` in `state_5.sqlite`, when that table contains matching rows.
+- structured `cwd` fields inside per-session JSONL files, especially `session_meta.payload.cwd` and `turn_context` payloads.
+
+Before updating, it creates backups:
 
 ```text
 state_5.sqlite.bak.YYYYMMDD-HHMMSS
+rollout-....jsonl.bak.codexmv.YYYYMMDD-HHMMSS
 ```
 
 It does not move files and does not modify repositories.
+
+## Why the Resume Chooser Can Still Show the Old Folder
+
+If a `codex resume` picker is already open, it has already loaded the old session metadata into memory. After running `codexmv`, cancel that old picker with `Ctrl+C` and start a fresh resume command.
+
+The important field for the chooser is usually the first line of the per-session JSONL:
+
+```text
+session_meta.payload.cwd
+```
+
+In the V-SPICE migration on Windows, `state_5.sqlite` had no matching row, but `session_meta.payload.cwd` still pointed at:
+
+```text
+C:\Users\Administrator\Projects\polarizer
+```
+
+After patching the JSONL metadata, a fresh resume correctly used:
+
+```text
+C:\Users\Administrator\Projects
+```
 
 ## Windows Notes
 
 - The wrapper uses `codex.cmd` when available to avoid recursively calling the PowerShell function named `codex`.
 - `codexmv` uses Python's built-in `sqlite3` module, so it does not require a separate `sqlite3.exe` install.
+- `codexmv` also patches per-session JSONL metadata because newer Codex resume behavior can read from `session_meta.payload.cwd`.
 - `--no-resume` is a Windows extension for safe use inside an already-running Codex session.
 - Open a new terminal after install so the profile loads automatically.
 

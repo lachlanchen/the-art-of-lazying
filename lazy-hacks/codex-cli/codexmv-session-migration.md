@@ -22,11 +22,13 @@ Modes:
 - `-l`, `--latest`: migrate then auto-resume the most recently updated migrated session
 
 ## What gets migrated
-Database:
+Database / metadata sources:
 - `~/.codex/state_5.sqlite`
+- `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl`
 
-Table/field:
+Table/fields:
 - `threads.cwd`
+- JSONL structured `cwd` fields, especially `session_meta.payload.cwd` and `turn_context` payloads
 
 Matches:
 - exact path: `cwd == oldpath`
@@ -75,6 +77,10 @@ Default mode:
 Latest mode:
 - prints migrated count
 - resumes the newest migrated session immediately
+
+Windows note:
+- If an already-open resume chooser still shows the old path, cancel it with `Ctrl+C` and launch a new `codex resume`.
+- Newer Codex builds can read the displayed "Session directory" from the first `session_meta.payload.cwd` record in the per-session JSONL, not only from `state_5.sqlite`.
 
 ## Safety notes
 - this changes only Codex session metadata, not repository files
