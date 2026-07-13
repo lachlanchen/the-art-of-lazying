@@ -89,16 +89,73 @@ The desktop entry runs:
 /home/lachlan/scripts/netswitch gui
 ```
 
-It also can be pinned to the Ubuntu dock through GNOME favorites:
-
-```bash
-gsettings get org.gnome.shell favorite-apps
-```
-
-The favorite app id is:
+It can be pinned to the Ubuntu dock through GNOME favorites. The desktop ID
+is:
 
 ```text
 internet-route-switch.desktop
+```
+
+### Persistent dock pin after reboot
+
+On this XRDP workstation, a plain `gsettings` command wrote the favorite into:
+
+```text
+~/.config/glib-2.0/settings/keyfile
+```
+
+GNOME Shell was actually reading its dock favorites from the user's persistent
+dconf database. This produced a confusing state:
+
+- `gsettings get org.gnome.shell favorite-apps` showed the launcher
+- the Ubuntu dock did not show it after reboot
+- `dconf read /org/gnome/shell/favorite-apps` revealed the real Shell list did
+  not contain it
+
+Pin the launcher to the store GNOME Shell actually uses:
+
+```bash
+favorites="$(dconf read /org/gnome/shell/favorite-apps)"
+
+case "$favorites" in
+  *"'internet-route-switch.desktop'"*) ;;
+  "@as []"|"[]"|"") favorites="['internet-route-switch.desktop']" ;;
+  *)
+    favorites="${favorites%]}"
+    favorites="$favorites, 'internet-route-switch.desktop']"
+    ;;
+esac
+
+dconf write /org/gnome/shell/favorite-apps "$favorites"
+```
+
+Verify the persistent value:
+
+```bash
+dconf read /org/gnome/shell/favorite-apps
+```
+
+The result should contain:
+
+```text
+internet-route-switch.desktop
+```
+
+The dconf write updates the running GNOME Shell and persists in
+`~/.config/dconf/user`, so no login-time loop or systemd service is needed.
+
+If the icon still does not render, refresh and validate the application cache:
+
+```bash
+desktop-file-validate \
+  ~/.local/share/applications/internet-route-switch.desktop
+update-desktop-database ~/.local/share/applications
+```
+
+To verify that GLib can resolve the desktop ID without opening the app:
+
+```bash
+gjs -c "const Gio=imports.gi.Gio; const app=Gio.DesktopAppInfo.new('internet-route-switch.desktop'); if (!app) throw new Error('desktop ID not found'); print(app.get_name());"
 ```
 
 Important distinction: this local launcher appears in GNOME Show Applications/search and the dock, not in Ubuntu App Center. App Center shows packaged software, not ad-hoc desktop entries.
