@@ -56,6 +56,58 @@ layout:  jp
 variant: mac
 ```
 
+### When the RDP client reports the wrong layout ID
+
+`setxkbmap -query` can show the correct `jp(mac)` profile while punctuation
+still behaves like US. A decisive example is:
+
+```text
+Shift+7 -> &     # US behavior
+Shift+7 -> '     # Japanese JIS behavior
+```
+
+In the Mac -> UU Remote -> Windows -> XRDP chain, the XRDP log showed:
+
+```text
+keyboard_type:[0x07]
+keyboard_subtype:[0x00]
+keylayout:[0x00000804]
+layout [us]
+Loading keymap file /etc/xrdp/km-00000409.ini
+```
+
+Windows was reporting `0x00000804` (Simplified Chinese), not Japanese
+`0x00000411`. Because XRDP had no local map for that ID, it fell back to the
+US `0x00000409` keymap before GNOME's XKB setting could help.
+
+The server-side compatibility fix is:
+
+- generate `/etc/xrdp/km-00000804.ini` while the live X session is using
+  `applealu_jis`, `jp`, `mac`
+- map `0x00000804` to `jp(mac)` in `/etc/xrdp/xrdp_keyboard.ini`
+- match the observed type `7`, subtype `0` to model `applealu_jis` and variant
+  `mac`
+
+Generate the compatibility keymap:
+
+```bash
+DISPLAY=:10.0 XAUTHORITY="$HOME/.Xauthority" \
+  xrdp-genkeymap /tmp/km-00000804.ini
+
+sudo install -o root -g root -m 0644 \
+  /tmp/km-00000804.ini /etc/xrdp/km-00000804.ini
+```
+
+The generated map should contain this shifted key entry:
+
+```ini
+[shift]
+Key16=39:39
+```
+
+Keysym `39` is the apostrophe expected from `Shift+7` on JIS. This keymap is
+loaded by a new RDP connection; changing it does not require rebooting Ubuntu.
+
 ### Keep it XRDP-only
 
 Do not switch the whole machine globally unless you really want every console and every desktop path changed.
