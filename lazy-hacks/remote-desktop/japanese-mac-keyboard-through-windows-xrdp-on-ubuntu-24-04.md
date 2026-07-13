@@ -65,32 +65,46 @@ For this workstation the safer choice is:
 - leave system defaults alone
 - override only XRDP sessions
 
-### Working XRDP session hook
+### Persistent two-stage XRDP hook
 
-File:
+The first implementation applied the layout only from `~/.xsessionrc`. That
+command succeeded, but a later XRDP/GNOME startup step could replace it with:
+
+```text
+model:  pc105+inet
+layout: us,us
+```
+
+The robust setup applies the same idempotent helper twice:
 
 - [~/.xsessionrc](/home/lachlan/.xsessionrc)
+- [~/scripts/set-xrdp-japanese-mac-keyboard.sh](/home/lachlan/scripts/set-xrdp-japanese-mac-keyboard.sh)
+- [~/.config/autostart/xrdp-japanese-mac-keyboard.desktop](/home/lachlan/.config/autostart/xrdp-japanese-mac-keyboard.desktop)
 
-Relevant contents:
+`~/.xsessionrc` applies it early:
 
 ```sh
-export GTK_IM_MODULE=ibus
-export QT_IM_MODULE=ibus
-export XMODIFIERS=@im=ibus
-export CLUTTER_IM_MODULE=ibus
-
-if command -v ibus-daemon >/dev/null 2>&1; then
-  if ! pgrep -u "$(id -u)" -x ibus-daemon >/dev/null 2>&1; then
-    ibus-daemon -drx >/tmp/ibus-xrdp.log 2>&1 &
-  fi
-fi
-
-if [ "${XRDP_SESSION:-}" = "1" ] && command -v setxkbmap >/dev/null 2>&1; then
-  setxkbmap -model applealu_jis -layout jp -variant mac >/tmp/xrdp-setxkbmap.log 2>&1
+if [ "${XRDP_SESSION:-}" = "1" ] && [ -x "$HOME/scripts/set-xrdp-japanese-mac-keyboard.sh" ]; then
+  "$HOME/scripts/set-xrdp-japanese-mac-keyboard.sh" >/tmp/xrdp-setxkbmap.log 2>&1 || true
 fi
 ```
 
-This preserves the older XRDP CJK `ibus` fix and adds the XRDP-only Apple JIS keyboard override.
+The GNOME autostart entry applies it once more after five seconds, after the
+desktop's own keyboard initialization has finished:
+
+```sh
+Exec=sh -c "sleep 5; exec /home/lachlan/scripts/set-xrdp-japanese-mac-keyboard.sh"
+```
+
+The helper verifies that the current display belongs to an `xrdp-sesman`
+session before changing anything, then runs:
+
+```bash
+setxkbmap -model applealu_jis -layout jp -variant mac -option caps:none
+```
+
+This remains XRDP-only, preserves the earlier CJK `ibus` setup, and adds no
+new monitoring loop.
 
 ## Live check
 
@@ -115,12 +129,13 @@ For the current XRDP session:
 
 ```bash
 DISPLAY=:10.0 XAUTHORITY="$HOME/.Xauthority" \
-  setxkbmap -model applealu_jis -layout jp -variant mac
+  setxkbmap -model applealu_jis -layout jp -variant mac -option caps:none
 ```
 
 No reboot is required.
 
-For persistence testing, log out of the XRDP desktop and reconnect once.
+Future XRDP desktop logins apply it automatically; no reboot or XRDP service
+restart is required.
 
 ## Caveat
 
