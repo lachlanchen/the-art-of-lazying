@@ -36,19 +36,100 @@ netswitch wired -> prefer eno2 via 192.168.1.1
 netswitch wifi  -> prefer wlp0s20f3 via 192.168.24.1
 ```
 
-The script sets NetworkManager route metrics persistently and also updates the live kernel default route immediately.
+The script sets NetworkManager route and DNS priorities persistently, reapplies
+the active NetworkManager connections immediately, and flushes the resolver
+cache after a switch.
 
 Typical metrics:
 
 ```text
 wired preferred:
-  eno2 metric 100
-  wlp0s20f3 metric 600
+  eno2       route metric 100, DNS priority -100
+  wlp0s20f3  route metric 600, DNS priority 600
 
 Wi-Fi preferred:
-  eno2 metric 600
-  wlp0s20f3 metric 100
+  eno2       route metric 600, DNS priority 600
+  wlp0s20f3  route metric 100, DNS priority -100
 ```
+
+The selected connection uses negative DNS priority. With NetworkManager, that
+excludes DNS servers from connections with higher positive priorities while
+the selected connection is active. If the selected link disconnects, its
+negative-priority DNS disappears and the backup connection can provide DNS
+again.
+
+## Intermittent Internet Failure With Both Links Connected
+
+A machine can appear online in browsers while an application intermittently
+reports a network failure when two uplinks are active. On this workstation:
+
+- Wi-Fi DNS at `192.168.24.1` resolved Tencent domains reliably
+- Ethernet DNS at `192.168.1.1` timed out on one Tencent lookup
+- WeChat HTTPS succeeded over Wi-Fi but timed out over Ethernet
+- both links initially advertised themselves as default DNS routes
+
+That allowed `systemd-resolved` and NetworkManager to expose the unreliable
+Ethernet DNS/path even while Wi-Fi had the lower default-route metric.
+
+After `netswitch wifi`, the expected resolver state is:
+
+```text
+Link (eno2)
+  Current Scopes: none
+
+Link (wlp0s20f3)
+  Current Scopes: DNS
+  Current DNS Server: 192.168.24.1
+  DNS Domain: ~.
+```
+
+Useful verification:
+
+```bash
+resolvectl status
+ip -4 route show default
+ip route get 1.1.1.1
+
+nmcli -g ipv4.route-metric,ipv4.dns-priority \
+  connection show JifuReborn-5G
+nmcli -g ipv4.route-metric,ipv4.dns-priority \
+  connection show netplan-eno2
+```
+
+An older route updater used `ip route add`, which could race NetworkManager and
+fail with:
+
+```text
+RTNETLINK answers: File exists
+```
+
+Changing that to `ip route replace` avoided the immediate error, but
+NetworkManager could later restore its own DHCP route and leave a duplicate.
+The final design makes NetworkManager the single live-route owner:
+
+- set persistent route metrics with `nmcli connection modify`
+- apply them with `nmcli device reapply`
+- remove only legacy `proto boot` defaults created by older script versions
+- reapply once more so NetworkManager restores any required DHCP route
+
+This remains idempotent and avoids duplicate default routes.
+
+### Existing application sockets
+
+Changing the default route does not migrate TCP sockets that an application
+already opened. For example, WeChat still had established connections whose
+local address was the old Ethernet address after Wi-Fi became preferred.
+
+If an application continues to report failure after the route and DNS are
+correct, restart only that application so its new sockets use the selected
+interface. Confirm with:
+
+```bash
+ss -tpn state established
+```
+
+On this workstation, restarting WeChat changed its new connection source from
+`192.168.1.99` to `192.168.24.108`.
 
 Check current routing:
 
