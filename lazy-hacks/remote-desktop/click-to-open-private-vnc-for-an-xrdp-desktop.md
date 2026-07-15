@@ -161,11 +161,18 @@ The launcher:
 1. asks the Ubuntu helper to start or reuse the localhost VNC bridge
 2. asks it to enforce the configured framebuffer size
 3. starts or reuses the SSH local-forward
-4. opens RealVNC Viewer
+4. opens RealVNC Viewer, or activates the existing matching connection
 5. uses `Scaling=FitAutoAspect` and keeps `DynamicResolution=0`
 
 The last point is intentional: Ubuntu owns the true `1620x1080` framebuffer;
 Viewer only fits that desktop cleanly into its Mac window.
+
+The launcher also uses an atomic operation lock and matches Viewer processes by
+the exact localhost display target. Rapid repeated clicks therefore serialize:
+the first click opens the connection and later clicks activate it. If stale
+duplicates are already present, it keeps one and closes only the duplicates.
+The `stop` action closes matching Viewer processes before stopping the SSH
+tunnel and localhost Ubuntu bridge. It does not touch XRDP or the desktop.
 
 ### Build clickable macOS apps
 
@@ -220,6 +227,18 @@ icon, and choose **Options -> Keep in Dock**.
    longer needed.
 
 No reboot, logout, public VNC port, or background monitoring loop is required.
+
+### When RDP is the primary connection
+
+Do not leave multiple VNC Viewer connections open while an RDP client is also
+driving the same XRDP/Xorg display. On the verified workstation, two Viewer
+processes plus one live RDP connection briefly made X11 queries time out and
+drove GNOME Shell and Xorg CPU sharply upward. Closing both Viewer processes
+and stopping only the VNC tunnel/bridge left RDP connected; the display then
+answered X11 checks in approximately `4-8 ms` and became responsive again.
+
+Use the Dock start app only when VNC is needed. When returning to RDP, run the
+stop app. No permanent monitoring loop is used.
 
 ## Troubleshooting
 
