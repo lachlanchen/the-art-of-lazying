@@ -13,6 +13,11 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
   - why stale old `Xorg` and new `Xvnc` sessions can fight over single-instance apps
   - why Firefox feels different now after moving from the Ubuntu snap to Mozilla's `deb` package
 
+- [gnome-system-rdp-remote-login-on-ubuntu-24-04.md](./gnome-system-rdp-remote-login-on-ubuntu-24-04.md)
+  - why GNOME user desktop sharing can fail when no desktop session is active or the keyring is locked
+  - how to configure GNOME's system Remote Login RDP backend with `grdctl --system`
+  - how to verify the `3389` listener before connecting from Windows App / Microsoft Remote Desktop
+
 - [xrdp-cjk-input-on-ubuntu-24-04.md](./xrdp-cjk-input-on-ubuntu-24-04.md)
   - why Chinese and Japanese input can work in terminal/Sublime but fail in Chrome, Firefox, and Typora over `xrdp`
   - how to use `ibus-mozc`, `libpinyin`, and `Wubi` together
