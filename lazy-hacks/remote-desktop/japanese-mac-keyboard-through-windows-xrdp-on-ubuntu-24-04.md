@@ -135,7 +135,7 @@ Loading keymap file /etc/xrdp/km-00000000.ini
 As with the `0x00000804` compatibility map, verify that its `[shift]` section
 contains `Key16=39:39`.
 
-### XRDP `Xvnc`: avoid translating the keyboard twice
+### XRDP `Xvnc`: the `RawKeyboard` experiment was not the final fix
 
 Loading the correct `km-00000000.ini` was necessary but not sufficient for
 the `Xvnc` backend. A raw `xev` capture of the first `Shift+7` test showed:
@@ -148,40 +148,130 @@ The live XKB map and XRDP keymap both already mapped that combination to an
 apostrophe. The extra change happened in TigerVNC's keysym-to-layout mapping,
 after XRDP had already translated the RDP key event.
 
-TigerVNC provides `RawKeyboard` specifically to send key events through and
-let the server's configured XKB layout decide the result. The persistent XRDP
-wrapper therefore ends with:
+TigerVNC provides `RawKeyboard` to send key events through and let the server's
+configured XKB layout decide the result. It was tested by launching a genuinely
+new Xvnc server with:
 
 ```bash
 exec /usr/bin/Xtigervnc "$@" -SecurityTypes None -RawKeyboard=1
+```
+
+The running process and reboot persistence were both verified, but `7` and
+`Shift+7` still both produced `7`. Therefore `RawKeyboard` does not solve this
+particular `Windows App for macOS -> XRDP libvnc -> TigerVNC` chain. The option
+was removed again; the fallback wrapper remains:
+
+```bash
+exec /usr/bin/Xtigervnc "$@" -SecurityTypes None
 ```
 
 File:
 
 - [~/scripts/xrdp-xtigervnc-wrapper.sh](/home/lachlan/scripts/xrdp-xtigervnc-wrapper.sh)
 
-The running `Xtigervnc` process reads this option only at startup. Closing and
-reopening the RDP client normally reuses the old Xvnc desktop, so it is not
-enough. Log out of the XRDP desktop once and reconnect; rebooting also creates
-a fresh server but is unnecessary.
+This is a useful negative result: do not keep adding server-side XKB remaps
+when `setxkbmap`, `xmodmap`, and `km-*.ini` are already correct.
 
-Verify the fresh process:
+### Final Mac route: direct XRDP Xorg plus Unicode keyboard mode
 
-```bash
-pgrep -a Xtigervnc
+XRDP's `Xorg` backend removes the additional VNC translation hop. Keep it as
+the first/default connection section in `/etc/xrdp/xrdp.ini`:
+
+```ini
+[Globals]
+autorun=Xorg
+
+[Xorg]
+name=Xorg
+lib=libxup.so
+username=ask
+password=ask
+ip=127.0.0.1
+port=-1
+code=20
+
+[Xvnc]
+name=Xvnc
+lib=libvnc.so
 ```
 
-Its command line should include:
+Putting `[Xorg]` first matters. `autorun=Xorg` only bypasses XRDP's login panel
+when the client supplies valid saved credentials. If the client asks for
+credentials instead, XRDP selects the first suitable section in the file.
+
+The server log should confirm the direct backend:
 
 ```text
--RawKeyboard=1
+loaded module 'libxup.so'
 ```
 
-If this client still mishandles modifiers, select XRDP's `Xorg` backend for a
-direct keyboard path. GNOME system Remote Login is smoother on some machines,
-but this workstation previously experienced `gnome-shell` crashes in native
-GNOME RDP sessions, so it remains a separately tested alternative rather than
-the automatic replacement for XRDP.
+It must not say `libvnc.so` for this route.
+
+On Windows App / Microsoft Remote Desktop for macOS, use Unicode keyboard mode:
+
+```text
+Connections -> Keyboard Mode -> Unicode
+```
+
+Shortcuts:
+
+```text
+Control+Command+U  -> Unicode
+Control+Command+K  -> Scancode
+```
+
+Microsoft documents these two modes and shortcuts in its
+[macOS Remote Desktop keyboard guide](https://learn.microsoft.com/en-us/previous-versions/remote-desktop-client/client-features-macos#keyboard-modes).
+
+Unicode mode sends the finished printable character instead of forwarding the
+Mac/UU modifier sequence as physical scancode press/release events. This is the
+important client-side half of the repair for quotes, `?`, `@`, and Japanese or
+Chinese IME input.
+
+For a persistent macOS setting, fully quit Windows App after changing the menu
+option. Its preference is:
+
+```text
+ClientSettings.KeyboardDriverMode = 1
+```
+
+where `0` is Scancode and `1` is Unicode.
+
+### Preserve the old one-password direct login
+
+This setup still uses XRDP authentication; it does not add GNOME/GDM's second
+login screen. In Windows App, edit the saved PC and select a valid saved
+credential for the Ubuntu account. With a valid credential and
+`autorun=Xorg`, the connection enters the Xorg desktop directly.
+
+Windows App's official
+[saved-credential instructions](https://learn.microsoft.com/en-us/windows-app/user-account-settings-add-remove-manage#manage-credentials-for-devices-and-apps)
+describe the same client-side setup.
+
+If XRDP's old-style login panel unexpectedly appears, inspect the log:
+
+```bash
+rg 'login failed|login successful' /var/log/xrdp.log | tail
+```
+
+An immediate `login failed` followed by a successful manual login means the
+client's selected saved credential is stale or belongs to another host. Fix
+the selected saved credential in Windows App rather than storing a password in
+`xrdp.ini`.
+
+### The two practical client routes
+
+1. **Windows computer -> XRDP**: this client was observed as keyboard type `7`,
+   layout `0x00000804`. The server compatibility map to `jp(mac)` remains
+   useful, and Xorg is the preferred backend.
+2. **Mac computer -> Windows App for macOS -> XRDP**: this client was observed
+   as type `4`, layout `0x00000000`. Use XRDP Xorg plus Windows App Unicode
+   mode. Scancode mode through Xvnc lost held Shift and could not type symbols.
+
+Native GNOME system Remote Login can feel smoother on some machines, but this
+workstation previously experienced `gnome-shell` crashes in native GNOME RDP
+sessions. It remains a separate, explicitly tested alternative rather than the
+automatic replacement for XRDP.
 
 ### Keep it XRDP-only
 
