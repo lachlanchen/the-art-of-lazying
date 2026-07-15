@@ -30,6 +30,8 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
   - why TigerVNC `RawKeyboard=1` was tested but did not repair the macOS RDP modifier path
   - how direct XRDP Xorg plus Windows App Unicode mode restored printable symbols in the double-remote Mac route
   - how physical JIS geometry, Unicode/Scancode transport, and Japanese IME/Kana input differ
+  - why a corrected XRDP `jp` map can still type US-like characters when Unicode mode forwards the Mac relay's `ABC` source
+  - a native Swift helper for listing and selecting macOS ABC, Romaji, and Kana input sources
   - why the Mac and Windows client routes require separate XRDP compatibility mappings
   - how valid saved credentials preserve the old one-password direct-login workflow
   - why this should be an XRDP-only override instead of a whole-machine keyboard change
