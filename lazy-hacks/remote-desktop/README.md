@@ -26,6 +26,7 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
 - [japanese-mac-keyboard-through-windows-xrdp-on-ubuntu-24-04.md](./japanese-mac-keyboard-through-windows-xrdp-on-ubuntu-24-04.md)
   - how to keep Windows usable for Japanese input first
   - how to make Ubuntu XRDP use `applealu_jis` + `jp(mac)` instead of plain `pc105/us`
+  - how `RawKeyboard=1` prevents XRDP `Xvnc` from translating JIS modifier keys twice
   - why this should be an XRDP-only override instead of a whole-machine keyboard change
 
 - [xrdp-caps-lock-all-uppercase-fix-on-ubuntu-24-04.md](./xrdp-caps-lock-all-uppercase-fix-on-ubuntu-24-04.md)

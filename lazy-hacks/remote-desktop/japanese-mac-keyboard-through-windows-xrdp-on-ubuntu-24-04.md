@@ -108,6 +108,81 @@ Key16=39:39
 Keysym `39` is the apostrophe expected from `Shift+7` on JIS. This keymap is
 loaded by a new RDP connection; changing it does not require rebooting Ubuntu.
 
+### When a macOS RDP client reports layout `0x00000000`
+
+A second client path was observed later:
+
+- Japanese Mac keyboard on a MacBook Air
+- UU/Wangyi remote control into a Mac Pro
+- Windows App / Microsoft Remote Desktop for macOS
+- XRDP `Xvnc` on Ubuntu
+
+This client reported:
+
+```text
+keyboard_type:[0x04]
+keyboard_subtype:[0x00]
+keylayout:[0x00000000]
+```
+
+Generate and install `/etc/xrdp/km-00000000.ini` from the same live
+`applealu_jis` + `jp(mac)` XKB session. A new connection should then show:
+
+```text
+Loading keymap file /etc/xrdp/km-00000000.ini
+```
+
+As with the `0x00000804` compatibility map, verify that its `[shift]` section
+contains `Key16=39:39`.
+
+### XRDP `Xvnc`: avoid translating the keyboard twice
+
+Loading the correct `km-00000000.ini` was necessary but not sufficient for
+the `Xvnc` backend. A raw `xev` capture of the first `Shift+7` test showed:
+
+1. `Shift_L` pressed
+2. `Shift_L` released
+3. keycode `16` delivered as plain `7`
+
+The live XKB map and XRDP keymap both already mapped that combination to an
+apostrophe. The extra change happened in TigerVNC's keysym-to-layout mapping,
+after XRDP had already translated the RDP key event.
+
+TigerVNC provides `RawKeyboard` specifically to send key events through and
+let the server's configured XKB layout decide the result. The persistent XRDP
+wrapper therefore ends with:
+
+```bash
+exec /usr/bin/Xtigervnc "$@" -SecurityTypes None -RawKeyboard=1
+```
+
+File:
+
+- [~/scripts/xrdp-xtigervnc-wrapper.sh](/home/lachlan/scripts/xrdp-xtigervnc-wrapper.sh)
+
+The running `Xtigervnc` process reads this option only at startup. Closing and
+reopening the RDP client normally reuses the old Xvnc desktop, so it is not
+enough. Log out of the XRDP desktop once and reconnect; rebooting also creates
+a fresh server but is unnecessary.
+
+Verify the fresh process:
+
+```bash
+pgrep -a Xtigervnc
+```
+
+Its command line should include:
+
+```text
+-RawKeyboard=1
+```
+
+If this client still mishandles modifiers, select XRDP's `Xorg` backend for a
+direct keyboard path. GNOME system Remote Login is smoother on some machines,
+but this workstation previously experienced `gnome-shell` crashes in native
+GNOME RDP sessions, so it remains a separately tested alternative rather than
+the automatic replacement for XRDP.
+
 ### Keep it XRDP-only
 
 Do not switch the whole machine globally unless you really want every console and every desktop path changed.
