@@ -194,12 +194,26 @@ On the verified relay, the resulting applications are:
 ~/Desktop/Lachlanserver VNC.app
 ```
 
+The start application can also be pinned permanently to the macOS Dock. Back
+up `~/Library/Preferences/com.apple.dock.plist`, add the application URL to the
+Dock's `persistent-apps` array, and restart only the Dock process with
+`killall Dock`. This does not log out, reboot, or interrupt the remote Ubuntu
+desktop. The verified relay keeps this Dock entry:
+
+```text
+file:///Users/USER/Applications/Lachlanserver%20VNC.app/
+```
+
+The simpler manual equivalent is to open the app once, right-click its Dock
+icon, and choose **Options -> Keep in Dock**.
+
 ## How to use it next time
 
 1. After an Ubuntu reboot, make sure one XRDP/Xorg desktop exists. If none
    exists yet, log in once through XRDP and disconnect; do not use that route
    for normal typing.
-2. On the Mac relay, double-click `Lachlanserver VNC.app` on the Desktop.
+2. On the Mac relay, click `Lachlanserver VNC` in the Dock, or double-click the
+   Desktop app.
 3. Work in the VNC window. `Ctrl`, `Shift`, and the configured Ubuntu keyboard
    map remain usable there.
 4. Double-click `Lachlanserver VNC Stop.app` when the private tunnel is no
