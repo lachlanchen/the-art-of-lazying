@@ -25,9 +25,12 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
 
 - [japanese-mac-keyboard-through-windows-xrdp-on-ubuntu-24-04.md](./japanese-mac-keyboard-through-windows-xrdp-on-ubuntu-24-04.md)
   - how to keep Windows usable for Japanese input first
-  - how to make Ubuntu XRDP use `applealu_jis` + `jp(mac)` instead of plain `pc105/us`
+  - how to make Ubuntu XRDP use layout `jp` with `applealu_jis` and variant `mac` kept as separate settings
+  - why putting the literal value `jp(mac)` in XRDP's layout map moved Kana onto the primary letter/number layer
   - why TigerVNC `RawKeyboard=1` was tested but did not repair the macOS RDP modifier path
-  - how direct XRDP Xorg plus Windows App Unicode mode restores Mac/JIS symbols
+  - how direct XRDP Xorg plus Windows App Unicode mode restored printable symbols in the double-remote Mac route
+  - how physical JIS geometry, Unicode/Scancode transport, and Japanese IME/Kana input differ
+  - why the Mac and Windows client routes require separate XRDP compatibility mappings
   - how valid saved credentials preserve the old one-password direct-login workflow
   - why this should be an XRDP-only override instead of a whole-machine keyboard change
 

@@ -1,5 +1,110 @@
 # Japanese Mac Keyboard Through Windows XRDP on Ubuntu 24.04
 
+## Verified state on 2026-07-15
+
+The working route was a 2019 MacBook Air with a Japanese/JIS keyboard,
+remote-controlled into a Mac relay, followed by Windows App for macOS into an
+Ubuntu XRDP desktop. The verified client and server state was:
+
+```text
+Windows App for macOS: 11.3.7
+XRDP backend:           Xorg / libxup.so
+RDP keyboard type:      4
+RDP keyboard subtype:   0
+RDP layout id:          0x00000000
+Windows App mode:       Unicode (1)
+XRDP layout map:        jp
+XRDP-only XKB target:   applealu_jis + jp + variant mac
+```
+
+This restored ordinary English and printable symbols after Scancode mode lost
+the held `Shift` modifier. It is a safe working fallback. Exact JIS punctuation
+and the dedicated `Kana` / `Eisu` keys must still be tested separately because
+those are different from merely being able to type a shifted symbol.
+
+An important correction to an earlier version of this guide: do **not** put
+`jp(mac)` in `default_layouts_map` while also setting `variant=mac`. On this
+machine that was parsed as a literal layout name, and a fresh connection
+produced:
+
+```text
+rules:   base
+model:   pc104
+layout:  jp(mac)
+```
+
+The primary key layer then contained Kana symbols, so English letters and
+numbers appeared Japanese. The correct split is:
+
+```ini
+[default_layouts_map]
+rdp_layout_jp_via_mac_unspecified=jp
+rdp_layout_jp_via_zh_cn=jp
+
+[rdp_keyboard_jp_mac_via_mac_rdp]
+model=applealu_jis
+variant=mac
+```
+
+After correcting the map, a new XRDP connection logged `layout [jp]`, and the
+unwanted Kana-primary behavior disappeared.
+
+The fresh display then reported `model pc104`, `layout jp` when queried, while
+its effective key table contained the expected JIS shifted pairs:
+
+```text
+keycode 11 -> 2 / quotedbl
+keycode 16 -> 7 / apostrophe
+keycode 34 -> at / grave
+keycode 61 -> slash / question
+```
+
+This is why the XRDP log, XKB query, effective key table, and real typed output
+must all be checked. XRDP can translate through `km-*.ini` even when the model
+shown by `setxkbmap -query` is less specific than the desired helper target.
+
+## Three different things that should not be mixed together
+
+1. **Physical key geometry**: a Japanese Apple/JIS keyboard has different
+   punctuation positions from a US ANSI keyboard.
+2. **Printable-character transport**: Windows App can send physical Scancodes
+   or completed Unicode characters.
+3. **Japanese text input**: macOS Japanese input or Ubuntu `ibus-mozc` converts
+   Roman/Kana input into Japanese text.
+
+The Mac relay can legitimately show the `ABC` input source while a physical
+Japanese keyboard is connected. That does not automatically mean the hardware
+is US. In Unicode mode, Windows App forwards the character produced by macOS;
+in Scancode mode, Ubuntu must interpret the physical key and modifier sequence.
+
+### Switching between English/JIS symbols and Japanese text
+
+Do not make Kana the primary XKB layer. That was the broken state in which
+ordinary letters and numbers became Kana.
+
+For the Mac-to-Mac-to-XRDP route:
+
+- keep macOS `ABC` selected for English text
+- select macOS Japanese/Romaji or Japanese/Kana only when Japanese text is
+  wanted
+- keep Windows App in Unicode mode so it forwards the composed printable text
+
+The tested Mac relay had both `ABC` and Apple's Japanese input method enabled,
+with `ABC` selected during the successful English-symbol test. Use the macOS
+input menu to switch deliberately; a remote-control application may consume or
+misroute the physical `Kana` and `Eisu` keys.
+
+For conversion inside Ubuntu instead, the XRDP desktop has `ibus-mozc` in its
+configured engine list. From a terminal inside that desktop:
+
+```bash
+ibus engine mozc-jp       # Japanese input
+ibus engine xkb:us::eng  # plain English input
+```
+
+Chinese Pinyin and Wubi are documented separately in
+[xrdp-cjk-input-on-ubuntu-24-04.md](./xrdp-cjk-input-on-ubuntu-24-04.md).
+
 ## Problem
 
 The real path here is not just "keyboard -> Ubuntu".
@@ -58,7 +163,7 @@ variant: mac
 
 ### When the RDP client reports the wrong layout ID
 
-`setxkbmap -query` can show the correct `jp(mac)` profile while punctuation
+`setxkbmap -query` can show layout `jp` and variant `mac` while punctuation
 still behaves like US. A decisive example is:
 
 ```text
@@ -84,9 +189,10 @@ The server-side compatibility fix is:
 
 - generate `/etc/xrdp/km-00000804.ini` while the live X session is using
   `applealu_jis`, `jp`, `mac`
-- map `0x00000804` to `jp(mac)` in `/etc/xrdp/xrdp_keyboard.ini`
+- map `0x00000804` to layout `jp` in `/etc/xrdp/xrdp_keyboard.ini`
 - match the observed type `7`, subtype `0` to model `applealu_jis` and variant
-  `mac`
+  `mac` separately; do not encode the variant as the literal layout
+  `jp(mac)`
 
 Generate the compatibility keymap:
 
@@ -126,7 +232,8 @@ keylayout:[0x00000000]
 ```
 
 Generate and install `/etc/xrdp/km-00000000.ini` from the same live
-`applealu_jis` + `jp(mac)` XKB session. A new connection should then show:
+`applealu_jis` + `jp` + variant `mac` XKB session. A new connection should
+then show:
 
 ```text
 Loading keymap file /etc/xrdp/km-00000000.ini
@@ -172,7 +279,7 @@ File:
 This is a useful negative result: do not keep adding server-side XKB remaps
 when `setxkbmap`, `xmodmap`, and `km-*.ini` are already correct.
 
-### Final Mac route: direct XRDP Xorg plus Unicode keyboard mode
+### Mac route: direct XRDP Xorg plus Unicode keyboard mode
 
 XRDP's `Xorg` backend removes the additional VNC translation hop. Keep it as
 the first/default connection section in `/etc/xrdp/xrdp.ini`:
@@ -224,9 +331,27 @@ Microsoft documents these two modes and shortcuts in its
 [macOS Remote Desktop keyboard guide](https://learn.microsoft.com/en-us/previous-versions/remote-desktop-client/client-features-macos#keyboard-modes).
 
 Unicode mode sends the finished printable character instead of forwarding the
-Mac/UU modifier sequence as physical scancode press/release events. This is the
-important client-side half of the repair for quotes, `?`, `@`, and Japanese or
-Chinese IME input.
+Mac/remote-control modifier sequence as physical scancode press/release events.
+This matters in the double-remote Mac route because direct Xorg Scancode mode
+still produced the same value for `7` and `Shift+7`: Ubuntu never received a
+usable held-Shift sequence. Unicode mode restored printable shifted symbols
+after the malformed server layout was corrected.
+
+Do not interpret this as proof that every key is now exact JIS. Test at least:
+
+```text
+plain 7
+Shift+7
+Shift+2
+the dedicated @ key
+slash / question-mark key
+Kana and Eisu keys
+```
+
+If symbols work but follow US positions, printable transport is repaired but
+the local macOS input source/key geometry still needs adjustment. Do that on
+the Mac relay; do not corrupt the Ubuntu keymap to compensate for a character
+the Mac client is already producing.
 
 For a persistent macOS setting, fully quit Windows App after changing the menu
 option. Its preference is:
@@ -236,6 +361,15 @@ ClientSettings.KeyboardDriverMode = 1
 ```
 
 where `0` is Scancode and `1` is Unicode.
+
+The controlled rollback is:
+
+```bash
+defaults write com.microsoft.rdc.macos ClientSettings.KeyboardDriverMode -int 0
+```
+
+Fully quit and reopen Windows App after changing this preference. Keep a copy
+of its preferences before experimenting.
 
 ### Preserve the old one-password direct login
 
@@ -262,11 +396,16 @@ the selected saved credential in Windows App rather than storing a password in
 ### The two practical client routes
 
 1. **Windows computer -> XRDP**: this client was observed as keyboard type `7`,
-   layout `0x00000804`. The server compatibility map to `jp(mac)` remains
-   useful, and Xorg is the preferred backend.
+   layout `0x00000804`. Map that id to layout `jp`, apply model
+   `applealu_jis` and variant `mac` separately, and keep Xorg as the preferred
+   backend. Configure Japanese/Microsoft IME on Windows itself first.
 2. **Mac computer -> Windows App for macOS -> XRDP**: this client was observed
    as type `4`, layout `0x00000000`. Use XRDP Xorg plus Windows App Unicode
-   mode. Scancode mode through Xvnc lost held Shift and could not type symbols.
+   mode for the double-remote route. Scancode mode lost held Shift in both the
+   tested Xvnc path and the later direct-Xorg test.
+
+These identifiers are compatibility observations, not universal truths. Check
+`/var/log/xrdp.log` after changing the client machine or RDP application.
 
 Native GNOME system Remote Login can feel smoother on some machines, but this
 workstation previously experienced `gnome-shell` crashes in native GNOME RDP
@@ -313,12 +452,18 @@ desktop's own keyboard initialization has finished:
 Exec=sh -c "sleep 5; exec /home/lachlan/scripts/set-xrdp-japanese-mac-keyboard.sh"
 ```
 
-The helper verifies that the current display belongs to an `xrdp-sesman`
+The helper verifies that the target display belongs to an `xrdp-sesman`
 session before changing anything, then runs:
 
 ```bash
-setxkbmap -model applealu_jis -layout jp -variant mac -option caps:none
+setxkbmap -rules evdev -model applealu_jis -layout jp -variant mac -option caps:none
 ```
+
+The helper must also work when invoked over SSH. In that case the caller's
+`XDG_SESSION_ID` belongs to SSH, not XRDP. The repaired guard first checks the
+current session and then falls back to matching `DISPLAY` against all
+`xrdp-sesman` sessions. Without that fallback, a remote repair could silently
+exit without changing the desktop.
 
 This remains XRDP-only, preserves the earlier CJK `ibus` setup, and adds no
 new monitoring loop.
@@ -342,11 +487,12 @@ variant:    mac
 
 ## Apply immediately
 
-For the current XRDP session:
+For the current XRDP session, use its actual display number from `pgrep -a
+Xorg`; XRDP may allocate `:10`, `:11`, or another display:
 
 ```bash
-DISPLAY=:10.0 XAUTHORITY="$HOME/.Xauthority" \
-  setxkbmap -model applealu_jis -layout jp -variant mac -option caps:none
+DISPLAY=:11.0 XAUTHORITY="$HOME/.Xauthority" \
+  setxkbmap -rules evdev -model applealu_jis -layout jp -variant mac -option caps:none
 ```
 
 No reboot is required.
@@ -358,10 +504,16 @@ restart is required.
 
 This fixes the Ubuntu side correctly.
 
-If exact `Kana` / `Eisu` behavior is still imperfect, the limitation is probably higher in the chain:
+If exact `Kana` / `Eisu` behavior is still imperfect, the limitation is
+probably higher in the chain:
 
 - Mac keyboard forwarding
 - remote-control app
 - Windows App / RDP
 
 At that point the next step is a targeted remap for the specific keys that still arrive incorrectly.
+
+Do not claim success from `setxkbmap -query` alone. Compare `xmodmap -pke`, the
+XRDP log, and real typed output. A syntactically plausible layout can still be
+overridden on reconnect, and Unicode mode can bypass physical XKB punctuation
+entirely by sending the completed character.
