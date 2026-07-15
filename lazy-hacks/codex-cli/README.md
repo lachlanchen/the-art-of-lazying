@@ -15,6 +15,7 @@ This folder stores practical Codex CLI workflow tweaks used on this machine.
   - self-contained macOS `zsh` setup for `codex`, `codexr`, and `codexmv`
 - [windows-powershell-full-setup.md](./windows-powershell-full-setup.md)
   - self-contained Windows PowerShell setup and installer for `codex`, `codexr`, `cr`, and `codexmv`
+  - preserves native commands and flags, including one-argument commands, `-C`, and literal input after `--`
 - [codexmv-macos-zsh.md](./codexmv-macos-zsh.md)
   - macOS `zsh` tutorial for `codexmv`
 - [image-drag-drop-paths.md](./image-drag-drop-paths.md)
