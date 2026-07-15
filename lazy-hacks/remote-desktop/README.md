@@ -36,6 +36,14 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
   - how valid saved credentials preserve the old one-password direct-login workflow
   - why this should be an XRDP-only override instead of a whole-machine keyboard change
 
+- [click-to-open-private-vnc-for-an-xrdp-desktop.md](./click-to-open-private-vnc-for-an-xrdp-desktop.md)
+  - why Windows App Unicode mode fixed printable symbols but lost `Ctrl`, while Scancode still lost held `Shift`
+  - how to attach localhost-only `x11vnc` to the existing XRDP/Xorg desktop
+  - how a Mac launcher creates an SSH tunnel and opens RealVNC Viewer with one click
+  - how the helper enforces a true `1620x1080` framebuffer and restores the Japanese Mac XKB map
+  - why the resize credential belongs in GNOME Keyring instead of a script
+  - how to start, stop, verify, and recover the bridge without rebooting or exposing a VNC port
+
 - [xrdp-caps-lock-all-uppercase-fix-on-ubuntu-24-04.md](./xrdp-caps-lock-all-uppercase-fix-on-ubuntu-24-04.md)
   - why Ubuntu can show Caps Lock off while XRDP still types uppercase
   - how to diagnose Caps Lock, Shift, and XRDP keymap state separately

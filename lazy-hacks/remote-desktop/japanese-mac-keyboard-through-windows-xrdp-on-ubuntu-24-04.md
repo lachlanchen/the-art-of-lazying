@@ -18,9 +18,15 @@ XRDP-only XKB target:   applealu_jis + jp + variant mac
 ```
 
 This restored ordinary English and printable symbols after Scancode mode lost
-the held `Shift` modifier. It is a safe working fallback. Exact JIS punctuation
-and the dedicated `Kana` / `Eisu` keys must still be tested separately because
-those are different from merely being able to type a shifted symbol.
+the held `Shift` modifier, but it was not a complete daily-use solution:
+Unicode mode did not carry `Ctrl` shortcuts reliably through this nested route.
+Scancode mode was retested after upgrading Windows App and still produced plain
+`7` for `Shift+7`. The final working interaction path is an SSH-tunneled VNC
+connection, documented in
+[click-to-open-private-vnc-for-an-xrdp-desktop.md](./click-to-open-private-vnc-for-an-xrdp-desktop.md).
+VNC preserved both `Ctrl` and `Shift` in real typing tests. Exact JIS
+punctuation and the dedicated `Kana` / `Eisu` keys remain separate concerns
+from merely being able to type a shifted symbol.
 
 An important correction to an earlier version of this guide: do **not** put
 `jp(mac)` in `default_layouts_map` while also setting `variant=mac`. On this
@@ -453,7 +459,7 @@ client's selected saved credential is stale or belongs to another host. Fix
 the selected saved credential in Windows App rather than storing a password in
 `xrdp.ini`.
 
-### The two practical client routes
+### The three practical client routes
 
 1. **Windows computer -> XRDP**: this client was observed as keyboard type `7`,
    layout `0x00000804`. Map that id to layout `jp`, apply model
@@ -461,8 +467,13 @@ the selected saved credential in Windows App rather than storing a password in
    backend. Configure Japanese/Microsoft IME on Windows itself first.
 2. **Mac computer -> Windows App for macOS -> XRDP**: this client was observed
    as type `4`, layout `0x00000000`. Use XRDP Xorg plus Windows App Unicode
-   mode for the double-remote route. Scancode mode lost held Shift in both the
-   tested Xvnc path and the later direct-Xorg test.
+   mode only as a printable-character fallback for the double-remote route.
+   Scancode mode lost held Shift in both the tested Xvnc path and the later
+   direct-Xorg test; Unicode mode then failed ordinary `Ctrl` shortcuts.
+3. **Mac relay -> SSH-tunneled VNC -> existing XRDP/Xorg desktop**: this is the
+   accepted daily-use route for the nested Mac remote-control path. It kept
+   `Ctrl` and `Shift`, exposed no VNC port to the LAN, and used a true
+   `1620x1080` framebuffer rather than stretching the old `1024x656` desktop.
 
 These identifiers are compatibility observations, not universal truths. Check
 `/var/log/xrdp.log` after changing the client machine or RDP application.
