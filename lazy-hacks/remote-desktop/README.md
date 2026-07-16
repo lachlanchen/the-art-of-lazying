@@ -12,6 +12,12 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
   - how to install and verify native NetEase UU Remote on Windows
   - how to launch the UU GUI in the active RDP session when the command originates over SSH
 
+- [uu-remote-ubuntu-bridge.md](./uu-remote-ubuntu-bridge.md)
+  - how the official Windows UU client in Wine displays and controls the live Ubuntu GNOME desktop
+  - the Xvfb, SDL FreeRDP, GNOME RDP, and bounded input-broker data path
+  - where to find the private source submodule and exact `xxd`/`objdump` patch record
+  - the one-command installer, verification, rollback, and security boundaries
+
 - [native-gnome-rdp-vs-xrdp-on-ubuntu-24-04.md](./native-gnome-rdp-vs-xrdp-on-ubuntu-24-04.md)
   - why GNOME native RDP could crash the remote desktop session on app launch
   - why `xrdp` was chosen as the safer default
