@@ -5,6 +5,10 @@ These notes cover two practical fixes for a Windows workstation controlled throu
 - letters suddenly typing as uppercase unless `Shift` is held
 - setting up SSH in both directions between Windows and a Linux server
 
+For the audited end-to-end RDP bootstrap, administrator key ACLs, reusable
+PowerShell helper, and native UU Remote setup, see
+[Bootstrap Windows access with RDP, OpenSSH, and UU Remote](./remote-desktop/windows-rdp-bootstrap-to-ssh-and-uu-remote.md).
+
 ## Fix Remote Keyboard Typing All Caps
 
 Symptom:

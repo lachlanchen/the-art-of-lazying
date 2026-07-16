@@ -4,6 +4,14 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
 
 ## Files
 
+- [windows-rdp-bootstrap-to-ssh-and-uu-remote.md](./windows-rdp-bootstrap-to-ssh-and-uu-remote.md)
+  - how Remmina RDP was used as the one-time Windows bootstrap path
+  - how to install OpenSSH Server, add an administrator public key, and keep TCP 22 LAN-scoped
+  - companion helper: [scripts/enable-windows-openssh.ps1](./scripts/enable-windows-openssh.ps1)
+  - the verified Ubuntu SSH alias and Windows service/firewall/ACL checks
+  - how to install and verify native NetEase UU Remote on Windows
+  - how to launch the UU GUI in the active RDP session when the command originates over SSH
+
 - [native-gnome-rdp-vs-xrdp-on-ubuntu-24-04.md](./native-gnome-rdp-vs-xrdp-on-ubuntu-24-04.md)
   - why GNOME native RDP could crash the remote desktop session on app launch
   - why `xrdp` was chosen as the safer default
@@ -54,4 +62,6 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
 - Ubuntu 24.04
 - GNOME 46
 - Windows App / Microsoft Remote Desktop
+- Remmina RDP as a Windows bootstrap client
+- Windows OpenSSH and NetEase UU Remote recovery access
 - RealVNC, native GNOME RDP, and XRDP comparison
