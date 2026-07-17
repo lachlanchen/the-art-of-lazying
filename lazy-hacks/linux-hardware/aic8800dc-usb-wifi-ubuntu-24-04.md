@@ -24,7 +24,11 @@ After installation:
 - an active scan found 15 nearby networks
 - the driver's test script passed all 11 checks
 - DKMS registered an automatic rebuild for future kernel packages
+- kernel and header hooks retry a missed DKMS build
+- a boot service repairs the running kernel before NetworkManager starts
 - a controlled reboot into kernel 7.0 restored Wi-Fi and internet automatically
+- removing the inactive 6.11 kernel's complete DKMS build state was repaired
+  automatically from the registered source
 
 No Wi-Fi credential is stored in this playbook.
 
@@ -244,6 +248,82 @@ dkms status -m aic8800dc
 After reboot, repeat `lsusb -t`, `dkms status`, `nmcli device status`, and a
 scan. The udev rule should switch `a69c:5721` to `a69c:88dc` automatically.
 
+### Install the Persistence Guard
+
+Ubuntu's normal DKMS hooks remain the primary update mechanism. Install this
+repository's additional guard to cover kernels that were installed before the
+driver, interrupted package configuration, and missing module files at boot:
+
+```bash
+cd ~/Projects/the-art-of-lazying/lazy-hacks/linux-hardware/aic8800dc-persistence
+sudo ./install.sh
+aic8800dc-persistence-verify
+```
+
+The installer adds three idempotent recovery paths:
+
+- `/etc/kernel/postinst.d/aic8800dc-dkms-guard` runs after a kernel package
+- `/etc/kernel/header_postinst.d/aic8800dc-dkms-guard` retries when its headers
+  become available
+- `aic8800dc-dkms-ensure.service` verifies or repairs the running kernel before
+  NetworkManager starts on every boot
+- `zz-aic8800dc-wifi.conf` disables power saving for USB Wi-Fi and the installer
+  also persists that setting on the currently active AIC8800DC profile
+
+The shared `aic8800dc-dkms-ensure` command locks concurrent invocations,
+discovers the highest registered or staged driver version, builds only when the
+current kernel lacks the modules, runs `depmod`, and loads both modules for the
+running kernel. This version discovery means a deliberately reviewed driver
+update does not require editing the recovery script.
+
+Check the installed mechanism and its last boot log:
+
+```bash
+aic8800dc-persistence-verify
+systemctl status aic8800dc-dkms-ensure.service --no-pager
+journalctl -b -u aic8800dc-dkms-ensure.service --no-pager
+```
+
+Remove only the extra guard, leaving the driver and firmware installed:
+
+```bash
+sudo ./uninstall.sh
+```
+
+The HWE image and header meta-packages must remain installed so future kernels
+arrive with matching build headers:
+
+```bash
+dpkg-query -W linux-generic-hwe-24.04 linux-headers-generic-hwe-24.04
+```
+
+This automation cannot make an incompatible driver compile against every
+future kernel API. When a build fails, the package hook emits a warning without
+leaving `dpkg` broken, the boot service records a visible failure, and GRUB's
+previous working kernel remains the recovery path. Review and pin a compatible
+upstream driver revision before replacing the validated source.
+
+### Validated Recovery Test
+
+The 3040 was rebooted after installing the guard. On that clean boot, the
+service completed before NetworkManager, the adapter switched to `a69c:88dc`,
+the saved Wi-Fi profile connected, and traffic reached both the router and the
+internet through the Wi-Fi interface.
+
+The full DKMS state for the inactive 6.11 kernel was then removed and recovered
+to exercise the same path as a newly installed kernel:
+
+```bash
+sudo dkms remove -m aic8800dc -v 6.4.3.0-patched.5 \
+  -k 6.11.0-17-generic
+sudo aic8800dc-dkms-ensure 6.11.0-17-generic
+```
+
+The guard compiled, signed, installed, and indexed both modules. `modinfo -k`
+and `dkms status` confirmed the restored installation. Only use this test with
+an inactive kernel while a separate working network path is available; do not
+remove the running kernel's sole remote-access driver.
+
 ## Wi-Fi Missing After Booting a Different Kernel
 
 This happened once on the 3040 and was not a MOK or mode-switch failure. The
@@ -289,7 +369,8 @@ interface.
 
 This one-time mismatch can occur when another kernel was already installed
 before the driver was first registered with DKMS. Ubuntu's existing
-`/etc/kernel/postinst.d/dkms` hook handles later kernel package installations.
+`/etc/kernel/postinst.d/dkms` hook handles later kernel package installations;
+the persistence guard above also repairs this case during boot.
 
 ## Update Deliberately
 
