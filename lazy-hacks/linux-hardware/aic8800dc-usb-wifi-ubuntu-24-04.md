@@ -9,7 +9,7 @@ adapter on the `OptiPlex-3040`.
 | --- | --- |
 | Host | Dell OptiPlex 3040 |
 | OS | Ubuntu 24.04.4 LTS, x86-64 |
-| Kernel | `6.11.0-17-generic` |
+| Kernels | `6.11.0-17-generic` and `7.0.0-28-generic` |
 | Storage-mode USB ID | `a69c:5721` (`aicsemi Aic MSC`) |
 | Wi-Fi-mode USB ID | `a69c:88dc` (`AICSemi AIC8800DC`) |
 | Driver | `aic8800dc/6.4.3.0-patched.5` through DKMS |
@@ -24,6 +24,7 @@ After installation:
 - an active scan found 15 nearby networks
 - the driver's test script passed all 11 checks
 - DKMS registered an automatic rebuild for future kernel packages
+- a controlled reboot into kernel 7.0 restored Wi-Fi and internet automatically
 
 No Wi-Fi credential is stored in this playbook.
 
@@ -242,6 +243,53 @@ dkms status -m aic8800dc
 
 After reboot, repeat `lsusb -t`, `dkms status`, `nmcli device status`, and a
 scan. The udev rule should switch `a69c:5721` to `a69c:88dc` automatically.
+
+## Wi-Fi Missing After Booting a Different Kernel
+
+This happened once on the 3040 and was not a MOK or mode-switch failure. The
+adapter had already changed to `a69c:88dc`, but the computer booted
+`7.0.0-28-generic` while DKMS contained modules only for the previously running
+`6.11.0-17-generic` kernel. `lsusb -t` therefore showed `Driver=[none]` and
+`modinfo aic8800_fdrv` could not find a current-kernel module.
+
+Confirm the mismatch:
+
+```bash
+uname -r
+lsusb
+lsusb -t
+dkms status -m aic8800dc
+modinfo -F filename aic8800_fdrv
+```
+
+Build and load the driver for the kernel that is running:
+
+```bash
+version=6.4.3.0-patched.5
+kernel="$(uname -r)"
+sudo dkms build -m aic8800dc -v "$version" -k "$kernel"
+sudo dkms install -m aic8800dc -v "$version" -k "$kernel"
+sudo modprobe aic_load_fw
+sudo modprobe aic8800_fdrv
+```
+
+Then verify:
+
+```bash
+dkms status -m aic8800dc
+lsusb -t
+nmcli device status
+```
+
+The current kernel must have its own `installed` DKMS line. The 3040 then
+completed a controlled reboot test: the udev rule switched the adapter within
+one second, both modules loaded, NetworkManager autoconnected the saved profile,
+Wi-Fi obtained an address, and traffic reached the internet through that
+interface.
+
+This one-time mismatch can occur when another kernel was already installed
+before the driver was first registered with DKMS. Ubuntu's existing
+`/etc/kernel/postinst.d/dkms` hook handles later kernel package installations.
 
 ## Update Deliberately
 
