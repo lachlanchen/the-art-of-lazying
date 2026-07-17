@@ -8,8 +8,8 @@ Wayland desktop. This is an experimental, version-locked compatibility bridge,
 not a native Linux port.
 
 The implementation is kept in the
-[private submodule](../../code/uu-remote-ubuntu-bridge). An authorized GitHub
-account and SSH key are required to fetch it:
+[public submodule](../../code/uu-remote-ubuntu-bridge). It can be fetched
+without a GitHub account:
 
 ```bash
 git submodule update --init code/uu-remote-ubuntu-bridge
@@ -54,7 +54,7 @@ because it incorrectly killed a healthy Wine process.
 
 ## Reproducible Record
 
-The private submodule contains the complete source and operational record:
+The public submodule contains the complete source and operational record:
 
 - `README.md` plus `i18n/`: polished overview and selector for 11 languages
 - `docs/architecture.md`: process and trust boundaries
@@ -64,6 +64,8 @@ The private submodule contains the complete source and operational record:
 - `docs/upstream-maintenance.md`: repeatable workflow for a new UU release
 - `docs/security.md`: credential handling and residual risk
 - `docs/troubleshooting.md`: black video, failed input, NLA, and restart checks
+- `docs/mobile-keyboard-parity-handoff.md`: known-good 7090 keyboard baseline,
+  cross-host comparison, acceptance matrix, and privacy-safe failure handoff
 - `patches/*.json`: approved versioned release identities and patch signatures
 - `scripts/stage-uu-release.sh`: private archive/sandbox staging
 - `scripts/audit-gameviewer.py`: PE map, semantic candidates, disassembly report,
