@@ -1,118 +1,190 @@
-# Fix Baidu Netdisk 8.5.x Freezes on Windows
+# Fix Baidu Netdisk 8.5.x freezes on Windows
 
-This playbook documents a reproducible `BaiduNetdiskUnite.exe` freeze and the
-reversible migration that fixed it. The affected client was Baidu Netdisk
-`8.5.5.103` with BrowserEngine `8.5.6.436`; the working client is the signed
-`8.5.8.107` build with BrowserEngine `8.5.8.443`.
+This playbook covers two distinct `BaiduNetdiskUnite.exe` failures:
 
-The final repair does **not** hex-edit or patch a signed executable. It promotes
-an intact, signed, internally consistent Baidu build and archives the old client
-for rollback.
+1. an 8.5.5/BrowserEngine 8.5.6 memory runaway, fixed by promoting the complete
+   signed 8.5.8 client; and
+2. an 8.5.8 physical right-click hang in Baidu's floating window, mitigated by
+   disabling that window in Baidu's own settings.
 
-## Outcome
+The verified repair does not modify executable bytes, DLLs, or ASAR archives.
 
-The only active client now lives at Baidu's normal path:
+## Verified fix at a glance
 
-```text
-%APPDATA%\baidu\BaiduNetdisk
-```
-
-Verified active versions:
+The tested signed build is:
 
 ```text
 BaiduNetdisk.exe       8.5.8.107
 BaiduNetdiskUnite.exe  8.5.8.443
+kernel_btsdk.dll       1.0.10.31
 ```
 
-Both executables have valid Authenticode signatures from Beijing Duyou Science
-and Technology Co., Ltd.
-
-Here, "only 8.5.8" means that `8.5.8` is the only active and default-launched
-client. No shortcut or normal entry point targets `8.5.5`; its executable
-remains in a private archive and can be run manually only for rollback.
-
-## Failure Evidence
-
-Windows recorded three identical `AppHangB1` failures on 2026-07-16 for:
+The active SDK SHA-256 is:
 
 ```text
-BaiduNetdiskUnite.exe 8.5.6.436
+EF50D1EFE473851442C10448BF120529C5491AA8B5FB4D373B8D9469024F8DCB
 ```
 
-The visible BrowserEngine process became non-responsive and reached roughly
-1.67 GB working set. After Windows closed it, Baidu relaunched the UI and its
-private memory again climbed from about 922 MB to 1.42 GB in less than one
-minute. The complete Baidu tree reached roughly 2.68 GB across 17 processes.
-
-An orphan renderer survived one parent hang and consumed close to one CPU core.
-The embedded-browser log also contained repeated Mojo/IPC validation failures:
+In Baidu, use only left-clicks to open:
 
 ```text
-VALIDATION_ERROR_UNKNOWN_ENUM_VALUE
-Message ... rejected by interface baidu.netdisk.plugin.mojom.p2pServer
+Settings -> Startup Settings -> Show floating window
+设置 -> 启动设置 -> 显示悬浮窗
 ```
 
-Useful local evidence sources:
+Uncheck that option. The floating window disappears immediately and remains
+disabled after restart.
+
+If Baidu is already frozen, save the names of any active transfers if possible,
+then recover it with the checked launcher:
+
+```powershell
+.\scripts\Launch-BaiduNetdiskFixed.ps1 -ForceRestart
+```
+
+Run the health check after the UI is ready:
+
+```powershell
+.\scripts\Test-BaiduNetdiskHealth.ps1 `
+  -Samples 6 `
+  -IntervalSeconds 5
+```
+
+By default, the health check treats any visible small Baidu floating window as
+a failure and prints the settings path above. `-AllowFloatingWindow` is a
+diagnostic escape hatch, not the recommended configuration for 8.5.8.443.
+
+## Verified outcome
+
+On 2026-07-17, after unchecking `显示悬浮窗`:
+
+- a clean restart produced one visible 1200-by-800 Baidu window and zero
+  floating windows;
+- the setting remained disabled across the restart;
+- a real Windows right-click in the main file window stayed responsive for 40
+  consecutive 250 ms samples;
+- the renderer count stayed at four instead of creating a menu renderer; and
+- no executable, DLL, shell registration, download directory, or cloud file
+  was changed.
+
+This is deliberately narrower than claiming every future 8.5.8 operation is
+fixed. It removes the exact native window-creation path that was reproduced and
+dumped, while normal main-window right-click menus continue to work.
+
+## Why the floating window hangs
+
+Synthetic posted mouse messages initially appeared to pass, but a real Windows
+right-click consistently reproduced the hang. At the click timestamp, Baidu
+created a new `--type=renderer` process and never produced a usable menu window.
+The backend and network processes stayed alive while the visible UI stopped
+responding.
+
+The shipped 8.5.8 JavaScript explains the process creation:
 
 ```text
-Windows Application log, event IDs 1001 and 1002
-%APPDATA%\baidu\BaiduNetdisk\module\BrowserEngine\debug.log
-%APPDATA%\baidu\BaiduNetdisk\module\BrowserEngine\users\...\btConfig\btsdk.log
+floating-window rightbuttondown
+  -> OPEN_SESTON_MENU
+  -> create /sestonMenu
+  -> new Electron BrowserWindow (188 px wide)
 ```
 
-Do not publish full process command lines or raw logs. They can contain an
-encrypted `StartInfo` value, account identifiers, and per-user paths.
+Ordinary file-list context menus use a DOM menu in the existing renderer. They
+do not create this extra `BrowserWindow`.
 
-## Why Not Patch with `xxd` or `objdump`?
+A full user dump placed the main `CrBrowserMain` thread inside themed window
+positioning and an indefinite `WaitForSingleObject`. A live non-invasive WinDbg
+query showed its wait handle was an unsignaled auto-reset event. A second Baidu
+thread was inside `UIAutomationCore` and synchronously messaging the UI thread.
+The evidence therefore supports a native Electron window/UI Automation
+deadlock during floating-menu creation. It does not identify a safe binary byte
+to patch.
 
-`xxd` and `objdump` are useful for inspecting PE headers, sections, imports,
-and byte differences. They are not a safe repair mechanism here:
+## What did not fix the right-click regression
 
-- changing even one byte invalidates Authenticode;
-- the old and new clients differ across the main executable, BrowserEngine,
-  plugins, resources, and IPC schemas;
-- the freeze reproduced after cache reset and a single-plugin rollback;
-- replacing only `BaiduNetdiskUnite.exe` risks a new ABI or resource mismatch.
+- Rolling signed `kernel_btsdk.dll` back from `1.0.10.31` to `1.0.10.30` did
+  not change the physical-click hang. Normal signed writable `.31` was restored.
+- Blocking Baidu's legacy and modern Explorer context-menu COM classes did not
+  help. Those per-user block values should not be retained for this fix.
+- Reposting `WM_RBUTTON*` messages was not a valid physical-input test.
+- Cache cleanup was already exhausted, and `Local State` already had hardware
+  acceleration disabled.
+- Pagefile pressure, total RAM use, and GPU load did not match the freeze.
 
-The smallest coherent boundary is therefore the complete signed 8.5.8 payload,
-not a byte offset in one executable.
+Keep diagnosis reversible. Do not replace a signed Baidu DLL based only on a
+synthetic click, and do not publish a full process dump because it may contain
+account/session data.
 
-## What Did Not Fix It
+## Setting persistence
 
-These reversible tests were useful diagnostically but did not stop the delayed
-memory surge in 8.5.5/8.5.6:
+Baidu's settings page calls its native settings API with:
 
-1. Terminating the full Baidu process tree, including orphan renderers.
-2. Renaming only browser runtime caches:
-   - `Cache`
-   - `Code Cache`
-   - `GPUCache`
-   - `DawnCache`
-   - `VideoDecodeStats`
-   - `blob_storage`
-   - `lockfile`
-3. Resetting the P2P `btConfig` directory.
-4. Rolling `vastplayer.dll` back from signed `2.2.4.114` to signed
-   `2.2.4.100`.
-5. Passing `--disable-gpu` to `BaiduNetdisk.exe`; the bootstrap executable did
-   not forward that switch to `BaiduNetdiskUnite.exe`.
+```text
+scope:   personal user
+section: local_info
+key:     sestonSwitch
+value:   false
+```
 
-The machine also had an old Intel HD 530 driver and an active GameViewer virtual
-display adapter. Those can aggravate Chromium rendering, but the direct evidence
-and version-to-version result pointed to the client build itself.
+The backing file is the current BrowserEngine user's `PersonalSetting.xml`.
+It is managed/encrypted and has a `.bak`; do not hand-edit it. Use the settings
+page so Baidu writes and applies the value consistently.
 
-## Locate and Inspect the Staged Build
+## Checked launcher
 
-On the repaired machine, Baidu had already staged this full package:
+`scripts/Launch-BaiduNetdiskFixed.ps1` verifies:
+
+- the normal `%APPDATA%\baidu\BaiduNetdisk` install path;
+- main version `8.5.8.107`;
+- BrowserEngine version `8.5.8.443`;
+- valid Beijing Duyou Authenticode signatures; and
+- the expected writable `.31` SDK hash before and after launch.
+
+It also restarts a visibly hung UI and ignores already-terminating zombie
+process objects when waiting for active Baidu processes to exit. A forced
+restart interrupts active transfers, so use `-ForceRestart` intentionally.
+
+The companion health script samples the active root BrowserEngine process,
+validates its path/version/memory/responding state, checks the signed artifacts
+again, detects the floating window, and checks Windows events 1001 and 1002 for
+new Baidu hangs.
+
+## Stable desktop shortcut and Start menu
+
+The included command shim expects this repository at:
+
+```text
+%USERPROFILE%\Projects\the-art-of-lazying
+```
+
+Create a desktop shortcut that points to the shim:
+
+```powershell
+$shim = Join-Path $PWD 'scripts\baidunetdisk-stable.cmd'
+$desktop = [Environment]::GetFolderPath('Desktop')
+$shortcutPath = Join-Path $desktop 'BaiduNetdisk Stable.lnk'
+$shell = New-Object -ComObject WScript.Shell
+$shortcut = $shell.CreateShortcut($shortcutPath)
+$shortcut.TargetPath = $shim
+$shortcut.WorkingDirectory = Split-Path -Parent $shim
+$shortcut.Save()
+```
+
+Remove any old Start-menu shortcut that points to 8.5.5 or a staging folder.
+Keeping a single checked desktop entry avoids accidentally relaunching the
+archived client. Do not remove the Apps & Features uninstaller entry.
+
+## Upgrade an unstable 8.5.5 installation
+
+This section is only for the older memory-runaway failure. If signed 8.5.8 is
+already active, skip to the floating-window setting above.
+
+### Inspect the staged full package
+
+On the repaired machine, Baidu had staged:
 
 ```powershell
 $cab = Join-Path $env:APPDATA `
   'baidu\BaiduNetdisk\AutoUpdate\Download\MainApp\fullpackage_858107_x64.cab'
-```
-
-List it without extracting:
-
-```powershell
 expand.exe -D $cab
 ```
 
@@ -122,12 +194,11 @@ The observed CAB SHA-256 was:
 76B5E4637DA01D455A658F742AD8BC22B17994B0BEDA604CBC410C7D6F444A0F
 ```
 
-Do not trust the filename alone. Extract to an isolated directory and verify
-the signed files:
+Extract it outside the live install and verify the signed files:
 
 ```powershell
 $stage = Join-Path $HOME 'Projects\BaiduNetdiskFreezeFix\BaiduNetdisk-8.5.8.107'
-New-Item -ItemType Directory -Path $stage
+New-Item -ItemType Directory -Path $stage -Force | Out-Null
 expand.exe '-F:*' $cab $stage
 
 $main = Join-Path $stage 'BaiduNetdisk.exe'
@@ -139,20 +210,19 @@ Get-AuthenticodeSignature $main
 Get-AuthenticodeSignature $browser
 ```
 
-Expected SHA-256 values from the staged package used here:
+Hashes from the exact staged package used here were:
 
 ```text
 BaiduNetdisk.exe       F2E50ECD012C7B8D4269045C3937BAFDEBE2E2B3ED938F1AE03CAE28075F16C6
 BaiduNetdiskUnite.exe  380DF87F28850FD284DAEB9C10354AC503D23F7CDD193B8BE4D6E883970A6C68
 ```
 
-Hashes are evidence for this exact package, while a valid Baidu Authenticode
-signature is the more durable trust check for another legitimate build.
+A valid Baidu Authenticode signature is the durable trust check for a different
+legitimate package; do not trust a filename alone.
 
-## Test Before Promotion
+### Test before promotion
 
-Stop every old Baidu process, then launch the extracted build from its own
-working directory:
+Stop known Baidu processes and launch the staged copy from its own directory:
 
 ```powershell
 $names = @(
@@ -163,7 +233,7 @@ $names = @(
 )
 
 Get-Process -ErrorAction SilentlyContinue |
-  Where-Object { $_.ProcessName -in $names } |
+  Where-Object { $_.ProcessName -in $names -and -not $_.HasExited } |
   Stop-Process -Force
 
 Start-Process `
@@ -171,21 +241,24 @@ Start-Process `
   -WorkingDirectory $stage
 ```
 
-Open the real Baidu window and click through the same UI path that previously
-hung. Use `scripts/Test-BaiduNetdiskHealth.ps1` to sample the BrowserEngine
-parent process rather than relying on the window title, which disappears when
-the app minimizes to the tray:
+For an isolated CAB that has not created its runtime-managed SDK, skip only
+that artifact check:
 
 ```powershell
 .\scripts\Test-BaiduNetdiskHealth.ps1 `
   -ExpectedRoot $stage `
+  -SkipSdkValidation `
+  -AllowFloatingWindow `
   -Samples 6 `
   -IntervalSeconds 5
 ```
 
-## Promote 8.5.8 Reversibly
+The diagnostic `-AllowFloatingWindow` is needed only until the staged UI can be
+opened and the floating-window option turned off.
 
-After the isolated build passes, use the included promotion script:
+### Promote reversibly
+
+Preview the included promotion script:
 
 ```powershell
 .\scripts\Promote-StagedBaiduNetdisk.ps1 `
@@ -194,146 +267,25 @@ After the isolated build passes, use the included promotion script:
   -WhatIf
 ```
 
-Review the paths, then rerun without `-WhatIf`:
-
-```powershell
-.\scripts\Promote-StagedBaiduNetdisk.ps1 `
-  -StagedRoot $stage `
-  -BackupRoot "$HOME\Projects\BaiduNetdiskFreezeFix\backups"
-```
-
-The script:
-
-1. validates the expected main and BrowserEngine versions;
-2. requires valid Authenticode signatures;
-3. stops only known Baidu processes;
-4. moves the active client into a timestamped rollback directory;
-5. moves the staged signed build into the original install path;
-6. automatically restores the old client if promotion fails.
-
-It does not modify the separate Chromium profile at `%APPDATA%\BaiduNetdisk`
+Review the paths, then rerun without `-WhatIf`. The script verifies versions
+and signatures, stops only known Baidu processes, archives the active tree,
+moves the staged signed build to the original path, and restores the old tree
+automatically if promotion fails. It does not alter `%APPDATA%\BaiduNetdisk`
 or any download directory.
 
-## Launcher and Start Menu
+## Rollback
 
-`scripts/Launch-BaiduNetdiskFixed.ps1` verifies both normal-path executables,
-their expected `8.5.8` versions, valid signatures, and Baidu signer before
-launching the client.
+To re-enable the floating window, use the same Baidu settings checkbox. On
+BrowserEngine 8.5.8.443 this also restores the reproduced freeze path, so only
+do that to test a newer signed build.
 
-The desktop shortcut on the repaired machine points through
-`scripts/baidunetdisk-stable.cmd` to that launcher. Install that exact shim and
-create the desktop shortcut from the repository root with:
+To restore an archived client, save active transfers, stop active Baidu
+processes, move the current tree aside, and move the archive back to:
 
-```powershell
-$shim = Join-Path $HOME 'baidunetdisk-stable.cmd'
-Copy-Item `
-  -LiteralPath '.\lazy-hacks\baidunetdisk-freeze-fix\scripts\baidunetdisk-stable.cmd' `
-  -Destination $shim `
-  -Force
-
-$desktop = [Environment]::GetFolderPath('Desktop')
-$shortcutPath = Join-Path $desktop 'BaiduNetdisk Stable.lnk'
-$shell = New-Object -ComObject WScript.Shell
-$shortcut = $shell.CreateShortcut($shortcutPath)
-$shortcut.TargetPath = $shim
-$shortcut.WorkingDirectory = $HOME
-$shortcut.IconLocation = `
-  "$env:APPDATA\baidu\BaiduNetdisk\BaiduNetdisk.exe,0"
-$shortcut.Save()
+```text
+%APPDATA%\baidu\BaiduNetdisk
 ```
 
-The shim deliberately launches the checked-in PowerShell script rather than
-starting `BaiduNetdisk.exe` directly, so the version, signature, signer, and
-normal install path are revalidated on every restart.
-
-The checked-in shim assumes this repository is cloned at
-`%USERPROFILE%\Projects\the-art-of-lazying`. Edit `FIX_LAUNCHER` in the copied
-shim if the clone lives elsewhere.
-
-The obsolete Start-menu launcher was moved into a rollback folder; the
-uninstaller shortcut was retained.
-
-If the old shortcut is a normal `.lnk`, remove it reversibly like this:
-
-```powershell
-$source = Join-Path $env:APPDATA `
-  'Microsoft\Windows\Start Menu\Programs\百度网盘\百度网盘.lnk'
-$backup = "$HOME\Projects\BaiduNetdiskFreezeFix\shortcut-backups"
-
-New-Item -ItemType Directory -Path $backup -Force | Out-Null
-Move-Item -LiteralPath $source -Destination $backup
-```
-
-## Verify the Final Normal Path
-
-Launch the original path, not the staging directory:
-
-```powershell
-$exe = Join-Path $env:APPDATA 'baidu\BaiduNetdisk\BaiduNetdisk.exe'
-Start-Process -FilePath $exe -WorkingDirectory (Split-Path -Parent $exe)
-
-.\scripts\Test-BaiduNetdiskHealth.ps1 `
-  -Samples 6 `
-  -IntervalSeconds 5 `
-  -MaxMainPrivateMB 600
-```
-
-Final observed result:
-
-- six consecutive samples were responsive;
-- main private memory stayed essentially flat at `105.7` to `106.1 MB`;
-- total private memory stayed near `815` to `822 MB`;
-- the process path was the normal `%APPDATA%\baidu\BaiduNetdisk` path;
-- Windows recorded zero new Baidu event `1002` hangs.
-
-Check for new hang events:
-
-```powershell
-$start = Get-Date
-# Reproduce normal use here.
-
-Get-WinEvent -FilterHashtable @{
-  LogName  = 'Application'
-  StartTime = $start
-  Id       = 1002
-} -ErrorAction SilentlyContinue |
-  Where-Object { $_.Message -match 'BaiduNetdiskUnite' }
-```
-
-## Roll Back
-
-The archived old client is outside `%APPDATA%\baidu\BaiduNetdisk` and is not
-referenced by any shortcut or normal entry point. To restore it:
-
-```powershell
-$active = Join-Path $env:APPDATA 'baidu\BaiduNetdisk'
-$old = 'C:\path\to\BaiduNetdisk-8.5.5.103-installed-YYYYMMDD-HHMMSS'
-$failed = "$active.failed-$(Get-Date -Format yyyyMMdd-HHmmss)"
-
-Get-Process -ErrorAction SilentlyContinue |
-  Where-Object {
-    $_.ProcessName -in @(
-      'BaiduNetdisk',
-      'BaiduNetdiskUnite',
-      'baidunetdiskhost',
-      'YunDetectService'
-    )
-  } |
-  Stop-Process -Force
-
-Move-Item -LiteralPath $active -Destination $failed
-Move-Item -LiteralPath $old -Destination $active
-```
-
-Do not delete the 8.5.5 archive until 8.5.8 has survived normal long-running
-downloads, playback, tray restore, and a reboot.
-
-## Known Cosmetic Caveat
-
-Apps & Features may continue to display `8.5.5`. That label is stored in a
-protected HKLM uninstall key and does not determine which executable runs. Use
-the signed file versions at the active path as the authoritative state:
-
-```powershell
-(Get-Item "$env:APPDATA\baidu\BaiduNetdisk\BaiduNetdisk.exe").VersionInfo.FileVersion
-```
+Keep rollback archives outside the active tree and never point a normal
+shortcut at them. Apps & Features can retain an older cosmetic version label;
+the signed active executable versions are authoritative.

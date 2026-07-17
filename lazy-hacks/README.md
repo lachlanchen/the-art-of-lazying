@@ -4,7 +4,7 @@ Small, practical workflows and shell tricks that improve daily engineering speed
 
 ## Sections
 - [android-file-transfer-reconnect-macos.md](./android-file-transfer-reconnect-macos.md): recover Android File Transfer on macOS after a bad disconnect or “Could not connect to device” popup.
-- [baidunetdisk-freeze-fix](./baidunetdisk-freeze-fix/README.md): diagnose `BaiduNetdiskUnite.exe` hangs and promote a verified signed client with rollback and health checks.
+- [baidunetdisk-freeze-fix](./baidunetdisk-freeze-fix/README.md): promote a verified signed 8.5.8 client and prevent its floating-window right-click deadlock without patching Baidu binaries.
 - [codex-cli](./codex-cli/README.md): Codex CLI overrides, defaults, and session migration helpers.
 - [desktop-tiling](./desktop-tiling/README.md): GNOME desktop tiling workflows, including Tiling Shell.
 - [linux-hardware](./linux-hardware/README.md): workstation hardware fixes such as USB webcam access inside RDP.
