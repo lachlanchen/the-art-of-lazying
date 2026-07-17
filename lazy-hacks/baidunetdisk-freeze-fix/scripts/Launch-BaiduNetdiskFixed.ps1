@@ -1,6 +1,8 @@
 [CmdletBinding()]
 param(
-    [switch]$ForceRestart
+    [switch]$ForceRestart,
+
+    [int]$RequireExistingUiProcessId = 0
 )
 
 Set-StrictMode -Version Latest
@@ -85,6 +87,65 @@ foreach ($artifact in $artifacts) {
 }
 
 $running = @(Get-ActiveBaiduProcesses)
+$mayStopOnIntegrityFailure = $ForceRestart -or $running.Count -eq 0
+
+if ($RequireExistingUiProcessId -lt 0) {
+    throw '-RequireExistingUiProcessId must be a positive process ID.'
+}
+if ($RequireExistingUiProcessId -ne 0 -and -not $ForceRestart) {
+    throw '-RequireExistingUiProcessId is only valid with -ForceRestart.'
+}
+
+function Assert-RequiredExistingUiProcess {
+    param([object[]]$Processes)
+
+    if ($RequireExistingUiProcessId -eq 0) {
+        return
+    }
+
+    $required = @($Processes | Where-Object {
+        $_.Id -eq $RequireExistingUiProcessId -and
+        $_.ProcessName -eq 'BaiduNetdiskUnite'
+    })
+    if ($required.Count -ne 1) {
+        throw "Required existing Baidu UI PID $RequireExistingUiProcessId is no longer running; refusing to restart or auto-start Baidu."
+    }
+
+    try {
+        $requiredPath = [IO.Path]::GetFullPath($required[0].Path)
+        if (-not $requiredPath.Equals($fixedBrowser, [StringComparison]::OrdinalIgnoreCase) -or
+            $required[0].HasExited) {
+            throw 'Required process changed.'
+        }
+    } catch {
+        throw "Required existing Baidu UI PID $RequireExistingUiProcessId changed or exited; refusing to restart or auto-start Baidu."
+    }
+}
+
+function Assert-AutomatedRestartProcessScope {
+    param([object[]]$Processes)
+
+    if ($RequireExistingUiProcessId -eq 0) {
+        return
+    }
+
+    foreach ($process in $Processes) {
+        try {
+            $processPath = [IO.Path]::GetFullPath($process.Path)
+            if (-not $processPath.StartsWith(
+                $fixedRootPrefix,
+                [StringComparison]::OrdinalIgnoreCase
+            )) {
+                throw 'Process is outside the checked root.'
+            }
+        } catch {
+            throw "Baidu process PID $($process.Id) has an inaccessible or outside-root path; refusing automated restart."
+        }
+    }
+}
+
+Assert-RequiredExistingUiProcess -Processes $running
+Assert-AutomatedRestartProcessScope -Processes $running
 
 $otherRunning = @($running | Where-Object {
     -not $_.Path -or -not $_.Path.StartsWith($fixedRootPrefix, [StringComparison]::OrdinalIgnoreCase)
@@ -95,7 +156,21 @@ $hungVisibleUi = @($running | Where-Object {
     -not $_.Responding
 })
 
-if ($ForceRestart -or $otherRunning.Count -gt 0 -or $hungVisibleUi.Count -gt 0) {
+if (-not $ForceRestart) {
+    if ($otherRunning.Count -gt 0) {
+        throw "Baidu processes are running outside the checked 8.5.8 root: $($otherRunning.Id -join ', '). Normal launch will not terminate them; verify transfers and rerun with -ForceRestart only if interruption is safe."
+    }
+    if ($hungVisibleUi.Count -gt 0) {
+        throw "Baidu's visible UI is not responding (PID $($hungVisibleUi.Id -join ', ')). Normal launch will not terminate possible transfers; use the sustained-hang watchdog or rerun with -ForceRestart only after confirming recovery is safe."
+    }
+}
+
+if ($ForceRestart) {
+    # Recheck immediately before the first destructive action. This prevents a
+    # watchdog run from reopening Baidu when the user closed the observed UI.
+    $running = @(Get-ActiveBaiduProcesses)
+    Assert-RequiredExistingUiProcess -Processes $running
+    Assert-AutomatedRestartProcessScope -Processes $running
     $running | Stop-Process -Force -ErrorAction SilentlyContinue
 
     for ($attempt = 0; $attempt -lt 120; $attempt++) {
@@ -105,6 +180,7 @@ if ($ForceRestart -or $otherRunning.Count -gt 0 -or $hungVisibleUi.Count -gt 0) 
             break
         }
         if ($attempt % 8 -eq 7) {
+            Assert-AutomatedRestartProcessScope -Processes $remaining
             $remaining | Stop-Process -Force -ErrorAction SilentlyContinue
         }
     }
@@ -116,14 +192,16 @@ if ($ForceRestart -or $otherRunning.Count -gt 0 -or $hungVisibleUi.Count -gt 0) 
 }
 
 # Starting the same signed build again lets its single-instance handler focus an
-# existing healthy window. A visibly hung UI was restarted above; if Baidu is
-# not running, this launches a fresh instance.
+# existing healthy window. Only explicit -ForceRestart is destructive; if Baidu
+# is not running, this launches a fresh instance.
 Start-Process -FilePath $fixedExe -WorkingDirectory $fixedRoot
 
 Start-Sleep -Seconds 2
 $sdkHashAfterLaunch = (Get-FileHash -LiteralPath $fixedSdk -Algorithm SHA256).Hash
 if ($sdkHashAfterLaunch -ne $expectedSdkSha256) {
-    Get-ActiveBaiduProcesses |
-        Stop-Process -Force -ErrorAction SilentlyContinue
+    if ($mayStopOnIntegrityFailure) {
+        Get-ActiveBaiduProcesses |
+            Stop-Process -Force -ErrorAction SilentlyContinue
+    }
     throw "Baidu replaced the pinned SDK during launch: $sdkHashAfterLaunch"
 }
