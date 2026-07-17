@@ -116,6 +116,62 @@ aic_load_fw
 aic8800_fdrv
 ```
 
+## Complete Secure Boot Enrollment
+
+Skip this section when `mokutil --sb-state` reports that Secure Boot is
+disabled. With Secure Boot enabled, Ubuntu's DKMS setup generates a local
+signing key and the installer asks for a temporary enrollment password. That
+password must contain 8 through 16 characters and must not be stored in a
+script, repository, or shell argument.
+
+The modules are installed but the kernel rejects them until the new Machine
+Owner Key is enrolled. Confirm the expected pending state before reboot:
+
+```bash
+dkms status -m aic8800dc
+modinfo -F signer aic8800_fdrv
+mokutil --test-key /var/lib/shim-signed/mok/MOK.der || true
+find /sys/firmware/efi/efivars -maxdepth 1 \
+  -type f -name 'MokNew-*' -print
+```
+
+The 7090 preinstallation on kernel `6.17.0-35-generic` produced:
+
+```text
+aic8800dc/6.4.3.0-patched.5, 6.17.0-35-generic, x86_64: installed
+signer: OptiPlex-7090 Secure Boot Module Signature key
+MokNew: present
+```
+
+Do not reboot a remote-only computer unexpectedly. UU, RDP, and SSH cannot
+control the pre-boot MOK manager. At the machine with a physical display and
+keyboard:
+
+1. Reboot and press a key when the blue MOK management prompt appears.
+2. Select `Enroll MOK`.
+3. Select `Continue`, then confirm with `Yes`.
+4. Enter the temporary enrollment password created during installation.
+5. Select `Reboot`.
+
+After Ubuntu starts, verify trust and load the modules:
+
+```bash
+mokutil --test-key /var/lib/shim-signed/mok/MOK.der
+sudo modprobe aic_load_fw
+sudo modprobe aic8800_fdrv
+lsmod | grep -E '^aic'
+```
+
+If the key is not enrolled, do not disable signature enforcement or copy an
+unsigned module into the kernel tree. Queue the signed certificate again and
+repeat the physical enrollment:
+
+```bash
+sudo mokutil --import /var/lib/shim-signed/mok/MOK.der
+```
+
+Use a new temporary 8-to-16-character password when prompted.
+
 ## Verify
 
 Run the repository checks without root; every line should pass:
