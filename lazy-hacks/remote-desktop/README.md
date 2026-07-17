@@ -33,6 +33,13 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
   - how to configure GNOME's system Remote Login RDP backend with `grdctl --system`
   - how to verify the `3389` listener before connecting from Windows App / Microsoft Remote Desktop
 
+- [gnome-rdp-existing-desktop-with-autologin-on-ubuntu-24-04.md](./gnome-rdp-existing-desktop-with-autologin-on-ubuntu-24-04.md)
+  - why system Remote Login on `3389` cannot attach to an already-running automatic-login session
+  - how native Desktop Sharing on `3390` displays and controls the existing GNOME desktop
+  - how to survive the locked login keyring with a session collection and `systemd-creds`
+  - the reusable installer, credential loader, hardened systemd template, and rollback path
+  - dedicated SSH keys, mDNS, SAN certificates, Remmina, GFX, and end-to-end verification
+
 - [xrdp-cjk-input-on-ubuntu-24-04.md](./xrdp-cjk-input-on-ubuntu-24-04.md)
   - why Chinese and Japanese input can work in terminal/Sublime but fail in Chrome, Firefox, and Typora over `xrdp`
   - how to use `ibus-mozc`, `libpinyin`, and `Wubi` together
@@ -72,3 +79,4 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
 - Remmina RDP as a Windows bootstrap client
 - Windows OpenSSH and NetEase UU Remote recovery access
 - RealVNC, native GNOME RDP, and XRDP comparison
+- GNOME Desktop Sharing for an existing automatic-login session
