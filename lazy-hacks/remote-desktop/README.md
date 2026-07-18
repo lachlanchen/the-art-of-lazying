@@ -15,7 +15,10 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
 - [uu-remote-ubuntu-bridge.md](./uu-remote-ubuntu-bridge.md)
   - how the official Windows UU client in Wine displays and controls the live Ubuntu GNOME desktop
   - the Xvfb, SDL FreeRDP, GNOME RDP, and bounded input-broker data path
-  - where to find the private source submodule and exact `xxd`/`objdump` patch record
+  - why accepted `SendInput` calls could still lose fast letters, Enter, and Ctrl through the nested RDP hop
+  - how the opt-in authenticated X11/XTEST helper made direct-UU typing very smooth on XRDP
+  - the lossless 58-event isolated test and 256-call content-free live acceptance record
+  - where to find the public source submodule and exact `xxd`/`objdump` patch record
   - the one-command installer, verification, rollback, and security boundaries
   - the versioned manifest, sandboxed staging, and audited upstream-update workflow
 
