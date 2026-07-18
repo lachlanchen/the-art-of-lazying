@@ -83,6 +83,51 @@ DLL returns the normal Windows failure
 The upstream health monitor is replaced with a sleeping, reversible stub
 because it incorrectly killed a healthy Wine process.
 
+## Why Slow Typing and the Mouse Looked Healthy
+
+The old keyboard route was originally chosen because it also works with a
+Wayland desktop, where XTEST cannot inject directly:
+
+```text
+UU -> normal-token Wine broker -> SendInput -> SDL FreeRDP
+   -> GNOME RDP/libei -> XRDP Xorg desktop
+```
+
+The broker fixed UU's first proven error: Wine denied `SendInput` from the
+service token. A later `SendInput` success meant only that Wine accepted and
+queued the requested records. It did not confirm that every subsequent event
+loop, focus boundary, keyboard conversion, and nested RDP hop delivered every
+transition to the application.
+
+That is why the failure could look inconsistent:
+
+- Slow typing often worked because pauses let the nested queues drain.
+- Fast typing exposed the fault because every physical key-down and key-up is
+  a discrete edge; neither edge can safely be coalesced or replaced.
+- Enter and Ctrl shortcuts were more obvious failures because one omitted
+  transition can remove the whole action or invalidate its modifier state.
+- Pointer motion still looked smooth because it is state-like. Intermediate
+  coordinates can be coalesced while the newest pointer position remains
+  useful, and mouse clicks arrive much less frequently than fast keyboard
+  edges.
+- Adding 8 ms and then 12 ms pacing reduced pressure but retained every
+  conversion boundary. All 219 sampled broker calls at 12 ms were accepted
+  even while visible omissions remained.
+
+The final route removes only that unreliable local keyboard chain:
+
+```text
+UU -> normal-token broker -> authenticated X11 helper
+   -> XTEST + XSync -> XRDP Xorg desktop
+```
+
+It leaves video, mouse, clipboard, and phone text on their working relay. This
+is also why the evidence supports a careful conclusion: the dominant defect
+was in the old local nested route or its resulting back-pressure, but the
+tests do not identify one exact proprietary UU, Wine, FreeRDP, GNOME RDP, or
+libei function as the sole culprit. They also cannot promise that the
+controller or network upstream of the broker will never omit an event.
+
 ## Root Cause and Final Fix
 
 The useful comparison was not “UU versus the network.” It was the same live
