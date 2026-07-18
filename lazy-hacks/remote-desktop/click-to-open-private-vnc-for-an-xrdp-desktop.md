@@ -128,6 +128,11 @@ FreeRDP may replace the X keyboard map during its short reconnect. The helper
 therefore reapplies `~/scripts/set-xrdp-japanese-mac-keyboard.sh` after every
 resize and verifies the final framebuffer size.
 
+FreeRDP 3 rejects an explicit keyboard `subtype:0` value by printing its full
+usage page before it opens a connection. The current helper omits that field;
+FreeRDP keeps the intended default subtype while still announcing Japanese
+layout `0x00000411` and keyboard type `4`.
+
 Useful checks are:
 
 ```bash
@@ -260,6 +265,40 @@ Check the server framebuffer first:
 The status should include `resolution=1620x1080`. If it does, leave RealVNC
 Viewer at `FitAutoAspect`; changing Viewer zoom does not increase the Ubuntu
 desktop's real resolution.
+
+Windows App can dynamically shrink the same XRDP framebuffer when its window
+is resized. If it changes the desktop after the helper reports success, close
+or disconnect that RDP viewer and run `resize` again. Prefer a fixed-size or
+full-screen RDP connection when RDP must remain attached.
+
+If another relay such as UU Remote uses a persistent canvas, match it to the
+same framebuffer after resizing. For the validated `1620x1080` setup:
+
+```bash
+XRDP_VNC_GEOMETRY=1620x1080 ~/scripts/xrdp-vnc-bridge.sh resize
+
+cd ~/ProjectsLFS/uu-remote-ubuntu-bridge
+./install.sh --skip-packages --skip-account-login \
+  --resolution 1620x1080
+```
+
+When the sizes differ, the smaller desktop appears at the upper left of a
+larger white canvas. Matching both dimensions preserves resolution and removes
+the unused region; reducing the relay alone removes the region but makes the
+desktop unnecessarily blurry.
+
+### Resize prints the complete FreeRDP usage page
+
+An older helper passed the now-invalid `subtype:0` keyboard field. Reinstall
+the current canonical script and retry:
+
+```bash
+install -Dm700 \
+  scripts/xrdp-vnc-bridge.sh \
+  "$HOME/scripts/xrdp-vnc-bridge.sh"
+bash -n "$HOME/scripts/xrdp-vnc-bridge.sh"
+~/scripts/xrdp-vnc-bridge.sh resize
+```
 
 ### Resize reports a locked keyring
 

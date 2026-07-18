@@ -173,7 +173,7 @@ resize_display() {
           /size:"$geometry" \
           /cert:ignore \
           /from-stdin:force \
-          /kbd:layout:0x00000411,type:4,subtype:0 \
+          /kbd:layout:0x00000411,type:4 \
           /network:lan \
           /audio-mode:2 \
           -clipboard \
