@@ -1,0 +1,15 @@
+[Unit]
+Description=Ensure the AIC8800DC DKMS driver for the running kernel
+After=local-fs.target systemd-modules-load.service
+Before=network-pre.target NetworkManager.service
+Wants=network-pre.target
+ConditionPathExists=/usr/sbin/dkms
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/aic8800dc-dkms-ensure
+RemainAfterExit=yes
+TimeoutStartSec=10min
+
+[Install]
+WantedBy=multi-user.target

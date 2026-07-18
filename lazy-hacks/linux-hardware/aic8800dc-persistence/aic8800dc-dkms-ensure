@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+readonly package_name="aic8800dc"
+readonly required_modules=(aic_load_fw aic8800_fdrv)
+readonly lock_file="/run/lock/aic8800dc-dkms-ensure.lock"
+
+log() {
+  printf 'aic8800dc-dkms-ensure: %s\n' "$*"
+}
+
+die() {
+  log "ERROR: $*" >&2
+  exit 1
+}
+
+if (( EUID != 0 )); then
+  die "run as root"
+fi
+
+target_kernel="${1:-$(uname -r)}"
+if [[ ! "$target_kernel" =~ ^[A-Za-z0-9._+-]+$ ]]; then
+  die "invalid kernel release: $target_kernel"
+fi
+
+for command_name in dkms flock modinfo modprobe depmod; do
+  command -v "$command_name" >/dev/null 2>&1 || die "missing command: $command_name"
+done
+
+mkdir -p "$(dirname "$lock_file")"
+exec 9>"$lock_file"
+flock -x 9
+
+detect_version() {
+  local version
+
+  version="$({
+    dkms status -m "$package_name" 2>/dev/null || true
+  } | awk -F '[/,]' -v name="$package_name" '$1 == name { print $2 }' \
+    | sort -Vu | tail -n 1)"
+
+  if [[ -z "$version" ]]; then
+    version="$(find /usr/src -mindepth 1 -maxdepth 1 -type d \
+      -name "${package_name}-*" -printf '%f\n' 2>/dev/null \
+      | sed "s/^${package_name}-//" | sort -V | tail -n 1)"
+  fi
+
+  printf '%s' "$version"
+}
+
+modules_available() {
+  local module_name
+
+  for module_name in "${required_modules[@]}"; do
+    modinfo -k "$target_kernel" "$module_name" >/dev/null 2>&1 || return 1
+  done
+}
+
+load_running_kernel_modules() {
+  [[ "$target_kernel" == "$(uname -r)" ]] || return 0
+
+  modprobe aic_load_fw
+  modprobe aic8800_fdrv
+}
+
+if modules_available; then
+  load_running_kernel_modules
+  log "modules are ready for $target_kernel"
+  exit 0
+fi
+
+headers_dir="/lib/modules/$target_kernel/build"
+[[ -f "$headers_dir/Makefile" ]] || die \
+  "headers are missing for $target_kernel; install linux-headers-$target_kernel"
+
+version="$(detect_version)"
+[[ -n "$version" ]] || die "no registered or staged $package_name source was found"
+
+source_dir="/usr/src/${package_name}-${version}"
+[[ -f "$source_dir/dkms.conf" ]] || die "missing $source_dir/dkms.conf"
+
+package_status="$(dkms status -m "$package_name" -v "$version" 2>/dev/null || true)"
+if ! grep -Fq "${package_name}/${version}" <<<"$package_status"; then
+  log "registering $package_name/$version"
+  dkms add -m "$package_name" -v "$version"
+fi
+
+kernel_status="$(
+  dkms status -m "$package_name" -v "$version" -k "$target_kernel" 2>/dev/null || true
+)"
+
+if grep -q ': installed$' <<<"$kernel_status"; then
+  log "repairing the installed module files for $package_name/$version on $target_kernel"
+  dkms install --force -m "$package_name" -v "$version" -k "$target_kernel"
+else
+  log "building and installing $package_name/$version for $target_kernel"
+  dkms install -m "$package_name" -v "$version" -k "$target_kernel"
+fi
+
+depmod -a "$target_kernel"
+modules_available || die "DKMS completed but the required modules are still unavailable"
+
+load_running_kernel_modules
+log "$package_name/$version is ready for $target_kernel"

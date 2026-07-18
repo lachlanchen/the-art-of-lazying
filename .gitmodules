@@ -1,0 +1,3 @@
+[submodule "code/uu-remote-ubuntu-bridge"]
+	path = code/uu-remote-ubuntu-bridge
+	url = https://github.com/lachlanchen/uu-remote-ubuntu-bridge.git

@@ -1,0 +1,27 @@
+#!/bin/sh
+
+set -u
+
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+kernel_release="${1:-}"
+case "$kernel_release" in
+  ''|*[!A-Za-z0-9._+-]*)
+    echo "aic8800dc-dkms-guard: ignoring invalid kernel release: $kernel_release" >&2
+    exit 0
+    ;;
+esac
+
+if [ ! -f "/lib/modules/$kernel_release/build/Makefile" ]; then
+  echo "aic8800dc-dkms-guard: deferring $kernel_release until its headers are installed"
+  exit 0
+fi
+
+if /usr/local/sbin/aic8800dc-dkms-ensure "$kernel_release"; then
+  exit 0
+fi
+
+# Never leave dpkg half-configured. The boot service retries and reports a
+# visible failure while the previously working kernel remains available.
+echo "aic8800dc-dkms-guard: WARNING: driver preparation failed for $kernel_release" >&2
+exit 0

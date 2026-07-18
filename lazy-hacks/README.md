@@ -10,7 +10,7 @@ Small, practical workflows and shell tricks that improve daily engineering speed
 - [linux-shutdown](./linux-shutdown/README.md): systemd ordering and busy-unmount fixes for mounted home subpaths.
 - [networking](./networking/README.md): practical home-lab networking notes, including Pi Wi-Fi-to-LAN routing and workstation default-route switching.
 - [nutstore-inotify-limit-on-ubuntu.md](./nutstore-inotify-limit-on-ubuntu.md): stop Nutstore's repeated synced-folder-limit popup by fixing inotify instance and watch limits cleanly.
-- [remote-desktop](./remote-desktop/README.md): GNOME native RDP vs XRDP, with practical remote-session stability notes for Ubuntu 24.04.
+- [remote-desktop](./remote-desktop/README.md): Windows access bootstrapping with RDP/OpenSSH/UU Remote, a Wine-to-GNOME UU control bridge, GNOME automatic-login Desktop Sharing, and native RDP vs XRDP stability notes for Ubuntu 24.04.
 - [uuremote-mouse-axis.md](./uuremote-mouse-axis.md): quick fix for GameViewer/UURemote reversed horizontal mouse movement.
 - [windows-remote-keyboard-and-ssh.md](./windows-remote-keyboard-and-ssh.md): fix remote Caps Lock desync and set up Windows/Linux OpenSSH in both directions.
 

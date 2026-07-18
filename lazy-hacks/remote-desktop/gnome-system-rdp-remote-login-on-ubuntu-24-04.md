@@ -1,5 +1,10 @@
 # GNOME System RDP Remote Login on Ubuntu 24.04
 
+> This guide is for the GDM login-screen path on port `3389`. If the user is
+> already logged in automatically and RDP must control that existing desktop,
+> use [GNOME RDP Existing Desktop With Automatic Login](./gnome-rdp-existing-desktop-with-autologin-on-ubuntu-24-04.md)
+> on port `3390` instead.
+
 ## Problem
 
 GNOME Remote Desktop can be enabled but still reject RDP clients.
