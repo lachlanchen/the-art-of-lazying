@@ -7,13 +7,20 @@ prefix and can display and control a logged-in Ubuntu 24.04 GNOME desktop,
 including Wayland and XRDP/Xorg targets. This is an experimental,
 version-locked compatibility bridge, not a native Linux port.
 
-The backward-compatible `v0.2.0` release also fixes the difficult fast-typing
-case seen on one XRDP workstation. Physical UU keyboard input can bypass the
-lossy nested Wine/FreeRDP conversion and enter the live Xorg desktop through a
-small native XTEST helper. Video, pointer, clipboard, and phone text keep using
-the established local RDP relay. In the accepted live run, 256 bounded sampled
-physical-key calls used `route=x11`, all returned `error=0`, and typing was
-reported as very smooth with almost all previous omissions resolved.
+The backward-compatible `v0.2.0` release fixes the difficult fast-typing case
+seen on one XRDP workstation. Physical UU keyboard input can bypass the lossy
+nested Wine/FreeRDP conversion and enter the live Xorg desktop through a small
+native XTEST helper. In its accepted live run, 256 bounded sampled physical-key
+calls used `route=x11`, all returned `error=0`, and typing became very smooth.
+
+The immutable `v0.2.0` tag still behaves exactly as released. A validated
+follow-up on `main` now sends layout-representable phone native-keyboard text
+through the same helper after converting it to ordinary virtual-key chords.
+Video, pointer, and clipboard remain on the established local RDP relay. The
+isolated phone-text acceptance preserved all 52 requested transitions, and the
+first 72 live calls used `route=x11-text`, returned exact result counts with
+`error=0` in 0–2 ms, and produced visibly complete text. The computer-keyboard
+panel remained exact as well.
 
 The implementation is kept in the
 [public submodule](../../code/uu-remote-ubuntu-bridge). It can be fetched
@@ -36,12 +43,12 @@ still required through the official client.
 UU controller
   -> GameViewerServer.exe in Wine
        |
-       +-> video, mouse, clipboard, phone text
+       +-> video, mouse, clipboard
        |     -> Windows SDL FreeRDP in private Xvfb
        |     -> GNOME Remote Desktop on 127.0.0.1
        |     -> logged-in GNOME desktop
        |
-       +-> physical keyboard
+       +-> physical keyboard and representable phone text
              -> bounded normal-token broker
                   | default: Windows SendInput -> local RDP
                   | opt-in on Xorg: authenticated loopback helper
@@ -52,8 +59,9 @@ UU controller
 UU captures the FreeRDP window as a normal Windows application. GNOME Remote
 Desktop performs the normal final capture and input integration. The local RDP
 hop pins the SHA-256 fingerprint of GNOME's configured TLS certificate. The
-direct X11 route changes physical-key delivery only; it does not replace the
-working capture or pointer path.
+direct X11 route changes keyboard delivery only; it does not replace the
+working capture or pointer path. The compatible default remains the RDP route,
+including on Wayland systems where XTEST cannot target the desktop directly.
 
 ## Why the Bridge Is Needed
 
@@ -68,7 +76,11 @@ UU exposes a second keyboard boundary that was easy to misdiagnose. Native
 phone IME commits arrive as `KEYEVENTF_UNICODE`, while SDL FreeRDP expects
 physical key events. The broker converts representable Unicode characters into
 ordinary virtual-key chords and paces new installations by 8 ms per character.
-The computer-keyboard panel instead sends physical Windows keys.
+On the compatible RDP route those chords still pass through SDL FreeRDP. On the
+opt-in X11 route, the broker validates and maps the complete translated request
+before giving it to the helper. The computer-keyboard panel instead sends
+physical Windows keys. Characters that Windows cannot represent with the
+active keyboard layout are rejected rather than silently corrupted.
 
 On the affected XRDP workstation, adding 8 ms and then 12 ms of physical-key
 pacing improved typing but never fully solved it. A bounded 12 ms capture
@@ -121,12 +133,42 @@ UU -> normal-token broker -> authenticated X11 helper
    -> XTEST + XSync -> XRDP Xorg desktop
 ```
 
-It leaves video, mouse, clipboard, and phone text on their working relay. This
-is also why the evidence supports a careful conclusion: the dominant defect
-was in the old local nested route or its resulting back-pressure, but the
-tests do not identify one exact proprietary UU, Wine, FreeRDP, GNOME RDP, or
-libei function as the sole culprit. They also cannot promise that the
-controller or network upstream of the broker will never omit an event.
+It leaves video, mouse, and clipboard on their working relay. This is also why
+the evidence supports a careful conclusion: the dominant defect was in the old
+local nested route or its resulting back-pressure, but the tests do not
+identify one exact proprietary UU, Wine, FreeRDP, GNOME RDP, or libei function
+as the sole culprit. They also cannot promise that the controller or network
+upstream of the broker will never omit an event.
+
+## Follow-up: Phone Native Keyboard
+
+The physical-key fix did not initially change normal phone-keyboard commits.
+A fixed 13-character live A/B test then showed the important boundary: all 13
+phone-text calls reached the broker and returned success, but only 11
+characters appeared in the target. The phone/controller link and Unicode
+normalization were therefore not the missing boundary; the loss occurred after
+broker acceptance in the same nested Wine/FreeRDP path.
+
+The follow-up maps the complete normalized chord array first, then submits that
+array to the authenticated X11 helper as one keyboard-only request. It falls
+back to RDP only if X11 fails before any event is injected, so it never replays
+an ambiguously partial shortcut. The helper still accepts only bounded,
+non-Unicode keyboard records; Unicode interpretation remains in the broker.
+
+An early implementation also exposed a separate 41 ms transport delay between
+the broker and helper. It wrote the request header and events separately over
+TCP, which interacted badly with small-packet buffering. Coalescing them into
+one write and enabling `TCP_NODELAY` reduced the measured helper round trip to
+0–2 ms without adding polling, retries, or another daemon.
+
+The isolated Xvfb/Wine acceptance preserved 52/52 requested transitions in
+exact order. After installation, the first 72 privacy-safe live phone-text
+records all used `route=x11-text`, returned the exact requested count with
+`error=0`, and completed in 0–2 ms. Visible phone typing and the UU
+computer-keyboard panel were both then confirmed complete. This route covers
+text representable by the active Windows keyboard layout; arbitrary CJK or
+emoji commits still require a different text protocol if `VkKeyScanW` cannot
+map them.
 
 ## Root Cause and Final Fix
 
@@ -140,6 +182,9 @@ desktop through two paths:
 | UU broker metadata at 12 ms | Every sampled call accepted | More `SendInput` success or delay could not prove final delivery |
 | Native XTEST burst on isolated Xvfb | 58/58 transitions | The direct helper preserved alphabet, Ctrl, and Enter press/release ordering |
 | Live UU with direct X11 route | 256/256 sampled calls successful; typing very smooth | The local conversion defect was practically resolved |
+| Phone text on the old nested route | 13/13 broker calls accepted, but 11/13 characters visible | Broker success still did not prove downstream delivery |
+| Phone text through isolated X11 route | 52/52 transitions in exact order | Complete normalization and helper submission were lossless |
+| Live phone text through X11 | First 72 calls exact, `error=0`, 0–2 ms; visible typing complete | The same narrow bypass resolved the phone native-keyboard loss |
 
 The final design is deliberately narrow:
 
@@ -147,7 +192,7 @@ The final design is deliberately narrow:
    does not change.
 2. Enable `x11` only for an affected, verified Xorg/XRDP desktop.
 3. Accept only bounded, non-Unicode, keyboard-only records in the native
-   helper.
+   helper. Phone Unicode is normalized and validated in the broker first.
 4. Map the complete request before injecting its first event.
 5. Fall back to RDP only when failure is known to occur before injection.
 6. Never replay an ambiguous partial request; a late original plus a retry can
@@ -192,7 +237,7 @@ Available route modes are:
 | Mode | Behavior |
 | --- | --- |
 | `rdp` | Compatible default; all input uses the established local relay |
-| `x11` | Require direct physical-key injection and make verification fail if it cannot start |
+| `x11` | Require direct keyboard injection for physical keys and representable phone text; verification fails if the helper cannot start |
 | `auto` | Select direct input only when the discovered live target is X11 |
 
 The choices are stored in
@@ -227,8 +272,10 @@ unfiltered network adapters.
 5. **Treat pacing as an experiment, not a cure.** Eight and twelve milliseconds
    gave useful evidence and partial improvement. Continuing to increase delay
    would only add back-pressure.
-6. **Remove one bad hop, not the whole architecture.** Keeping working
-   video/mouse/text channels unchanged made the final fix small and reversible.
+6. **Remove one bad hop, not the whole architecture.** Keeping working video,
+   mouse, and clipboard channels unchanged made the final fix small and
+   reversible. Phone text moved only after its own A/B evidence showed the same
+   downstream loss.
 7. **Never replay after uncertainty.** Retrying a possibly delivered modifier
    or shortcut is more dangerous than returning one failure.
 8. **Preserve known-good machines.** New functionality is opt-in, migration
@@ -252,9 +299,9 @@ The public submodule contains the complete source and operational record:
 - `docs/security.md`: credential handling and residual risk
 - `docs/troubleshooting.md`: black video, failed input, NLA, and restart checks
 - `docs/debugging-journey.md`: evidence from failed hypotheses through the
-  final direct-X11 route
+  final direct-X11 physical-key and phone-text routes
 - `docs/xrdp-and-keyboard-recovery.md`: safe XRDP recovery, physical pacing,
-  direct-X11 activation, acceptance, and rollback
+  direct-X11 keyboard activation, acceptance, and rollback
 - `docs/releases/v0.2.0.md`: backward-compatibility contract and validation
 - `docs/mobile-keyboard-parity-handoff.md`: known-good 7090 keyboard baseline,
   cross-host comparison, acceptance matrix, and privacy-safe failure handoff
@@ -263,6 +310,8 @@ The public submodule contains the complete source and operational record:
 - `scripts/audit-gameviewer.py`: PE map, semantic candidates, disassembly report,
   draft generation, and explicit finalization gate
 - `scripts/patch-gameviewer.py`: generic fail-closed patch, verify, and restore CLI
+- `scripts/test-x11-phone-text.sh`: isolated Xvfb/Wine phone-text route and
+  exact-order acceptance test
 - `install.sh`: complete from-scratch setup
 
 No NetEase binary, Wine prefix, account token, device ID, password, private
@@ -285,9 +334,11 @@ PASS  input broker uses a 0 ms physical-key delay
 PASS  direct X11 physical-key helper is active
 ```
 
-After reconnecting the UU controller, fresh content-free keyboard records use
-`category=keyboard route=x11` with a matching result and `error=0`. A test
-performed through ordinary RDP does not validate the UU route.
+After reconnecting the UU controller, fresh content-free physical-key records
+use `category=keyboard route=x11`, while normal phone-keyboard records use
+`category=text route=x11-text`. Both must show matching requested/result counts
+and `error=0`. A test performed through ordinary RDP does not validate the UU
+route.
 
 The full verifier holds one GameViewerServer PID for 270 seconds, crossing the
 former four-minute failure interval. The original controller acceptance
@@ -299,6 +350,14 @@ broker without disconnecting. The v0.2 direct-keyboard acceptance adds:
 - 256 successful sampled live `route=x11` calls with no broker errors;
 - the operator's visible report that typing became very smooth and almost all
   former omissions were fixed.
+
+The post-v0.2 phone native-keyboard acceptance adds:
+
+- an isolated 52/52 exact-order X11 text-route test;
+- the first 72 live `route=x11-text` calls with exact counts, `error=0`, and
+  0–2 ms completion;
+- visible confirmation that both phone typing and the UU computer-keyboard
+  panel produced complete text.
 
 The wording is intentionally “strong practical acceptance,” not a universal
 zero-loss promise. The bounded diagnostics cannot reconstruct typed content,

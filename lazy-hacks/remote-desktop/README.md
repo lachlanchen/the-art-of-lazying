@@ -19,6 +19,9 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
   - why deliberate slow typing and apparently smooth mouse motion masked the keyboard-only loss
   - how the opt-in authenticated X11/XTEST helper made direct-UU typing very smooth on XRDP
   - the lossless 58-event isolated test and 256-call content-free live acceptance record
+  - why normal phone-keyboard text remained lossy after the physical-key fix
+  - the 52/52 isolated phone-text test and first 72 exact live `x11-text` calls
+  - confirmation that both phone typing and the UU computer-keyboard panel are complete
   - where to find the public source submodule and exact `xxd`/`objdump` patch record
   - the one-command installer, verification, rollback, and security boundaries
   - the versioned manifest, sandboxed staging, and audited upstream-update workflow
