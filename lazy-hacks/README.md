@@ -10,6 +10,7 @@ Small, practical workflows and shell tricks that improve daily engineering speed
 - [linux-shutdown](./linux-shutdown/README.md): systemd ordering and busy-unmount fixes for mounted home subpaths.
 - [remote-desktop](./remote-desktop/README.md): GNOME native RDP vs XRDP, with practical remote-session stability notes for Ubuntu 24.04.
 - [uuremote-mouse-axis.md](./uuremote-mouse-axis.md): quick fix for GameViewer/UURemote reversed horizontal mouse movement.
+- [windows-always-on-and-manual-updates.md](./windows-always-on-and-manual-updates.md): keep a remote Windows workstation awake across power-plan changes and make Windows Update manual-only.
 - [windows-remote-keyboard-and-ssh.md](./windows-remote-keyboard-and-ssh.md): fix remote Caps Lock desync and set up Windows/Linux OpenSSH in both directions.
 
 ## Convention
