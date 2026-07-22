@@ -25,6 +25,8 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
   - where to find the public source submodule and exact `xxd`/`objdump` patch record
   - the one-command installer, verification, rollback, and security boundaries
   - the versioned manifest, sandboxed staging, and audited upstream-update workflow
+  - descriptive RDP-broker and direct-X11 behavior tags for cross-machine handoff
+  - reboot-persistent daily checks and resumable Codex repair without restarting a healthy relay
 
 - [native-gnome-rdp-vs-xrdp-on-ubuntu-24-04.md](./native-gnome-rdp-vs-xrdp-on-ubuntu-24-04.md)
   - why GNOME native RDP could crash the remote desktop session on app launch

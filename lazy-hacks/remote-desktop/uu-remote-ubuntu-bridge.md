@@ -382,6 +382,50 @@ The installer accepts an approved future manifest with
 `--release-manifest`. Drafts, ambiguous signatures, unknown hashes, overlapping
 patches, and restore over a different release fail closed.
 
+## Automatic Checks and Repair Resume
+
+Describe the validated input behavior instead of calling the two machines
+"v1" and "v2":
+
+| Behavior tag | Host profile |
+| --- | --- |
+| `track-rdp-broker-v1` | Keep the compatible broker and nested RDP keyboard route on a computer where it is already smooth |
+| `track-direct-x11-v1` | Keep direct physical-key and normalized phone-text injection on a validated X11/XRDP computer |
+
+Both immutable tags use the union source; the saved route and timing settings
+select the behavior. The daily checker never switches profiles. Enable it only
+after the normal phone and computer-keyboard acceptance passes:
+
+```bash
+cd code/uu-remote-ubuntu-bridge
+git fetch --tags origin
+./scripts/configure-updater.sh enable --track TRACK_NAME \
+  --model gpt-5.6-sol --reasoning-effort xhigh
+uu-remote update
+```
+
+`uu-remote-update-check.timer` runs a metadata check daily and after reboot. A
+same-version build is downloaded once for a complete SHA-256; an unchanged
+ETag, size, and cached hash make later checks metadata-only. A healthy UU relay
+is never restarted by this check.
+
+`uu-remote-repair-monitor.timer` performs a read-only health check every 15
+minutes. It restarts only after the relay is unhealthy twice and snapshots the
+deployed runtime before a known-good reinstall. Failed readiness restores the
+snapshot. For an unknown upstream build or a persistent runtime fault, it
+creates a private repair clone and starts Codex with explicit
+`gpt-5.6-sol`/`xhigh` settings. The Codex thread UUID, context, events, and test
+result are saved atomically, so the same task resumes after reboot or network
+interruption with bounded backoff.
+
+Codex cannot approve its own binary manifest, push the repair clone, use sudo,
+or deploy an unknown installer. Static candidates still require the semantic
+review and Windows/controller acceptance above. Full setup, state, privacy,
+failure, and another-computer instructions are in
+[`docs/automatic-updates.md`](../../code/uu-remote-ubuntu-bridge/docs/automatic-updates.md)
+and
+[`docs/release-tracks.md`](../../code/uu-remote-ubuntu-bridge/docs/release-tracks.md).
+
 Restore the audited upstream files while keeping UU account state:
 
 ```bash
