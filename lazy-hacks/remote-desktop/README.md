@@ -49,6 +49,12 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
   - the reusable installer, credential loader, hardened systemd template, and rollback path
   - dedicated SSH keys, mDNS, SAN certificates, Remmina, GFX, and end-to-end verification
 
+- [windows-rdp-current-physical-desktop.md](./windows-rdp-current-physical-desktop.md)
+  - the current OptiPlex-7090 physical-desktop endpoint on `3391`
+  - why Windows RDP on `3389` shows the separate-session conflict
+  - the verified Windows desktop shortcut and `.rdp` profile
+  - service ownership, non-disruptive verification, recovery rules, and the SSH alias
+
 - [xrdp-cjk-input-on-ubuntu-24-04.md](./xrdp-cjk-input-on-ubuntu-24-04.md)
   - why Chinese and Japanese input can work in terminal/Sublime but fail in Chrome, Firefox, and Typora over `xrdp`
   - how to use `ibus-mozc`, `libpinyin`, and `Wubi` together
