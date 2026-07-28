@@ -13,6 +13,7 @@ Small, practical workflows and shell tricks that improve daily engineering speed
 - [remote-desktop](./remote-desktop/README.md): Windows access bootstrapping with RDP/OpenSSH/UU Remote, a Wine-to-GNOME UU control bridge, GNOME automatic-login Desktop Sharing, and native RDP vs XRDP stability notes for Ubuntu 24.04.
 - [storage](./storage/README.md): large-first workstation cleanup, exact Downloads deduplication, and cloud-side iCloud cleanup without materializing the full Drive on a Mac.
 - [uuremote-mouse-axis.md](./uuremote-mouse-axis.md): quick fix for GameViewer/UURemote reversed horizontal mouse movement.
+- [windows-always-on-and-manual-updates.md](./windows-always-on-and-manual-updates.md): keep a remote Windows workstation awake across power-plan changes and make Windows Update manual-only.
 - [windows-remote-keyboard-and-ssh.md](./windows-remote-keyboard-and-ssh.md): fix remote Caps Lock desync and set up Windows/Linux OpenSSH in both directions.
 
 ## Convention
