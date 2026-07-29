@@ -42,6 +42,14 @@ Countries, Devices, Endpoints, Astrill, Router, and Settings.
 
 Fresh configurations start native-only, read-only, and with no policy applied.
 
+The desktop reads router status once at startup, but it does not run a
+recurring 60-second SSH poll. Later reads happen only through **Refresh
+router**, a first page-demand load such as Devices, Endpoints, or Astrill, or
+the status returned by an explicit router action. Leaving the app open does
+not create periodic desktop-to-router SSH traffic. This affects only the
+Windows frontend: the optional companion's router-local watchdog remains on
+DD-WRT and continues maintaining its installed routing runtime independently.
+
 The **Astrill** view follows the Ubuntu frontend's human-readable layout. Its
 controls are grouped into **Routing**, **DNS**, **Connection**, and
 **Advanced** sections instead of presenting a raw NVRAM table. Friendly labels
@@ -163,12 +171,15 @@ credentials or the selected endpoint. Applying routing policies is another
 separately confirmed action; merely editing local policies does not change
 traffic.
 
-After a router reboot, the Windows status monitor reuses a healthy companion or
-reconstructs its runtime from the validated package retained in NVRAM. If the
-router retained neither the persistent markers nor runtime, the desktop falls
-back to usable native-only mode and leaves **Install / upgrade** available. An
-unreachable router does not trigger that fallback. Missing, stale, or
-inconsistent packages are never silently installed or persistently rewritten.
+After a router reboot, the companion's router-local startup hook and watchdog
+maintain or reconstruct its runtime from the validated package retained in
+NVRAM; this does not depend on desktop polling. The Windows app inspects the
+result on its next startup read or manual **Refresh router** action; other
+pages load only their own data when first needed. If the router retained
+neither the persistent markers nor runtime, the desktop falls back to usable
+native-only mode and leaves **Install / upgrade** available. An unreachable
+router does not trigger that fallback. Missing, stale, or inconsistent
+packages are never silently installed or persistently rewritten.
 
 The **Endpoints** page already provides **Connect router to selected endpoint**.
 It loads the router's Astrill server catalog, requires the read-only guard to
@@ -176,6 +187,19 @@ be off and the companion to be healthy, and asks for a Cancel-default
 confirmation. The companion reconnects DD-WRT's one shared tunnel and restores
 the previous settings if the new endpoint fails. This action does not install
 a VPN or change local routing on the Windows PC.
+
+The page also has a separate manual **Test PC latency** action for the selected
+endpoint, currently visible endpoints, or all loaded endpoints. It performs
+bounded TCP connection checks from the Windows PC and reports the observed
+connection latency. The test never starts automatically: opening the page,
+loading or filtering the catalog, changing protocol, and refreshing status do
+not launch it.
+
+This PC-side check sends no SSH command to DD-WRT, does not read or write router
+configuration, and does not connect or switch the router tunnel. It is not a
+VPN throughput or download-speed test; it measures only TCP connection setup
+over the PC's current network path, which can differ from the path used by the
+router.
 
 ## Update Or Remove
 
