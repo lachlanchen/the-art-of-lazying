@@ -42,6 +42,19 @@ Countries, Devices, Endpoints, Astrill, Router, and Settings.
 
 Fresh configurations start native-only, read-only, and with no policy applied.
 
+The **Astrill** view follows the Ubuntu frontend's human-readable layout. Its
+controls are grouped into **Routing**, **DNS**, **Connection**, and
+**Advanced** sections instead of presenting a raw NVRAM table. Friendly labels
+and appropriate switches, selectors, and text fields make common settings
+easier to understand, while the exact NVRAM key remains visible as secondary
+metadata for troubleshooting and comparison with DD-WRT.
+
+This presentation layer still reads and writes only the same explicitly
+allowlisted, validated NVRAM keys. Loading the page preserves the router's
+current values, and read-only mode continues to prevent saves; reorganizing the
+controls does not broaden the app's router access or invent replacement
+defaults.
+
 ## Build And Install
 
 Windows 10 or 11, Python 3.11 or newer, network access for the initial
@@ -123,6 +136,12 @@ Background commands fail closed with batch mode, identity-only
 authentication, strict host-key checking, and the app-owned `known_hosts`
 file. The onboarding flow never uses `StrictHostKeyChecking=no` and never
 silently accepts a new or changed host key.
+
+On Windows, noninteractive OpenSSH helpers such as `ssh.exe`,
+`ssh-keyscan.exe`, and `ssh-keygen.exe` run without creating a console window,
+so normal status refreshes and onboarding checks do not flash a terminal. The
+explicit **Open interactive SSH setup** action intentionally opens a visible
+terminal because that action hands control of the SSH session to the user.
 
 Telnet deliberately remains enabled as a recovery path. This is a security
 tradeoff: keep it LAN-only and maintain physical or local-console access.
