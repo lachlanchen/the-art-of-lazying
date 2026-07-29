@@ -8,7 +8,7 @@ machine-specific SSH fingerprints.
 
 ## Current Version And Paths
 
-The source snapshot documented here reports application version `0.2.3` and
+The source snapshot documented here reports application version `0.2.8` and
 router companion version `0.2.3`.
 
 | Artifact | Default path |
@@ -22,6 +22,7 @@ router companion version `0.2.3`.
 | Desktop shortcut | `%USERPROFILE%\Desktop\Astrill Lazy Router.lnk` |
 | Login-startup shortcut | `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\Astrill Lazy Router.lnk` |
 | Configuration | `%LOCALAPPDATA%\Astrill Lazy Router\config.json` |
+| Saved endpoint latency | `%LOCALAPPDATA%\Astrill Lazy Router\endpoint-latency.json` |
 | App-owned host-key store | `%LOCALAPPDATA%\Astrill Lazy Router\known_hosts` |
 | Default dedicated identity | `~/.ssh/astrill_lazy_router_ed25519` |
 
@@ -200,6 +201,18 @@ configuration, and does not connect or switch the router tunnel. It is not a
 VPN throughput or download-speed test; it measures only TCP connection setup
 over the PC's current network path, which can differ from the path used by the
 router.
+
+The results persist across app restarts in a separate validated local cache;
+loading them never starts a network test. Each row keeps its tested time.
+Results older than 24 hours, or results whose advertised Astrill address or
+port changed, are marked for a manual retest. **Clear results** removes the
+cache.
+
+Use **Sort** to choose **Default order** (Astrill's catalog order), **Region
+(A–Z)**, or **PC latency (fastest)**. Latency ordering uses the numeric result,
+places current reachable endpoints first, and leaves untested endpoints last.
+Changing the search or sort preserves the selected endpoint when possible and
+does not rerun any test.
 
 ## Update Or Remove
 
