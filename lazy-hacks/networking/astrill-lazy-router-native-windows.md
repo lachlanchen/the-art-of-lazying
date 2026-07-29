@@ -20,6 +20,7 @@ router companion version `0.2.3`.
 | Per-user installation | `%LOCALAPPDATA%\Programs\Astrill Lazy Router` |
 | Installed executable | `%LOCALAPPDATA%\Programs\Astrill Lazy Router\Astrill Lazy Router.exe` |
 | Desktop shortcut | `%USERPROFILE%\Desktop\Astrill Lazy Router.lnk` |
+| Login-startup shortcut | `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\Astrill Lazy Router.lnk` |
 | Configuration | `%LOCALAPPDATA%\Astrill Lazy Router\config.json` |
 | App-owned host-key store | `%LOCALAPPDATA%\Astrill Lazy Router\known_hosts` |
 | Default dedicated identity | `~/.ssh/astrill_lazy_router_ed25519` |
@@ -72,9 +73,11 @@ The router package builder canonicalizes its `VERSION` file to LF, so a Windows
 CRLF checkout cannot turn an exact companion version such as `0.2.3` into a
 mismatched runtime value.
 
-The native installer creates one Desktop shortcut. It removes an older
-same-named Start Menu shortcut and creates no new Start Menu entry. It also
-does not request administrator access, enable login startup, launch the app, or
+The native installer creates one Desktop shortcut and one current-user Startup
+shortcut. The latter opens the app after Windows sign-in, including after a
+reboot, without a service or administrator access. Installation remains
+idempotent and does not launch the app immediately. It removes an older
+same-named Start Menu shortcut, creates no new Start Menu entry, and does not
 alter router state.
 
 Launch from the Desktop shortcut or directly:
@@ -141,6 +144,20 @@ credentials or the selected endpoint. Applying routing policies is another
 separately confirmed action; merely editing local policies does not change
 traffic.
 
+After a router reboot, the Windows status monitor reuses a healthy companion or
+reconstructs its runtime from the validated package retained in NVRAM. If the
+router retained neither the persistent markers nor runtime, the desktop falls
+back to usable native-only mode and leaves **Install / upgrade** available. An
+unreachable router does not trigger that fallback. Missing, stale, or
+inconsistent packages are never silently installed or persistently rewritten.
+
+The **Endpoints** page already provides **Connect router to selected endpoint**.
+It loads the router's Astrill server catalog, requires the read-only guard to
+be off and the companion to be healthy, and asks for a Cancel-default
+confirmation. The companion reconnects DD-WRT's one shared tunnel and restores
+the previous settings if the new endpoint fails. This action does not install
+a VPN or change local routing on the Windows PC.
+
 ## Update Or Remove
 
 Close the app before an update, rebuild, and run `install-native.ps1` again.
@@ -151,9 +168,10 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
   -File .\contrib\windows\uninstall-native.ps1
 ```
 
-Uninstall removes the app folder and matching shortcuts but preserves
-configuration and SSH keys. Review and remove those retained files manually
-only when they are no longer needed.
+Uninstall removes the app folder and matching Desktop, Startup, and legacy
+Start Menu shortcuts but preserves unrelated shortcuts, configuration, and SSH
+keys. Review and remove retained configuration or keys manually only when they
+are no longer needed.
 
 The canonical, more detailed reference remains
 [docs/WINDOWS_APP.md](https://github.com/lachlanchen/astrill-lazy-router/blob/main/docs/WINDOWS_APP.md)
