@@ -256,6 +256,107 @@ If the row is still absent, inspect the local `rules` array before changing the
 router. Do not interpret selecting a catalog row, or merely opening the
 Services page, as a saved policy.
 
+### Proposed persistent core and RAM overlay
+
+The capacity warning separates two different states:
+
+| State | July 2026 value |
+| --- | ---: |
+| Complete Windows library | 88 enabled origins |
+| Expanded complete library | 313 rows / 28,373 bytes |
+| Current router limit | 6,144 bytes |
+| Applied UU Remote plus Nutstore selection | 24 rows / 2,688 bytes |
+
+The full Apply is blocked before router mutation. The smaller selected profile
+remains active. “Missing on router” currently compares the complete local
+library with that deliberately smaller deployment; it does not by itself mean
+the selected UU Remote or Nutstore policies failed.
+
+A proposed companion revision can use a hybrid model:
+
+1. Keep a small, explicitly pinned core in NVRAM.
+2. Reconstruct and activate that core immediately after every router reboot.
+3. Keep larger controller-owned overlays only under the RAM-backed
+   `/tmp/astrill-lazy/overlays/` directory.
+4. Give each router runtime a new opaque epoch and report core, overlay, and
+   effective-policy hashes.
+5. At Windows sign-in, after a relevant network-change event, or on manual
+   **Refresh router**, compare the expected overlay hash and restore that
+   computer's overlay once when it is missing and automatic restore has been
+   explicitly enabled.
+6. Have the companion compose the core and valid overlays into one verified
+   inactive chain, then atomically switch the active jump.
+
+This remains a design, not behavior in companion `0.2.5`. The current
+`alctl apply` always persists the complete current and previous TSV documents
+to NVRAM, and the current Windows startup reconciliation does not re-upload a
+volatile local overlay.
+
+The live E4200 check supports a bounded prototype:
+
+```text
+/proc/meminfo MemTotal: 58,708 KiB
+MemFree during inspection: about 31-32 MiB
+/tmp/astrill-lazy runtime files: about 124 KiB
+NVRAM free during inspection: about 6.3 KiB
+```
+
+The exact locally saved UU Remote, Nutstore/Jianguoyun, and WeChat rules
+compile to 38 rows and 3,846 ASCII bytes, so they fit the current raw
+6,144-byte policy contract. Their deterministic gzip form measured 534 bytes,
+or 712 bytes after base64 encoding. This makes them a reasonable persistent
+core candidate:
+
+```text
+UU Remote            -> Direct
+Nutstore/Jianguoyun   -> Direct
+WeChat                -> Direct
+```
+
+Pinning WeChat must still be an explicit, confirmed policy change. It was not
+part of the verified two-policy deployment recorded below. Catalog-based UU
+Remote and WeChat rules also cannot guarantee every dynamic peer, relay, or CDN
+address merely because they survive a reboot.
+
+The complete 28 KB document also fits easily as text in RAM, but its resolved
+addresses and generated iptables entries are the actual E4200 cost. A safe
+implementation must separately limit:
+
+- bytes and rows per controller;
+- total effective rows;
+- resolved addresses and final firewall matches;
+- minimum free/reclaimable RAM; and
+- transaction duration.
+
+An oversized or interrupted RAM upload must leave the previous chain active.
+RAM-overlay restoration must make no NVRAM commit. Astrill-targeted traffic
+must retain the companion's existing fail-closed behavior.
+
+For several LAN computers, separate overlay filenames are not sufficient:
+ordinary destination rules remain global. Each independent overlay must also
+be guarded by that computer's reserved source IP and validated MAC, or the
+computer must use a local Route Intent/Path Broker backend. Controllers need
+owner-specific IDs, conditional generations, and permission to replace only
+their own overlay so that the last GUI to connect cannot overwrite every other
+computer.
+
+The intended UI separates:
+
+- **Local library**
+- **Persistent router core**
+- **This computer's RAM overlay**
+- **Other controller overlays**
+- **Effective router policy**
+
+Core-only operation after a reboot is an amber “overlay waiting for restore”
+state, not a red failure. Red is reserved for a missing expected core, a failed
+restore, or degraded fail-closed health. Frequent SSH polling is unnecessary;
+startup, bounded retry when the router is still booting, Windows network-change
+events, and manual refresh are sufficient.
+
+The canonical engineering proposal is
+[Hybrid policy storage](https://github.com/lachlanchen/astrill-lazy-router/blob/main/docs/HYBRID_POLICY_STORAGE.md).
+
 ## Optional Router Companion
 
 SSH onboarding and companion installation are separate decisions. A successful
