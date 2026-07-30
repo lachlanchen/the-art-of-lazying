@@ -7,24 +7,14 @@ param(
     [int]$IntervalSeconds = 5,
 
     [ValidateRange(100, 8192)]
-    [int]$MaxMainPrivateMB = 600,
-
-    [string]$ExpectedRoot = (Join-Path $env:APPDATA 'baidu\BaiduNetdisk'),
-
-    [string]$ExpectedMainVersion = '8.5.8.107',
-
-    [string]$ExpectedBrowserVersion = '8.5.8.443',
-
-    [string]$ExpectedSdkSha256 = 'EF50D1EFE473851442C10448BF120529C5491AA8B5FB4D373B8D9469024F8DCB',
-
-    [switch]$SkipSdkValidation,
-
-    [switch]$AllowFloatingWindow
+    [int]$MaxMainPrivateMB = 600
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# Archived, non-destructive health check for one exact signed 8.5.8 incident.
+# It reads process, window, artifact, and Windows event data only.
 $processNames = @(
     'BaiduNetdisk',
     'BaiduNetdiskUnite',
@@ -128,30 +118,30 @@ function Get-BaiduVisibleWindowMetrics {
     @($windows | ForEach-Object { $_ })
 }
 $expectedSigner = 'Beijing Duyou Science and Technology'
-$expectedRootPath = (Resolve-Path -LiteralPath $ExpectedRoot).Path.TrimEnd('\')
+$expectedRootPath = [IO.Path]::GetFullPath(
+    (Join-Path $env:APPDATA 'baidu\BaiduNetdisk')
+).TrimEnd('\')
 $expectedRootPrefix = $expectedRootPath + '\'
 $expectedArtifacts = @(
     @{
         Path = (Join-Path $expectedRootPath 'BaiduNetdisk.exe')
-        Version = $ExpectedMainVersion
-        Sha256 = $null
+        Version = '8.5.8.107'
+        Sha256 = 'F2E50ECD012C7B8D4269045C3937BAFDEBE2E2B3ED938F1AE03CAE28075F16C6'
         RequireReadOnly = $false
     },
     @{
         Path = (Join-Path $expectedRootPath 'module\BrowserEngine\BaiduNetdiskUnite.exe')
-        Version = $ExpectedBrowserVersion
-        Sha256 = $null
+        Version = '8.5.8.443'
+        Sha256 = '380DF87F28850FD284DAEB9C10354AC503D23F7CDD193B8BE4D6E883970A6C68'
+        RequireReadOnly = $false
+    },
+    @{
+        Path = (Join-Path $expectedRootPath 'kernel_btsdk.dll')
+        Version = $null
+        Sha256 = 'EF50D1EFE473851442C10448BF120529C5491AA8B5FB4D373B8D9469024F8DCB'
         RequireReadOnly = $false
     }
 )
-if (-not $SkipSdkValidation) {
-    $expectedArtifacts += @{
-        Path = (Join-Path $expectedRootPath 'kernel_btsdk.dll')
-        Version = $null
-        Sha256 = $ExpectedSdkSha256
-        RequireReadOnly = $false
-    }
-}
 
 function Assert-BaiduArtifacts {
     param(
@@ -293,7 +283,7 @@ for ($sample = 1; $sample -le $Samples; $sample++) {
         [void]$failureReasons.Add('BrowserEngine UI process is outside the expected root')
         $failed = $true
     }
-    if ($main -and $mainVersion -ne $ExpectedBrowserVersion) {
+    if ($main -and $mainVersion -ne '8.5.8.443') {
         [void]$failureReasons.Add("BrowserEngine UI version is $mainVersion")
         $failed = $true
     }
@@ -301,7 +291,7 @@ for ($sample = 1; $sample -le $Samples; $sample++) {
         [void]$failureReasons.Add("$($outsideRootProcesses.Count) Baidu processes are outside the expected root")
         $failed = $true
     }
-    if (-not $AllowFloatingWindow -and $floatingWindows.Count -gt 0) {
+    if ($floatingWindows.Count -gt 0) {
         [void]$failureReasons.Add(
             'Baidu floating window is enabled; disable Settings > Startup Settings > Show floating window'
         )
