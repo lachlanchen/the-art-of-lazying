@@ -321,10 +321,18 @@ use substring matching or accidentally include a similarly named region.
 Search can still match endpoint name, country, mapped region, or server ID.
 
 Endpoint selection uses the same durable model as Services: row checkboxes,
-`Ctrl`, `Shift`, tri-state **Select visible**, and **Clear selection**. A
+`Ctrl`, `Shift`, tri-state **Select visible**, and **Clear**. A
 selection hidden by search or country filters remains selected and is called
 out in the selection summary. Connecting requires exactly one endpoint, while
 latency and favorite actions can use a batch.
+
+Windows release `0.2.11` keeps search and reload on the first row, places
+Country, Protocol, Sort, **PC latency...**, and **Connect selected** on the
+second, and combines selection, favorite synchronization, and connection
+behavior in one compact card. The endpoint table receives all remaining
+height, so substantially more servers stay visible without scrolling.
+**Behavior...** opens the two native failover/boot preferences without
+permanently using another row above the table.
 
 The sort presets remain **Default order**, **Region (A–Z)**, and **PC latency
 (fastest)**. Clicking a table header adds semantic ascending/descending sorts
@@ -366,18 +374,26 @@ chosen protocol blocks the batch. A confirmed batch then:
 6. reads back and verifies the exact result.
 
 A no-op makes no commit. Malformed data, a concurrent favorite change, or any
-validation error stops before overwrite and asks for a fresh sync. Favorite
-actions are also disabled while the **Astrill** or **Connection** page has
-unsaved edits.
+validation error stops before overwrite and asks for a fresh sync.
+
+An unrelated Astrill or Connection draft no longer makes **Favorite selected**
+look active while silently blocking the click. The favorite action remains
+available and merges only the verified `astrill_favlist` readback into the
+Connection editor's baseline, preserving pending endpoint, protocol, port,
+cipher, MTU, and resilience edits. If the Connection draft itself changes
+favorite membership, the Endpoints favorite buttons are visibly disabled and
+their tooltip names that exact conflict until the draft is saved or reloaded.
 Changing favorites does not require the companion, reconnect or switch the
 active tunnel, run a latency test, change Windows routing, or start background
 monitoring.
 
 ### Persistent, manual PC latency
 
-The separate **Test PC latency** action operates on selected endpoints,
-currently visible endpoints, or all loaded endpoints. It performs bounded TCP
-connection checks from the Windows PC and reports connection setup latency.
+Select the single compact **PC latency...** button to open the reusable test
+dialog. Its scope can be selected endpoints, currently visible endpoints, or
+all loaded endpoints. **Run latency test** performs bounded TCP connection
+checks from the Windows PC and reports connection setup latency. Closing and
+reopening the dialog preserves its scope and status.
 The test never starts automatically: opening the page, loading or filtering
 the catalog, changing protocol, sorting, and refreshing status do not launch
 it.
@@ -391,8 +407,8 @@ router.
 The results persist across app restarts in a separate validated local cache;
 loading them never starts a network test. Each row keeps its tested time.
 Results older than 24 hours, or results whose advertised Astrill address or
-port changed, are marked for a manual retest. **Clear results** removes the
-cache.
+port changed, are marked for a manual retest. **Clear saved results** removes
+the cache.
 
 ### Reboot and automatic connection behavior
 
