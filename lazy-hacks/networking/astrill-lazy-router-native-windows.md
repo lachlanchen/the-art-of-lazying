@@ -8,8 +8,8 @@ machine-specific SSH fingerprints.
 
 ## Current Version And Paths
 
-The source snapshot documented here reports application version `0.2.12` and
-router companion version `0.2.5`.
+The source snapshot documented here reports application version `0.2.13` and
+router companion version `0.2.11`.
 
 | Artifact | Default path |
 | --- | --- |
@@ -118,7 +118,7 @@ before replacing the current per-user copy and refuses to update while the
 installed app is running.
 
 The router package builder canonicalizes its `VERSION` file to LF, so a Windows
-CRLF checkout cannot turn an exact companion version such as `0.2.4` into a
+CRLF checkout cannot turn an exact companion version such as `0.2.11` into a
 mismatched runtime value.
 
 The native installer creates one Desktop shortcut and one current-user Startup
@@ -127,6 +127,11 @@ reboot, without a service or administrator access. Installation remains
 idempotent and does not launch the app immediately. It removes an older
 same-named Start Menu shortcut, creates no new Start Menu entry, and does not
 alter router state.
+
+The GUI holds a crash-recoverable per-user lock for its full lifetime. A
+second launch exits successfully before it can construct another window or
+start another reboot-reconciliation task, so a double-click cannot race the
+one-shot RAM-overlay restore.
 
 Launch from the Desktop shortcut or directly:
 
@@ -202,44 +207,52 @@ Policies**. **Suggested** uses each catalog entry's recommended route; the
 other two override the selected services as one batch.
 
 Selection alone does not create a policy. **Add to Policies** writes the
-selection to the Windows configuration. **Apply policies** and **Apply
-selected** are separate, confirmed router operations:
+selection to the Windows configuration. Companion `0.2.11` then offers two
+separate confirmed router operations:
 
-- **Apply policies** compiles every saved local record, including disabled
-  records, and replaces the complete router document.
-- **Apply selected** compiles only the selected policy rows and makes that set
-  the complete router document. Unselected policies remain saved on Windows.
+- **Replace persistent core** compiles the selected complete global core,
+  writes it to compressed NVRAM, and activates it after every reboot.
+- **Load selected into router RAM** compiles this controller's volatile
+  overlay, scopes it to the Windows computer's LAN source and observed MAC,
+  and performs no NVRAM commit.
 
-The router accepts at most 6,144 compiled bytes. A service row can expand into
-many domain and literal-network rows, so the app preflights the exact compiled
-row and byte totals before any SSH write. An oversized full apply is disabled;
-select a smaller deliberate set and use **Apply selected**. Neither path
-silently truncates its scope, and a failed preflight leaves the previous router
-document active.
+The persistent core accepts at most 6,144 compiled bytes and must leave at
+least 2 KiB of live NVRAM headroom. A service row can expand into many domain
+and literal-network rows, so the app preflights exact rows and bytes before
+SSH. RAM overlays instead use per-owner byte/row limits plus total effective
+rows, generated-match, reclaimable-memory, and build-duration checks. Neither
+path silently truncates its scope, and a failed preflight leaves the previous
+effective policy active.
 
-The Policies page reports **Local / applied policies**. Companion `0.2.5`
-compares the exact enabled local and applied origin-ID sets and identifies
-missing or extra IDs; count-only comparison is retained only for an older
-companion whose status lacks rule detail. A dash means router state has not
-been read yet. Equal counts do not prove that the same policies are installed.
+Policies reports five distinct states: **Local library**, **Persistent core**,
+**This computer's RAM overlay**, **Other overlays**, and **Effective router**.
+The local manifest binds the confirmed SSH host fingerprint, companion version,
+and exact stored-package MD5. Exact origin IDs, runtime generations, policy
+document MD5 hashes, source/MAC binding, and runtime epoch distinguish an
+intentionally smaller deployment from drift.
 
 This distinction explains a missing **UU Remote** policy seen during the July
 2026 check. The Windows configuration contained no rules, and both the
 companion rule table and native router list were empty. The policy therefore
 had not been saved or applied; it was not merely hidden by a stale GUI row.
 
-To install the two narrow Direct policies used on this router:
+To prepare the three reboot-essential Direct policies used on this router:
 
 1. Open **Policies** and select **Add service...**, or open **Services**.
 2. Search for `UU Remote`, select it, choose **Direct**, and use **Add to
    Policies**.
-3. Repeat for `Nutstore (Jianguoyun)`.
-4. On **Policies**, select those two rows and choose **Apply selected**.
-5. Approve the separate summary only if it reports two enabled policies, 24
-   compiled rows, and 2,688 / 6,144 bytes.
-6. Refresh the router and verify that the applied IDs are
-   `uu-remote-18bc36c7` and `nutstore-jianguoyun-7ebf346c`.
-7. Reconnect only the affected applications if they retain old sessions; do
+3. Repeat for `Nutstore (Jianguoyun)` and `WeChat`.
+4. On **Policies**, select those three rows and choose **Replace persistent
+   core**.
+5. Approve the whole-core replacement only if it reports three enabled
+   origins, 41 compiled rows, and 4,135 / 6,144 bytes.
+6. Refresh the router and verify all three exact IDs and the returned core
+   generation/hash.
+7. Select computer-specific policies outside that core, choose **Load selected
+   into router RAM**, and keep the recommended source value `auto`.
+8. Verify the returned `/32`, MAC, owner, overlay generation/hash, and
+   effective rows before opting into one-shot reboot restoration.
+9. Reconnect only the affected applications if they retain old sessions; do
    not flush all router connection tracking.
 
 The maintained profiles include UU's observed
@@ -256,56 +269,91 @@ If the row is still absent, inspect the local `rules` array before changing the
 router. Do not interpret selecting a catalog row, or merely opening the
 Services page, as a saved policy.
 
-### Proposed persistent core and RAM overlay
+### Persistent core and RAM overlay
 
-The capacity warning separates two different states:
+The hybrid model is implemented by Windows `0.2.13` and companion `0.2.11`.
+The measured local split is:
 
 | State | July 2026 value |
 | --- | ---: |
 | Complete Windows library | 88 enabled origins |
-| Expanded complete library | 313 rows / 28,373 bytes |
-| Current router limit | 6,144 bytes |
-| Applied UU Remote plus Nutstore selection | 24 rows / 2,688 bytes |
+| Expanded complete library | 316 rows / 28,686 bytes |
+| Persistent UU + Nutstore + WeChat core | 3 origins / 41 rows / 4,135 bytes |
+| Remaining Windows overlay | 85 origins / 275 rows / 24,551 bytes |
+| Source-scoped effective document | 316 rows / 38,455 bytes |
 
-The full Apply is blocked before router mutation. The smaller selected profile
-remains active. “Missing on router” currently compares the complete local
-library with that deliberately smaller deployment; it does not by itself mean
-the selected UU Remote or Nutstore policies failed.
+The storage lifecycle is:
 
-A proposed companion revision can use a hybrid model:
+1. Keep the small global core in gzip/base64 NVRAM when compression is smaller.
+2. Reconstruct, validate, and activate that core immediately after reboot,
+   even when every PC is off.
+3. Keep controller overlays only under `/tmp/astrill-lazy/overlays`.
+4. Compose the core first, then enter each overlay only through its source
+   address and optional MAC guard.
+5. Give each router runtime a new epoch and every layer a compare-and-swap
+   generation plus MD5 content hash.
+6. Restore an opted-in controller overlay once after Windows sign-in or a
+   relevant network-change event; never poll DD-WRT repeatedly.
+7. Rebuild a RAM overlay only for an explicit load, that one-shot restore, or a
+   manual restore/reload; do not put large overlays on the watchdog's periodic
+   DNS cycle.
 
-1. Keep a small, explicitly pinned core in NVRAM.
-2. Reconstruct and activate that core immediately after every router reboot.
-3. Keep larger controller-owned overlays only under the RAM-backed
-   `/tmp/astrill-lazy/overlays/` directory.
-4. Give each router runtime a new opaque epoch and report core, overlay, and
-   effective-policy hashes.
-5. At Windows sign-in, after a relevant network-change event, or on manual
-   **Refresh router**, compare the expected overlay hash and restore that
-   computer's overlay once when it is missing and automatic restore has been
-   explicitly enabled.
-6. Have the companion compose the core and valid overlays into one verified
-   inactive chain, then atomically switch the active jump.
+The base package stored in NVRAM intentionally excludes the larger
+`alhybrid` helper. The Windows bundle uploads that helper atomically to RAM and
+verifies its MD5 under the same controller lock used by package and policy
+transactions. This preserves package headroom without weakening core-only
+boot. Core writes also stage this helper because it owns the cross-layer
+transaction journal and rollback path. The persistent footprint is only the
+base package, compressed bootstrap payload, and small core; the helper,
+workstation overlays, effective document, runtime epoch, and generations are
+RAM-only.
 
-This remains a design, not behavior in companion `0.2.5`. The current
-`alctl apply` always persists the complete current and previous TSV documents
-to NVRAM, and the current Windows startup reconciliation does not re-upload a
-volatile local overlay.
+Every core/overlay document mutation is bound to the exact running code:
 
-The live E4200 check supports a bounded prototype:
+```text
+alctl apply VERSION PACKAGE_MD5 HELPER_MD5 FILE|-
+alctl rollback VERSION PACKAGE_MD5 HELPER_MD5 [--json]
+alctl core-apply VERSION PACKAGE_MD5 HELPER_MD5 GENERATION FILE|-
+alctl core-rollback VERSION PACKAGE_MD5 HELPER_MD5 GENERATION
+alctl overlay-put VERSION PACKAGE_MD5 HELPER_MD5 OWNER GENERATION \
+  SOURCE EXPECTED_SOURCE EXPECTED_MAC FILE|-
+alctl overlay-remove VERSION PACKAGE_MD5 HELPER_MD5 OWNER GENERATION
+alctl toggle-origin VERSION PACKAGE_MD5 HELPER_MD5 ID
+alctl route-origin VERSION PACKAGE_MD5 HELPER_MD5 ID direct|vpn
+```
+
+After acquiring the shared lock, `alctl` compares the supplied version and
+package MD5 with both the verified tmpfs markers and installed NVRAM metadata,
+then compares `HELPER_MD5` with the executable it will source. A same-version
+package replacement or helper replacement therefore fails the precondition
+instead of racing a policy write onto different code.
+
+The E4200 admission design uses this live preflight snapshot:
 
 ```text
 /proc/meminfo MemTotal: 58,708 KiB
 MemFree during inspection: about 31-32 MiB
 /tmp/astrill-lazy runtime files: about 124 KiB
-NVRAM free during inspection: about 6.3 KiB
+Deterministic companion package: 19,960 bytes / 26,616 base64 bytes / 15 chunks
+Package MD5: 3552747bcb9a06a8f6b64dcbb1ce0675
+Package SHA-256: 2f0dbbda03af55a54ebf75fa6a06d2f47ffcd071310082544202edac4422a4be
+NVRAM free before locked upgrade projection: 3,115 bytes
+Normalized bootstrap source: 6,502 bytes
+Stored deterministic gzip/base64 bootstrap: 2,560 bytes
+Canonical payload-plus-LF hash input: 2,561 bytes
+Bootstrap MD5 for this release: 3b6a21b7fbc73107dc1fc85539e9e008
+Projected upgrade growth: +608 bytes
+Projected NVRAM free after upgrade: 2,507 bytes
+Projected reserve margin: 459 bytes above the required 2,048
+Observed free after physical reboot: 2,494 bytes
+Observed reserve margin: 446 bytes
 ```
 
-The exact locally saved UU Remote, Nutstore/Jianguoyun, and WeChat rules
-compile to 38 rows and 3,846 ASCII bytes, so they fit the current raw
-6,144-byte policy contract. Their deterministic gzip form measured 534 bytes,
-or 712 bytes after base64 encoding. This makes them a reasonable persistent
-core candidate:
+Those values describe that router snapshot, not a permanent capacity
+guarantee. Every install recomputes the projection from current NVRAM before
+and again under the shared controller lock.
+
+The selected persistent core is:
 
 ```text
 UU Remote            -> Direct
@@ -313,48 +361,53 @@ Nutstore/Jianguoyun   -> Direct
 WeChat                -> Direct
 ```
 
-Pinning WeChat must still be an explicit, confirmed policy change. It was not
-part of the verified two-policy deployment recorded below. Catalog-based UU
-Remote and WeChat rules also cannot guarantee every dynamic peer, relay, or CDN
-address merely because they survive a reboot.
+Changing the core is a global NVRAM operation. The GUI reads the current core
+generation and hash, shows the whole replacement, and refuses drift rather
+than overwriting it. A core persistence failure restores the prior NVRAM
+values and A/B chain in the same transaction. A corrupt current core at boot
+uses a verified previous core in a degraded state; it is never accepted as an
+intentional empty policy.
 
-The complete 28 KB document also fits easily as text in RAM, but its resolved
-addresses and generated iptables entries are the actual E4200 cost. A safe
-implementation must separately limit:
+For the overlay, keep **Automatic source binding** unless a deliberate LAN
+CIDR is required. `auto` derives the SSH peer `/32` and requires its bridge ARP
+MAC. A controller cannot shadow a core origin or replace another owner's
+overlay. Device rows are rejected because the owner chain already supplies the
+source condition.
 
-- bytes and rows per controller;
-- total effective rows;
-- resolved addresses and final firewall matches;
-- minimum free/reclaimable RAM; and
-- transaction duration.
+On reboot restoration, the app sends the previously trusted resolved `/32` and
+MAC as write preconditions. The router compares them with its fresh LAN/ARP
+resolution before composing or activating a candidate. A DHCP reassignment is
+therefore rejected before any policy can briefly apply to the wrong device.
 
-An oversized or interrupted RAM upload must leave the previous chain active.
-RAM-overlay restoration must make no NVRAM commit. Astrill-targeted traffic
-must retain the companion's existing fail-closed behavior.
+Initial limits are 32 KiB/320 rows per overlay, eight owners, 128 KiB/512 rows
+effective, 1,536 generated matches, at least 8 MiB reclaimable memory, a
+240-second whole-policy transaction, and 16 resolved addresses per domain.
 
-For several LAN computers, separate overlay filenames are not sufficient:
-ordinary destination rules remain global. Each independent overlay must also
-be guarded by that computer's reserved source IP and validated MAC, or the
-computer must use a local Route Intent/Path Broker backend. Controllers need
-owner-specific IDs, conditional generations, and permission to replace only
-their own overlay so that the last GUI to connect cannot overwrite every other
-computer.
+The loader deduplicates enabled domains, runs no more than eight resolver jobs
+at once, and stops each lookup after five seconds. A refresh prefers a fresh
+validated answer but reuses the prior validated cache when that lookup fails.
+It then serializes one bounded restore document that declares only the
+unreferenced inactive A/B chain. After topology, memory, and deadline checks,
+the helper dry-runs the document with `iptables-restore --noflush --test`,
+rechecks the guards, commits the same document once with `--noflush`, and reads
+back the exact rule count and reference topology before publishing the A/B
+jump. Any rejection leaves the previous effective policy active.
 
-The intended UI separates:
+To enable reboot restoration safely:
 
-- **Local library**
-- **Persistent router core**
-- **This computer's RAM overlay**
-- **Other controller overlays**
-- **Effective router policy**
+1. Load and verify the overlay manually once.
+2. Confirm the returned source/MAC, owner, generation, and hash.
+3. Enable **Restore this computer's RAM overlay after router reboot**.
+4. Reboot the router while the GUI is closed and verify core-only service.
+5. Open the GUI and verify one restore for the new epoch.
+6. Compare the complete NVRAM digest before and after; an overlay operation
+   must not change it.
 
-Core-only operation after a reboot is an amber “overlay waiting for restore”
-state, not a red failure. Red is reserved for a missing expected core, a failed
-restore, or degraded fail-closed health. Frequent SSH polling is unnecessary;
-startup, bounded retry when the router is still booting, Windows network-change
-events, and manual refresh are sufficient.
+Core-only operation after reboot is an amber “overlay waiting for restore”
+state, not a red failure. Red is reserved for core drift/corruption, failed
+restore, binding mismatch, or degraded fail-closed health.
 
-The canonical engineering proposal is
+The canonical engineering reference is
 [Hybrid policy storage](https://github.com/lachlanchen/astrill-lazy-router/blob/main/docs/HYBRID_POLICY_STORAGE.md).
 
 ## Optional Router Companion
@@ -368,26 +421,77 @@ When the optional DD-WRT companion is wanted, open **Router**, select
 Cancel is the default. On a fresh profile that confirmation also turns off the
 local read-only guard; a failed installation restores the guard.
 
-The confirmed installation writes the validated companion package, startup
-hook, watchdog, routes, and MyPage entries. It does not change Astrill account
-credentials or the selected endpoint. Applying routing policies is another
-separately confirmed action; merely editing local policies does not change
-traffic.
+The confirmed installation writes the validated base companion package,
+startup hook, watchdog, routes, and MyPage entries. Version and package MD5
+must both match. Before the first write, the installer projects package/key
+growth—including key names and terminators—and compressed-rule migration
+against the 2 KiB NVRAM reserve. Under the same controller lock used by policy
+writes, it compare-and-swap checks the complete snapshot and repeats the live
+headroom calculation immediately before mutation. After bootstrap it
+independently decodes the committed core as a clean reboot would. If bootstrap
+or verification fails, guarded recovery restores the old chunks, metadata,
+rule records, startup/MyPage values, commits once, and reconstructs the prior
+runtime from the locally validated captured package through the current
+serialized recovery logic; it refuses to overwrite a newer state.
 
-After a router reboot, the companion's router-local startup hook and watchdog
-maintain or reconstruct its runtime from the validated package retained in
-NVRAM; this does not depend on desktop polling. The Windows app inspects the
-result on its next startup read or manual **Refresh router** action; other
-pages load only their own data when first needed. If the router retained
-neither the persistent markers nor runtime, the desktop falls back to usable
-native-only mode and leaves **Install / upgrade** available. An unreachable
-router does not trigger that fallback. Missing, stale, or inconsistent
-packages are never silently installed or persistently rewritten.
+The installer normalizes the bootstrap source, deterministically gzips and
+base64-encodes it, and stores only that encoded payload. Its MD5 covers the
+encoded payload plus one canonical trailing newline. At boot, the launcher
+captures the encoded payload and digest once, rejects blank or malformed
+values, hashes that canonical captured payload, decodes the same payload
+through `uudecode` and gzip, rejects an empty script, and executes it.
+The bootstrap rechecks the stored payload identity before and after it
+acquires the controller lock, verifies the reconstructed package archive,
+extracts to a private staging directory, publishes each runtime file by atomic
+rename, and writes the running package marker last. It never verifies one
+NVRAM read and decodes or executes another.
 
-### Companion 0.2.5 policy safety and recovery
+Failed-upgrade rollback restores the exact NVRAM snapshot, then uses the
+desktop-shipped current bootstrap in serialized recovery mode. It binds the
+expected old version, package MD5, and canonical stored-bootstrap MD5, rechecks
+them before and under the lock, verifies and stages the captured package, and
+starts the restored controller. Legacy status without a package marker is
+accepted only when every restored runtime file matches the validated archive.
+
+Install, upgrade, policy mutation, RAM-helper publication, and **Restore
+Astrill Only** share the same controller lock. Removal stops the runtime,
+captures exact NVRAM bytes and every numbered package chunk, then reacquires
+the lock and refuses any snapshot or residue change before mutation. It
+commits and verifies the uninstalled state and audits the owned watchdog,
+chains, policy rules, tables, startup hook, MyPage commands, NVRAM keys,
+chunks, and runtime residue before the GUI records native-only mode. A failed
+locked transaction attempts exact same-session NVRAM restoration.
+
+Installation does not change Astrill account credentials or the selected
+endpoint. Replacing the core or loading an overlay is another separately
+confirmed action; merely editing local policies does not change traffic.
+
+After reboot, the base companion reconstructs the verified package and
+persistent core without a desktop. The Windows app inspects the result at
+startup, on a relevant network-change event, or on manual **Refresh router**.
+It treats the package as current only when version, package and
+stored-bootstrap-payload digests, stored chunk/bootstrap integrity, persistent
+hooks, and the running package marker all agree.
+If opted in, it uploads the RAM-only hybrid helper and restores only its own
+missing overlay once for the new runtime epoch. A saved failed-attempt epoch
+prevents relaunch from becoming a retry loop.
+
+The router watchdog never periodically rebuilds an active workstation overlay.
+Overlay DNS and the batched inactive-chain load run only on an explicit load,
+this one-shot startup/network restoration, or a manual restore/reload. A
+core-only policy can retain its lightweight 30-cycle refresh while no overlay
+is active.
+
+If the router retained neither persistent markers nor runtime, the desktop
+falls back to usable native-only mode and leaves **Install / upgrade**
+available. An unreachable router does not trigger that fallback. Missing,
+stale, fingerprint-mismatched, or inconsistent packages are never silently
+installed or persistently rewritten.
+
+### Companion 0.2.11 policy safety and recovery
 
 Astrill creates its native policy rules dynamically, so a fixed companion
-priority is not safe. Before a managed connect or switch, companion `0.2.5`
+priority is not safe. Before a managed connect or switch, companion `0.2.11`
 removes only its exact mark/mask/table signatures and enables a VPN-mark
 filter guard. After `tun0` and Astrill's native rules stabilize, it allocates
 one free adjacent Direct/VPN pair immediately ahead of the observed native
@@ -407,8 +511,9 @@ undercut the recorded pair, the watchdog removes the owned pair, records
 lower preferences on every 60-second cycle. Observing the tunnel down clears
 that temporary marker; an explicit managed connect can stop/start Astrill once
 and rebase safely. The watchdog also reclaims a dead or missing-PID lock,
-refreshes domains every 30 cycles (about 30 minutes), and does not require
-desktop polling.
+refreshes a core-only policy every 30 cycles (about 30 minutes) only while no
+overlay is active, and does not require desktop polling. Active overlays are
+explicit/one-shot snapshots and are not rebuilt on that cadence.
 
 Cleanup scans only exact companion signatures, attempts every mangle, filter,
 RPDB, and dedicated-table object, and returns failure if anything remains. An
@@ -588,7 +693,45 @@ snapshot therefore did not demonstrate a failed endpoint connection. Use the
 app's **Start automatically after router boot** control and verify its router
 readback when automatic reconnection is wanted.
 
-### 2026-07-30 verified deployment
+### Current 2026-07-30 companion 0.2.11 hybrid deployment
+
+The persistent package installed from the current source is 19,960 bytes,
+26,616 base64 bytes, and 15 NVRAM chunks. Its MD5 is
+`3552747bcb9a06a8f6b64dcbb1ce0675`; its SHA-256 is
+`2f0dbbda03af55a54ebf75fa6a06d2f47ffcd071310082544202edac4422a4be`.
+The locked installer preflight started at 3,115 free NVRAM bytes, projected 608
+bytes of growth and 2,507 free, and observed 2,494 free after reboot. The final
+446-byte margin remained above the required 2,048-byte reserve.
+
+The generation-1 persistent core contained three origins, 41 rows, 4,135
+bytes, and hash `md5:b9651667705f05dbd97019aa529bc256`. The Windows
+controller loaded 85 origins as a generation-1, 275-row/24,551-byte overlay
+with hash `md5:6d6fe09c400bb103e0af5a168236f1d6`, source
+`192.168.1.166/32`, and MAC `54:bf:64:80:aa:23`. The resulting 316-row,
+38,455-byte effective document had hash
+`md5:383499271b38e263b709040abbed1da8`.
+
+The first large load exceeded the original 120-second helper deadline and
+failed safely without replacing the active policy. With a 240-second router
+deadline and 330-second Windows allowance, the manual load completed in 277.82
+seconds including client work. That DNS snapshot produced 694 generated
+matches and 1,394 chain rules. Both topology guards read one active reference
+and no inactive reference. Single-process validation plus committed-effective
+readback reduced normal status from more than 90 seconds to about seven
+seconds.
+
+Physical reboot created runtime epoch
+`c838dc8397a57cd936a1f9e7e3649caa`. The router activated the core by itself and
+cleared the RAM helper and overlay as designed. The opted-in Windows app then
+staged the helper and restored its overlay exactly once in about 200 seconds;
+the GUI remained responsive, both saved epoch fields matched, and no error was
+recorded. Fresh DNS produced 693 generated matches and 1,392 chain rules, one
+normal DNS-time rule pair fewer than before reboot without changing the
+effective document hash. Final status showed one active reference, no inactive
+reference, no transaction residue, 2,494 free NVRAM bytes, and Astrill
+disconnected.
+
+### Historical 2026-07-30 companion 0.2.5 deployment
 
 The finalized router archive was 16,598 bytes in 13 NVRAM chunks. A full NVRAM
 and runtime backup was captured while Astrill was down before upgrading. The
@@ -612,6 +755,10 @@ retained, and policy health ready. The rebuilt Windows `0.2.12` app was
 installed and opened with no console child. Desktop and login-startup
 shortcuts target the new executable, and the legacy Start Menu shortcut is
 absent.
+
+This section is retained as earlier acceptance evidence; the current
+`0.2.13`/`0.2.11` physical-reboot and one-shot-overlay result is recorded
+immediately above.
 
 ## E4200 2.4 GHz Deep Check
 
