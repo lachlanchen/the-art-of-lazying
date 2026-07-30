@@ -8,7 +8,7 @@ machine-specific SSH fingerprints.
 
 ## Current Version And Paths
 
-The source snapshot documented here reports application version `0.2.8` and
+The source snapshot documented here reports application version `0.2.9` and
 router companion version `0.2.3`.
 
 | Artifact | Default path |
@@ -188,6 +188,36 @@ be off and the companion to be healthy, and asks for a Cancel-default
 confirmation. The companion reconnects DD-WRT's one shared tunnel and restores
 the previous settings if the new endpoint fails. This action does not install
 a VPN or change local routing on the Windows PC.
+
+Version `0.2.9` adds a **Favorite** column backed by DD-WRT's native Astrill
+favorite list. The app reads it once after the endpoint catalog loads, when
+**Sync favorites** is selected, and from completed-action readbacks. These
+reads are event-driven; there is no recurring favorite or router-status poll.
+
+To change a favorite:
+
+1. Turn off the read-only guard only when router writes are intended.
+2. Load **Endpoints**, select **Sync favorites**, and choose an endpoint.
+3. For a new favorite, choose a supported protocol. Select **Add selected
+   favorite**; for an existing favorite, select **Remove selected favorite**.
+4. Review the Cancel-default confirmation, approve it, and wait for the
+   verified DD-WRT readback.
+
+Adding records the selected protocol and its default endpoint port. Removing
+matches the server ID, so it does not depend on the selected protocol. Each
+confirmed change first reads the latest router value, preserves every other
+favorite and its order, and changes only `astrill_favlist`. DD-WRT compares
+that fresh value before writing, commits once, and the app reads it back
+exactly. A concurrent change fails safely and asks for another sync instead of
+overwriting it.
+
+Malformed favorite data is preserved and disables editing. Add/remove is also
+disabled while the **Astrill** page has unsaved edits; save or reload that
+draft first. Favorite changes do not require the companion, reconnect or
+switch the active tunnel, run a latency test, change Windows routing, or start
+background monitoring. Ubuntu keeps its existing Favorite switch in the
+Connection view; the dedicated Favorite column described here is the Windows
+workflow.
 
 The page also has a separate manual **Test PC latency** action for the selected
 endpoint, currently visible endpoints, or all loaded endpoints. It performs
