@@ -8,8 +8,8 @@ machine-specific SSH fingerprints.
 
 ## Current Version And Paths
 
-The source snapshot documented here reports application version `0.2.9` and
-router companion version `0.2.4`.
+The source snapshot documented here reports application version `0.2.12` and
+router companion version `0.2.5`.
 
 | Artifact | Default path |
 | --- | --- |
@@ -202,36 +202,55 @@ Policies**. **Suggested** uses each catalog entry's recommended route; the
 other two override the selected services as one batch.
 
 Selection alone does not create a policy. **Add to Policies** writes the
-selection to the Windows configuration, and **Apply policies** is a separate,
-confirmed router operation. The Policies page reports these two states as
-**Local / applied policies**:
+selection to the Windows configuration. **Apply policies** and **Apply
+selected** are separate, confirmed router operations:
 
-- **Local** is the enabled rule count saved in
-  `%LOCALAPPDATA%\Astrill Lazy Router\config.json`.
-- **Applied** is the origin count reported by the most recent router refresh.
-  A dash means that count has not been read yet.
+- **Apply policies** compiles every saved local record, including disabled
+  records, and replaces the complete router document.
+- **Apply selected** compiles only the selected policy rows and makes that set
+  the complete router document. Unselected policies remain saved on Windows.
+
+The router accepts at most 6,144 compiled bytes. A service row can expand into
+many domain and literal-network rows, so the app preflights the exact compiled
+row and byte totals before any SSH write. An oversized full apply is disabled;
+select a smaller deliberate set and use **Apply selected**. Neither path
+silently truncates its scope, and a failed preflight leaves the previous router
+document active.
+
+The Policies page reports **Local / applied policies**. Companion `0.2.5`
+compares the exact enabled local and applied origin-ID sets and identifies
+missing or extra IDs; count-only comparison is retained only for an older
+companion whose status lacks rule detail. A dash means router state has not
+been read yet. Equal counts do not prove that the same policies are installed.
 
 This distinction explains a missing **UU Remote** policy seen during the July
 2026 check. The Windows configuration contained no rules, and both the
 companion rule table and native router list were empty. The policy therefore
 had not been saved or applied; it was not merely hidden by a stale GUI row.
 
-To add it correctly:
+To install the two narrow Direct policies used on this router:
 
 1. Open **Policies** and select **Add service...**, or open **Services**.
-2. Search for `UU Remote`.
-3. Check its row, or select it with the normal row-selection controls.
-4. Choose **Suggested**, **Direct**, or **Astrill**.
-5. Select **Add to Policies** and confirm that it appears on **Policies**.
-6. When the local rule is correct and router writes are intended, select
-   **Apply policies** and approve the separate router confirmation.
-7. Refresh the router and compare the local and applied counts.
+2. Search for `UU Remote`, select it, choose **Direct**, and use **Add to
+   Policies**.
+3. Repeat for `Nutstore (Jianguoyun)`.
+4. On **Policies**, select those two rows and choose **Apply selected**.
+5. Approve the separate summary only if it reports two enabled policies, 24
+   compiled rows, and 2,688 / 6,144 bytes.
+6. Refresh the router and verify that the applied IDs are
+   `uu-remote-18bc36c7` and `nutstore-jianguoyun-7ebf346c`.
+7. Reconnect only the affected applications if they retain old sessions; do
+   not flush all router connection tracking.
 
-After that workflow was used, the final live readback showed **UU Remote**
-saved locally and applied through companion `0.2.4`: one origin, 16 Direct
-address rules, zero Astrill/VPN address rules, and zero unresolved domains.
-The earlier empty state and this applied state were both real; the difference
-was the explicit **Add to Policies** and **Apply policies** actions.
+The maintained profiles include UU's observed
+`a56.gdl.netease.com` updater and Nutstore's documented
+`dav.jianguoyun.com` WebDAV service. Protocol and port remain unrestricted,
+and the literal UU networks remain narrow. UU Remote also uses dynamic UDP
+ICE, relay, and peer destinations that a destination-domain policy cannot
+promise to catch. A source-device Direct rule is the reliable broader
+fallback, but it bypasses every flow from that device. Use it only when that
+scope is acceptable; otherwise a process-aware device-local backend is needed.
+Do not add a hosting provider's broad networks merely to chase changing peers.
 
 If the row is still absent, inspect the local `rules` array before changing the
 router. Do not interpret selecting a catalog row, or merely opening the
@@ -264,7 +283,41 @@ native-only mode and leaves **Install / upgrade** available. An unreachable
 router does not trigger that fallback. Missing, stale, or inconsistent
 packages are never silently installed or persistently rewritten.
 
-### Companion 0.2.4 routing and connection fixes
+### Companion 0.2.5 policy safety and recovery
+
+Astrill creates its native policy rules dynamically, so a fixed companion
+priority is not safe. Before a managed connect or switch, companion `0.2.5`
+removes only its exact mark/mask/table signatures and enables a VPN-mark
+filter guard. After `tun0` and Astrill's native rules stabilize, it allocates
+one free adjacent Direct/VPN pair immediately ahead of the observed native
+minimum, verifies the installed rules and dedicated tables, and only then
+releases the guard.
+
+Table `213` must contain exactly one WAN default. While connected, table `212`
+contains the usable `tun0` default plus a worse-priority
+`blackhole default metric 32767`; while disconnected, the blackhole is its only
+route. The filter guard is enabled before every explicit stop. These layers
+keep VPN-targeted traffic fail-closed during tunnel loss instead of falling
+through to the main WAN route.
+
+If Astrill is restarted outside companion control and its new native rules
+undercut the recorded pair, the watchdog removes the owned pair, records
+`rpdb-rebase-required`, and reports degraded health. It does not keep choosing
+lower preferences on every 60-second cycle. Observing the tunnel down clears
+that temporary marker; an explicit managed connect can stop/start Astrill once
+and rebase safely. The watchdog also reclaims a dead or missing-PID lock,
+refreshes domains every 30 cycles (about 30 minutes), and does not require
+desktop polling.
+
+Cleanup scans only exact companion signatures, attempts every mangle, filter,
+RPDB, and dedicated-table object, and returns failure if anything remains. An
+upgrade aborts before extracting the replacement package when the old runtime
+cannot stop cleanly. The Windows app distinguishes a connected VPN from policy
+health, displays the native and owned preferences, table readiness,
+fail-closed state, rebase state, and last reconciliation error, and never calls
+a present-but-degraded runtime ready.
+
+### Historical companion 0.2.4 routing and connection fixes
 
 The live router exposed two concrete reliability defects that were separate
 from the still-unreproduced 2.4 GHz radio problem.
@@ -434,12 +487,30 @@ snapshot therefore did not demonstrate a failed endpoint connection. Use the
 app's **Start automatically after router boot** control and verify its router
 readback when automatic reconnection is wanted.
 
-After the controlled 28.4-second connection test, the user-requested final
-state was restored and verified: disconnected, `astrill_autostart=0`, no
-`tun0`, and no Astrill OpenVPN process. The saved endpoint remained intact and
-the applied UU Remote policy still reported one origin and 16 Direct address
-rules. Disconnecting the tunnel therefore did not remove the policy, and the
-disabled autostart will not silently reconnect it after the next router boot.
+### 2026-07-30 verified deployment
+
+The finalized router archive was 16,598 bytes in 13 NVRAM chunks. A full NVRAM
+and runtime backup was captured while Astrill was down before upgrading. The
+installed companion then reported `0.2.5`, healthy/ready, with one watchdog,
+both dedicated tables ready, the fail guard active, no owned RPDB rules, and
+8,935 NVRAM bytes free.
+
+The selected UU plus Nutstore document installed exactly two enabled origins:
+24 Direct rows, 2,688 bytes, 43 resolved addresses, and zero unresolved
+domains. The active Windows flows were UU Remote at
+`223.252.194.149:443` and Nutstore at `160.19.208.29:80`. Controlled TCP
+probes incremented their Direct mark/return counters. Two managed connects
+both produced the same verified ordering: Direct `32762`, VPN-policy `32763`,
+and native Astrill `32764`. Table `213` pointed to `vlan2`; connected table
+`212` contained the `tun0` route plus the metric-32767 blackhole fallback.
+
+The final requested state was restored and checked again after watchdog and
+GUI reconciliation: Astrill disconnected, no `tun0` or owned RPDB rules,
+blackhole-only table `212`, filter fail-closed active, both applied origins
+retained, and policy health ready. The rebuilt Windows `0.2.12` app was
+installed and opened with no console child. Desktop and login-startup
+shortcuts target the new executable, and the legacy Start Menu shortcut is
+absent.
 
 ## E4200 2.4 GHz Deep Check
 
@@ -506,6 +577,9 @@ Start Menu shortcuts but preserves unrelated shortcuts, configuration, and SSH
 keys. Review and remove retained configuration or keys manually only when they
 are no longer needed.
 
-The canonical, more detailed reference remains
-[docs/WINDOWS_APP.md](https://github.com/lachlanchen/astrill-lazy-router/blob/main/docs/WINDOWS_APP.md)
+The canonical, more detailed references remain
+[the Windows application guide](https://github.com/lachlanchen/astrill-lazy-router/blob/main/docs/WINDOWS_APP.md),
+[the rule model](https://github.com/lachlanchen/astrill-lazy-router/blob/main/docs/RULE_MODEL.md),
+and
+[the router installation guide](https://github.com/lachlanchen/astrill-lazy-router/blob/main/docs/ROUTER_INSTALL.md)
 in the Astrill Lazy Router repository.
