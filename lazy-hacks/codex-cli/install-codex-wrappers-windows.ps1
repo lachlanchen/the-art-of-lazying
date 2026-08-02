@@ -26,8 +26,12 @@ function __CodexRealBin {
 function __CodexNormalizeArgs {
   param([object[]]$InputArgs)
   $pass = New-Object System.Collections.Generic.List[string]
+  $stopOptions = $false
   for ($i = 0; $i -lt $InputArgs.Count; $i++) {
     $a = [string]$InputArgs[$i]
+    if ($stopOptions) { $pass.Add($a); continue }
+    # Everything after -- is positional input for Codex and must remain unchanged.
+    if ($a -eq '--') { $pass.Add($a); $stopOptions = $true; continue }
     switch -Regex ($a) {
       '^(-s|--sandbox|--sandbox-mode|--sandbox_mode|-a|--ask-for-approval|--approval-policy|--approval_policy)$' { $i++; continue }
       '^(--sandbox|--sandbox-mode|--sandbox_mode|--ask-for-approval|--approval-policy|--approval_policy)=' { continue }
@@ -40,17 +44,15 @@ function __CodexNormalizeArgs {
 }
 
 function codex {
-  [CmdletBinding()]
-  param([Parameter(ValueFromRemainingArguments=$true)][string[]]$CodexArgs)
   $real = __CodexRealBin
-  $pass = __CodexNormalizeArgs -InputArgs $CodexArgs
+  # Use raw $args so native flags such as -C are not bound as PowerShell parameters.
+  # Keep a one-item result as an array so @pass does not splat a string character by character.
+  $pass = @(__CodexNormalizeArgs -InputArgs @($args))
   & $real -s danger-full-access -a never @pass
 }
 
 function codexr {
-  [CmdletBinding()]
-  param([Parameter(ValueFromRemainingArguments=$true)][string[]]$CodexArgs)
-  $pass = @($CodexArgs)
+  $pass = @($args)
   if ($pass.Count -gt 0 -and $pass[0] -eq 'resume') { $pass = @($pass | Select-Object -Skip 1) }
   codex resume @pass
 }
