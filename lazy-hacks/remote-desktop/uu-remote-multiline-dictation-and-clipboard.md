@@ -24,6 +24,56 @@ the long-dictation extension is
 The change restarts only `uu-remote-bridge.service`. It does not restart XRDP,
 Xorg, GNOME Shell, or applications on the shared desktop.
 
+## September 5 regression: two further causes, reproduced and repaired
+
+The latest repair is bridge commit
+[`641357d`](https://github.com/lachlanchen/uu-remote-ubuntu-bridge/commit/641357d).
+It fixes two distinct problems without changing keyboard layouts, disabling
+the clipboard manager, modifying the network, or adding an input-retry loop.
+
+| Symptom | Reproduced cause | Correction |
+| --- | --- | --- |
+| Some Chinese/smart-quote commits disappear | The helper killed its old clipboard owner first. GNOME restored its cached selection during the owner=None gap and displaced the new owner. | Establish the new CLIPBOARD/PRIMARY owners before retiring the old pair. |
+| Long dictation erases the draft but does not replace it | 300 deliberately paced Backspace pairs took about 1.5 seconds, exceeding the broker's fixed one-second socket deadline. | Budget the response deadline for selection handling and the requested number of paced edits. |
+
+Evidence came from an owned temporary editor, not the user's existing typing
+field. Before the ownership fix, shared-desktop trials delivered 8/10, 6/10,
+and 6/10 CJK commits. The clipboard owner exited normally before paste;
+content-free XRes owner-to-PID lookup identified GNOME Shell as its replacement.
+After the fix, the same desktop passed 10/10 and then 30/30 commits exactly.
+An isolated XFixes restoration fixture also reproduces the old error `31` and
+passes with the new ownership handoff.
+
+The separate long-revision test first failed with `count=608 result=0 error=1236`.
+It now completes `608/608 error=0` and preserves the unrelated text preceding
+dictation. A timeout budget is not an added delay: normal key/mouse batches
+retain their one-second bound; semantic requests allow three seconds; each
+paced Backspace release adds five milliseconds. The existing 2,048-record
+limit remains. Ambiguous input is never replayed.
+
+Validation passed 137 unit tests and the direct-X11 text, split-display RDP
+semantic text, one-way VNC clipboard, and Japanese-layout VNC symbol tests.
+Chinese, multiline revisions, smart punctuation, split emoji, and a
+1,000-character Unicode commit remained exact.
+
+On the affected workstation only the two input binaries were replaced, with
+private backups and a rollback guard. A UU-bridge-only restart loaded them;
+the existing GNOME/Xorg processes and open applications remained intact. The
+enabled bridge service loads these files after reboot. Its UU product version,
+login state, desktop target, physical-key path and audio settings were unchanged.
+The already verified two-way shell route also survived this local UU restart.
+
+Operational caveats: a two-binary deployment is **not** a full runtime refresh,
+so do not overwrite its whole-source digest. The local verifier still flags
+an unrelated pinned hash for the unused Windows FreeRDP binary; the active
+VNC/direct-X11 checks pass. Do not replace working RDP software just to silence
+that unrelated check. Actual phone/controller acceptance remains important;
+the automated fixtures do not make arbitrary focus changes or interrupted GUI
+edits atomic.
+
+The reproducible tests, implementation and bounded diagnostic details are in
+[the bridge's semantic-text guide](https://github.com/lachlanchen/uu-remote-ubuntu-bridge/blob/main/docs/semantic-text-and-clipboard.md).
+
 ## Symptom and Control Experiment
 
 The useful comparison was:
@@ -94,10 +144,11 @@ content-free broker log could correctly report
 quotation appeared to become a paste of unrelated text. It was not a UU
 dictation, network, XRDP, locale, or clipboard-history failure.
 
-The helper now starts two independently tracked `xclip` owners, verifies that
+The helper starts two independently tracked `xclip` owners, verifies that
 both selections changed to new non-empty owners through X11, and emits the
-paste chord only after both checks pass. Replacing a semantic commit stops the
-two previous scoped owners first. Shutdown also terminates both safely. If
+paste chord only after both checks pass. A replacement now establishes the
+new pair before retiring the previous scoped owners, preventing the GNOME
+restoration race described above. Shutdown terminates both safely. If
 either owner exits, times out, or cannot be verified, the operation fails
 closed without issuing `Shift+Insert`.
 
