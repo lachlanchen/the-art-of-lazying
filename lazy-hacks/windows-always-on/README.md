@@ -44,6 +44,48 @@ Restore the recorded pre-apply state:
 
 ## What Apply changes
 
+### Update-only scope for a dedicated VM
+
+Use `-UpdatesOnly` when only Windows OS updates and upgrades should become
+manual. It leaves power plans, display, sleep, screen saver, inactivity lock,
+hibernate, and crash settings unchanged:
+
+```powershell
+.\lazy-hacks\windows-always-on\scripts\Configure-WindowsAlwaysOn.ps1 -Mode Status -UpdatesOnly
+.\lazy-hacks\windows-always-on\scripts\Configure-WindowsAlwaysOn.ps1 -Mode Apply -UpdatesOnly
+.\lazy-hacks\windows-always-on\scripts\Configure-WindowsAlwaysOn.ps1 -Mode Restore -UpdatesOnly
+```
+
+The separate rollback directory is
+`C:\ProgramData\LazyingArt\WindowsManualUpdates`. Always repeat `-UpdatesOnly`
+for status, apply, and restore. Mixing scopes or borrowing another scope's
+backup is rejected. Old full-scope backups remain supported. Do not manage the
+same update policies concurrently with both scopes; they have separate backups,
+not an ownership-merging mechanism.
+
+Let an already-started update finish first. Check pending reboot markers before
+and after applying: policy changes cannot cancel an update/reboot already
+committed by servicing. Do not kill servicing, clear pending markers, or reboot
+a live chat VM just to test persistence. These are persistent registry policies,
+not a time-limited pause. They do not disable app-specific update paths or
+Microsoft Defender protection.
+
+For a verified administrative SSH session, use
+`powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ...`.
+This bypass applies only to that process, not the machine execution policy.
+
+The regression test uses disposable HKCU keys and temporary state, with power
+mutations and policy refresh mocked; it needs no Pester installation:
+
+```powershell
+.\lazy-hacks\windows-always-on\scripts\Test-WindowsUpdatesOnly.ps1
+```
+
+See the [Tiny11 WeCom maintenance report](./reports/2026-09-06-tiny11-wecom-manual-updates.md)
+for the verified deployment and its pending-reboot limitation.
+
+### Full always-on scope (default)
+
 | Area | Result |
 | --- | --- |
 | Display | Normal and console-lock display timeouts are `0` on AC and DC power. |

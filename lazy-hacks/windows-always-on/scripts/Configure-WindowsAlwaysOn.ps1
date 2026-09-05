@@ -3,6 +3,8 @@ param(
     [ValidateSet("Apply", "Status", "Restore")]
     [string]$Mode = "Status",
 
+    [switch]$UpdatesOnly,
+
     [string]$StateRoot = "$env:ProgramData\LazyingArt\WindowsAlwaysOn",
 
     [string]$BackupPath = "",
@@ -13,6 +15,13 @@ param(
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = "Stop"
 $scriptFilePath = $PSCommandPath
+$scope = "AlwaysOn"
+if ($UpdatesOnly) {
+    $scope = "UpdatesOnly"
+    if (-not $PSBoundParameters.ContainsKey("StateRoot")) {
+        $StateRoot = "$env:ProgramData\LazyingArt\WindowsManualUpdates"
+    }
+}
 
 $powerSettings = @(
     [pscustomobject]@{
@@ -118,6 +127,9 @@ function Invoke-ElevatedSelf {
     )
     if ($BackupPath) {
         $arguments += @("-BackupPath", ('"{0}"' -f $BackupPath))
+    }
+    if ($UpdatesOnly) {
+        $arguments += "-UpdatesOnly"
     }
     if ($ResultPath) {
         $arguments += @("-ResultPath", ('"{0}"' -f $ResultPath))
@@ -282,6 +294,7 @@ function Assert-RollbackBackup {
     if ([int]$Backup.SchemaVersion -ne 1) {
         throw "Unsupported rollback-backup schema version."
     }
+    Assert-StateScope -State $Backup
     if ([string]$Backup.OriginalActivePowerSchemeGuid -notmatch "^[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$") {
         throw "Rollback backup contains an invalid original power-scheme GUID."
     }
@@ -290,8 +303,9 @@ function Assert-RollbackBackup {
     $expected = @(Get-DesiredRegistryValues | ForEach-Object { "$($_.Path)|$($_.Name)" })
     $actual = @($snapshots | ForEach-Object { "$($_.Path)|$($_.Name)" })
     $missing = @($expected | Where-Object { $actual -notcontains $_ })
-    if ($missing.Count -gt 0) {
-        throw "Rollback backup is incomplete; missing $($missing -join ', ')."
+    $extra = @($actual | Where-Object { $expected -notcontains $_ })
+    if ($missing.Count -gt 0 -or $extra.Count -gt 0 -or $actual.Count -ne $expected.Count) {
+        throw "Rollback backup does not match the managed registry values for scope '$scope'."
     }
     foreach ($snapshot in $snapshots) {
         $snapshotProperties = @($snapshot.PSObject.Properties.Name)
@@ -303,6 +317,18 @@ function Assert-RollbackBackup {
         if ($snapshot.Exists -and [string]$snapshot.Kind -notin @("DWord", "String")) {
             throw "Rollback registry kind '$($snapshot.Kind)' is unsupported."
         }
+    }
+}
+
+function Assert-StateScope {
+    param([Parameter(Mandatory = $true)]$State)
+
+    $savedScope = "AlwaysOn"
+    if ($null -ne $State.PSObject.Properties["Scope"]) {
+        $savedScope = [string]$State.Scope
+    }
+    if ($savedScope -ne $scope) {
+        throw "State scope '$savedScope' does not match '$scope'; use its original scope and state directory."
     }
 }
 
@@ -335,6 +361,10 @@ function Get-DesiredRegistryValues {
         [pscustomobject]@{ Path = "HKCU:\Software\Policies\Microsoft\Windows\Control Panel\Desktop"; Name = "ScreenSaveActive"; Kind = "String"; Data = "0" },
         [pscustomobject]@{ Path = "HKCU:\Software\Policies\Microsoft\Windows\Control Panel\Desktop"; Name = "ScreenSaverIsSecure"; Kind = "String"; Data = "0" }
     )
+
+    if ($UpdatesOnly) {
+        return @($desired | Where-Object { $_.Path -eq $windowsUpdatePolicy -or $_.Path -eq $automaticUpdatePolicy })
+    }
 
     foreach ($definition in $powerSettings | Where-Object MachinePolicy) {
         $path = Join-Path $powerPolicyBase $definition.Setting
@@ -387,6 +417,9 @@ function Get-WindowsAlwaysOnStatus {
     }
 
     $configurationCompliant = $powerCompliant -and -not $hibernateEnabled -and $registryCompliant
+    if ($UpdatesOnly) {
+        $configurationCompliant = $registryCompliant
+    }
     $pendingRebootDetected = [bool](
         $pendingReboot.ComponentBasedServicing -or
         $pendingReboot.WindowsUpdate -or
@@ -396,6 +429,8 @@ function Get-WindowsAlwaysOnStatus {
     return [ordered]@{
         SchemaVersion = 1
         CheckedAt = [DateTimeOffset]::Now.ToString("o")
+        Scope = $scope
+        PowerSettingsManaged = -not [bool]$UpdatesOnly
         Computer = $env:COMPUTERNAME
         CurrentUserSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
         ActivePowerSchemeGuid = $activeScheme
@@ -431,6 +466,7 @@ function Save-InitialBackup {
     $hibernateValue = (Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name HibernateEnabled -ErrorAction SilentlyContinue).HibernateEnabled
     $backup = [ordered]@{
         SchemaVersion = 1
+        Scope = $scope
         CreatedAt = [DateTimeOffset]::Now.ToString("o")
         Computer = $env:COMPUTERNAME
         UserSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
@@ -497,6 +533,7 @@ function Invoke-Apply {
         if ([int]$existingState.SchemaVersion -ne 1) {
             throw "Unsupported install-state schema version."
         }
+        Assert-StateScope -State $existingState
         if ($existingState.Computer -ne $env:COMPUTERNAME) {
             throw "The install state belongs to computer '$($existingState.Computer)'."
         }
@@ -525,13 +562,17 @@ function Invoke-Apply {
         throw "Install state and rollback backup disagree about the original power scheme."
     }
 
-    $schemeGuid = Get-OrCreateAlwaysOnScheme -SourceSchemeGuid $backup.OriginalActivePowerSchemeGuid
+    $schemeGuid = $null
+    if (-not $UpdatesOnly) {
+        $schemeGuid = Get-OrCreateAlwaysOnScheme -SourceSchemeGuid $backup.OriginalActivePowerSchemeGuid
+    }
     $createdAt = [DateTimeOffset]::Now.ToString("o")
     if ($existingState -and $existingState.CreatedAt) {
         $createdAt = [string]$existingState.CreatedAt
     }
     $state = [ordered]@{
         SchemaVersion = 1
+        Scope = $scope
         CreatedAt = $createdAt
         LastAppliedAt = [DateTimeOffset]::Now.ToString("o")
         Computer = $env:COMPUTERNAME
@@ -541,18 +582,22 @@ function Invoke-Apply {
     }
     Write-JsonFile -Value $state -Path $installStatePath
 
-    foreach ($definition in $powerSettings) {
-        Invoke-PowerCfg -Arguments @("/setacvalueindex", $schemeGuid, $definition.Subgroup, $definition.Setting, "0") | Out-Null
-        Invoke-PowerCfg -Arguments @("/setdcvalueindex", $schemeGuid, $definition.Subgroup, $definition.Setting, "0") | Out-Null
+    if (-not $UpdatesOnly) {
+        foreach ($definition in $powerSettings) {
+            Invoke-PowerCfg -Arguments @("/setacvalueindex", $schemeGuid, $definition.Subgroup, $definition.Setting, "0") | Out-Null
+            Invoke-PowerCfg -Arguments @("/setdcvalueindex", $schemeGuid, $definition.Subgroup, $definition.Setting, "0") | Out-Null
+        }
+        Invoke-PowerCfg -Arguments @("/setactive", $schemeGuid) | Out-Null
+        Invoke-PowerCfg -Arguments @("/hibernate", "off") | Out-Null
     }
-    Invoke-PowerCfg -Arguments @("/setactive", $schemeGuid) | Out-Null
-    Invoke-PowerCfg -Arguments @("/hibernate", "off") | Out-Null
 
     foreach ($target in $desired) {
         Set-RegistryValue -Path $target.Path -Name $target.Name -Kind $target.Kind -Data $target.Data
     }
 
-    & "$env:SystemRoot\System32\rundll32.exe" user32.dll,UpdatePerUserSystemParameters 1, True | Out-Null
+    if (-not $UpdatesOnly) {
+        & "$env:SystemRoot\System32\rundll32.exe" user32.dll,UpdatePerUserSystemParameters 1, True | Out-Null
+    }
     $policyRefresh = Invoke-PolicyRefresh
     $status = Get-WindowsAlwaysOnStatus
     if (-not $status.ConfigurationCompliant) {
@@ -591,6 +636,15 @@ function Get-RestoreVerification {
         }
     }
 
+    if ($UpdatesOnly) {
+        return [ordered]@{
+            RegistryRestored = $registryMismatches.Count -eq 0
+            RegistryMismatches = $registryMismatches
+            PowerSettingsManaged = $false
+            Verified = $registryMismatches.Count -eq 0
+        }
+    }
+
     $hibernateValue = (Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name HibernateEnabled -ErrorAction SilentlyContinue).HibernateEnabled
     $hibernateRestored = [bool]$hibernateValue -eq [bool]$Backup.HibernateEnabled
     $activeSchemeRestored = (Get-ActivePowerSchemeGuid) -eq [string]$Backup.OriginalActivePowerSchemeGuid
@@ -616,6 +670,7 @@ function Invoke-Restore {
         if ([int]$installState.SchemaVersion -ne 1 -or $installState.Computer -ne $env:COMPUTERNAME) {
             throw "Install state is invalid or belongs to another computer."
         }
+        Assert-StateScope -State $installState
         $effectiveBackupPath = [IO.Path]::GetFullPath([string]$installState.BackupPath)
         if ($BackupPath -and [IO.Path]::GetFullPath($BackupPath) -ne $effectiveBackupPath) {
             throw "This installation is bound to backup '$effectiveBackupPath'; a different -BackupPath is unsafe."
@@ -638,7 +693,7 @@ function Invoke-Restore {
     if ($backup.UserSid -ne [Security.Principal.WindowsIdentity]::GetCurrent().User.Value) {
         throw "The backup belongs to a different Windows user."
     }
-    if (-not (Test-PowerSchemeExists -SchemeGuid $backup.OriginalActivePowerSchemeGuid)) {
+    if (-not $UpdatesOnly -and -not (Test-PowerSchemeExists -SchemeGuid $backup.OriginalActivePowerSchemeGuid)) {
         throw "Original power scheme $($backup.OriginalActivePowerSchemeGuid) no longer exists."
     }
 
@@ -646,17 +701,18 @@ function Invoke-Restore {
         Restore-RegistryValue -Snapshot $snapshot
     }
 
-    if ([bool]$backup.HibernateEnabled) {
-        Invoke-PowerCfg -Arguments @("/hibernate", "on") | Out-Null
-    } else {
-        Invoke-PowerCfg -Arguments @("/hibernate", "off") | Out-Null
+    if (-not $UpdatesOnly) {
+        if ([bool]$backup.HibernateEnabled) {
+            Invoke-PowerCfg -Arguments @("/hibernate", "on") | Out-Null
+        } else {
+            Invoke-PowerCfg -Arguments @("/hibernate", "off") | Out-Null
+        }
+        Invoke-PowerCfg -Arguments @("/setactive", [string]$backup.OriginalActivePowerSchemeGuid) | Out-Null
     }
-
-    Invoke-PowerCfg -Arguments @("/setactive", [string]$backup.OriginalActivePowerSchemeGuid) | Out-Null
 
     $removedScheme = $null
     $createdScheme = $null
-    if (Test-Path -LiteralPath $installStatePath) {
+    if (-not $UpdatesOnly -and (Test-Path -LiteralPath $installStatePath)) {
         $installState = Get-Content -LiteralPath $installStatePath -Raw | ConvertFrom-Json
         $candidate = [string]$installState.AlwaysOnPowerSchemeGuid
         $createdScheme = $candidate
@@ -666,7 +722,9 @@ function Invoke-Restore {
         }
     }
 
-    & "$env:SystemRoot\System32\rundll32.exe" user32.dll,UpdatePerUserSystemParameters 1, True | Out-Null
+    if (-not $UpdatesOnly) {
+        & "$env:SystemRoot\System32\rundll32.exe" user32.dll,UpdatePerUserSystemParameters 1, True | Out-Null
+    }
     $policyRefresh = Invoke-PolicyRefresh
     $verification = Get-RestoreVerification -Backup $backup -CreatedSchemeGuid $createdScheme
     if (-not $verification.Verified) {
