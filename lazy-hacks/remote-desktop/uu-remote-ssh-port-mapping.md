@@ -64,6 +64,71 @@ or start/restart services. Eight isolated helper tests cover this behavior,
 including not offering that hint for a missing device ID or a non-SSH service
 already occupying the port.
 
+## Durable agent messages without another service
+
+The bridge now includes `uu-link`, a private inbox/outbox over the existing
+OpenSSH aliases. Install only this standalone helper on both hosts to avoid
+restarting a working desktop:
+
+```bash
+# From the uu-remote-ubuntu-bridge checkout, on each host:
+install -m 0755 scripts/uu-link "$HOME/.local/bin/uu-link"
+
+# Workstation -> configured lab peer:
+printf '%s\n' 'Ready for your test. 中文 / 日本語 / "quotes"' | uu-link send lab
+
+# Lab: inspect the message; read prints terminal-safe JSON.
+uu-link inbox
+uu-link read MESSAGE_UUID
+
+# Lab -> its configured workstation peer:
+printf '%s\n' 'Test completed; here is my result.' |
+  uu-link send workstation --reply-to MESSAGE_UUID
+```
+
+The message is stored before the bounded SSH attempt. A successful receipt
+confirms its ID and SHA-256 digest. If connectivity fails, the original stays
+in the private outbox and can be retried with the same UUID:
+
+```bash
+uu-link outbox
+uu-link retry MESSAGE_UUID
+uu-link send lab --file /path/to/private-handoff.md --queue-only
+```
+
+Receiver retries deduplicate without overwriting another payload. Files are
+`0600` under `0700` directories in `~/.local/state/uu-link/`; do not upload
+them to public Git. No new daemon, network port, GUI input, password store,
+automatic recovery, or execution of message contents is introduced. A receipt
+is not a human/agent response; a paused agent must still be resumed and told
+to read its inbox. The Unix SSH account is the trust boundary, not the sender
+label written in a message. Keep shared private Markdown as an offline
+fallback. See the complete [agent-link guide](https://github.com/lachlanchen/uu-remote-ubuntu-bridge/blob/main/docs/agent-link.md).
+
+The 2026-09-05 live test installed identical helpers on both hosts and obtained
+actual receipts in both directions for English, Chinese, Japanese, emoji,
+quotes, and multiple lines. The return test was driven by the workstation
+over SSH, not represented as an independent response from the peer agent.
+Ten isolated message tests and all 121 repository tests passed. A later
+mapping drop also demonstrated the failure behavior: a new message stayed
+queued instead of being lost or triggering a desktop restart.
+
+### Do not confuse a short active pass with availability
+
+The resumed recovery later passed the peer's **36/36 strict two-way checks over
+433 seconds**, then disconnected again: the workstation return forward exited
+255 at 15:23:01 HKT and its UU mapping listener vanished. The local bridge,
+controller and server processes remained alive with unchanged identities.
+This happened before the intended idle acceptance, so that idle test could
+not be called a pass. The evidence establishes a vendor connection/mapping
+lifetime problem beyond SSH authentication; its precise trigger remained
+unconfirmed at this point. No `.bashrc` reload can restore a missing listener.
+
+The companion peer's separate `error=1113` Chinese input fault was repaired
+through a semantic clipboard route while preserving its RDP desktop and
+routine input path. That input repair does not imply that UU TCP mapping is
+stable; see [the semantic-text diagnosis](https://github.com/lachlanchen/uu-remote-ubuntu-bridge/blob/main/docs/semantic-text-and-clipboard.md).
+
 ## Quick use
 
 On the controller, after installing `scripts/uu-ssh` to `~/.local/bin/uu-ssh`:

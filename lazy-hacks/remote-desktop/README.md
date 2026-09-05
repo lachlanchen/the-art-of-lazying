@@ -8,6 +8,7 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
   - use UU TCP forwarding with native OpenSSH, dedicated keys, and simple aliases
   - distinguish native UU Terminal from port-mapped SSH and a full virtual LAN
   - prepare two-way access using one UU mapping and a reverse SSH channel
+  - exchange private agent messages with `uu-link`, confirmed receipts, and safe offline retry
   - preserve desktop ownership when UU prompts for takeover; hand off remaining acceptance
 
 - [physical-display-privacy-with-remote-desktops.md](./physical-display-privacy-with-remote-desktops.md)
