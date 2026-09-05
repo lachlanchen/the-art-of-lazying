@@ -1,8 +1,10 @@
 # Cloud relay for independent two-way SSH
 
-Status: design reviewed on 2026-09-05; **not deployed**. The existing UU route
-and desktop services remain unchanged. No cloud purchase is authorized by
-this plan.
+Status updated 2026-09-05: **cloud administration bootstrap verified; two-peer
+relay deployment pending endpoint enrollment**. Reusable implementation:
+[LazyTunnel](https://github.com/lachlanchen/LazyTunnel). The user supplied an
+already provisioned HNCloud server; the agent did not purchase anything.
+UU/RDP/VNC services and the desktop were not changed by cloud setup.
 
 ## Recommended small design
 
@@ -70,13 +72,11 @@ routing to **both** computers and bandwidth matter more than extra CPU.
 Bulk SCP/rsync throughput is limited by the slower path and relay bandwidth;
 all file data passes through the relay and may incur provider traffic charges.
 
-Confirm the exact provider and plan URL before purchasing. If the intended
-provider is Huawei Cloud, its official
-[EIP and security-group guidance](https://support.huaweicloud.com/eip_faq/faq_eip_0007.html)
-describes external reachability. Do not assume a differently named provider
-has the same plans or network behavior. Test the chosen region's route from
-both networks before a long commitment; a cloud hop is not automatically
-faster than UU's direct path.
+Confirm the exact provider and plan URL before purchasing. The selected provider
+here is **HNCloud / 华纳云**, not Huawei Cloud. Do not substitute another
+provider's control-panel or security-group instructions. Test the chosen
+region's route from both networks before a long commitment; a cloud hop is not
+automatically faster than UU's direct path.
 
 ## Commands installed now vs a later cutover
 
@@ -102,10 +102,48 @@ scp file.txt uu-7090:/remote/path/
 Shell syntax and `-G` resolved the same user, loopback22709, strict host key
 and dedicated key as `ssh uu-7090`; an extra ConnectTimeout argument also
 passed through correctly. No network connection is opened by `-G`, so that
-check does not claim a fresh end-to-end session succeeded. The existing
-mapping and owned return process were left running.
+check does not claim a fresh end-to-end session succeeded. At that initial
+check the mapping and return process were left running. A later user-confirmed
+UU takeover closed them; installing a shortcut cannot keep a vendor-owned
+mapping alive after a takeover.
 
 A future cloud deployment should first add distinct explicit aliases such as
 `edge-7090` / `edge-workstation`. Only after both directions, file transfer,
 restart recovery and concurrent desktop use pass should any default change.
 Keep the UU aliases intact and do not add a silent cross-transport fallback.
+
+## Bootstrap lessons from the first cloud server
+
+The small Ubuntu image was reachable through its provider console while
+external SSH22 timed out. Its native `ssh.socket` listened locally, but
+`ssh.service` had not yet started. A temporary alternate-port sshd initially
+failed with a missing privilege-separation runtime directory. Starting the
+native SSH service created that directory; a separately named temporary2222
+listener then worked. Never diagnose every timeout as a broken password.
+
+The provider's QEMU console also required explicit Shift key events: sending
+only uppercase or punctuation keysyms produced lowercase letters/base keys.
+A harmless visible test string confirmed this before the next password
+attempt. The fix was limited to that provider console's input transport, not
+a global desktop keyboard remap. Reinstalling had also changed the generated
+root password, so the current authenticated console was the source of truth.
+
+The host fingerprint was compared against the authenticated provider console
+before SSH bootstrap. A separate non-root administrator, sudo membership,
+dedicated local key and strong console/sudo password were created and tested.
+Only then was native SSH made persistent on22+2222 with key-only network login.
+The temporary daemon was stopped. A detached, validated socket cutover retained
+the previous configuration and a rollback path; no computer reboot was used.
+Available OpenSSH and sudo updates were installed and key access rechecked.
+
+Actual secrets remain outside Git. The user explicitly chose an owner-only
+private synchronized credential file; file permissions do not make cloud-sync
+storage end-to-end encrypted. Do not place credentials in OneTimeSync handoff
+notes, command arguments, screenshots, or public example configurations.
+
+The [LazyTunnel operator runbook](https://github.com/lachlanchen/LazyTunnel/blob/main/docs/operations.md)
+covers enrollment, separate keys, explicit plan/apply commands, private reverse
+listeners, known-host verification, limited reloads and rollback. On this date
+the cloud administrator path and renderer tests passed, but the peer's public
+enrollment packet had not arrived. Therefore bidirectional SSH, file transfer,
+carrier recovery and boot recovery were **not yet claimed as tested**.
