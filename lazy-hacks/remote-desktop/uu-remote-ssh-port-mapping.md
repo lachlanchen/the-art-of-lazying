@@ -2,6 +2,14 @@
 
 ## Result and limitation
 
+Convenience commands: `ssh-uu-7090` on the workstation and
+`ssh-uu-lachlanserver` on the peer. The workstation command now exists in
+`~/.local/bin`; it simply forwards to `ssh uu-7090` and accepts arguments.
+No shell reload or tunnel restart is needed. The old `ssh uu-7090` still works.
+For an independent cloud alternative, see the
+[cloud relay plan and exact shortcut source](cloud-ssh-relay-plan.md).
+The cloud design is not deployed and has not replaced the UU route.
+
 **Current operating route (later on 5 September 2026):** reverse the native UU
 mapping direction. The workstation where the user normally attaches a viewer
 originates the mapping to the peer, whose device card showed no other controller.
