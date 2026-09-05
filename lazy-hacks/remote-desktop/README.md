@@ -4,6 +4,12 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
 
 ## Files
 
+- [uu-remote-ssh-port-mapping.md](./uu-remote-ssh-port-mapping.md)
+  - use UU TCP forwarding with native OpenSSH, dedicated keys, and simple aliases
+  - distinguish native UU Terminal from port-mapped SSH and a full virtual LAN
+  - prepare two-way access using one UU mapping and a reverse SSH channel
+  - preserve desktop ownership when UU prompts for takeover; hand off remaining acceptance
+
 - [physical-display-privacy-with-remote-desktops.md](./physical-display-privacy-with-remote-desktops.md)
   - turn off Ubuntu and Windows physical monitors without suspending either computer
   - preserve XRDP, UU Remote, GNOME, applications, terminals, and window geometry
