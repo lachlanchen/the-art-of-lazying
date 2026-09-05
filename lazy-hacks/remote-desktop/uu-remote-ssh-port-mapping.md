@@ -140,6 +140,28 @@ must not silently replace it. A possible direct-only alternative is to reverse
 which host owns the native mapping, then use one SSH return forward; validate
 the chosen direction and avoid a second native rule on the return port.
 
+### Safely inspecting the existing panel
+
+The bridge intentionally restores relay focus once per second. Standard window
+activation can therefore appear broken unless a short console-focus lease is
+used. Do not stop the supervisor or create a competing desktop:
+
+```bash
+uu-remote-console focus-client
+# Inspect the actual Port Mapping panel; cancel any takeover prompt.
+uu-remote-console release-client
+```
+
+Always release the lease in an EXIT trap during automation. Record the original
+active relay window as an additional restore fallback. The improved helper
+ignores transient UU toasts and restores either the SDL/FreeRDP relay or the
+existing loopback RealVNC relay. Its old SDL-only lookup could return nonzero
+on VNC installations. The isolated tests cover both profiles and cleanup when
+no relay is found; the live VNC release test returned success, left no lease,
+and preserved the original active window. Only the helper script was deployed,
+with a private backup; no desktop/runtime restart was needed. All 124 repository
+tests passed after this focused correction.
+
 The companion peer's separate `error=1113` Chinese input fault was repaired
 through a semantic clipboard route while preserving its RDP desktop and
 routine input path. That input repair does not imply that UU TCP mapping is
