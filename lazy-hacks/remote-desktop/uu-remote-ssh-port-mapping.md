@@ -86,6 +86,31 @@ and controller-platform compatibility rejection. The exact live branch remains
 unproven, so do not reinstall or patch a working desktop merely from that generic
 message. A terminal UI is not automatically a binary-safe file-transfer channel.
 
+### Native-client comparison: a working mapping is not a standalone bridge fix
+
+A later bounded comparison used an already-authorized nearby Mac with signed
+native UU Remote 4.35.0. Its actual Port Mapping panel accepted one scratch
+rule to the remote Ubuntu's `127.0.0.1:22` without a takeover prompt. The
+listener bound to the Mac's loopback interface only. Through an existing
+trusted LAN SSH hop to that Mac, the companion Ubuntu verified the remote
+host key and public-key login. Five independent commands returned the expected
+identity and preserved exit statuses `0, 7, 0, 17, 0` exactly. Neither Ubuntu's
+bridge was restarted. This is peer-reported live evidence, not a local mock.
+
+This establishes a usable **Mac-assisted UU SSH route**, not a repair of
+Wine-to-Wine Terminal, a standalone two-Ubuntu connection, reboot persistence,
+or user-verified desktop/input coexistence. The Mac and its mapping must remain
+available; closing the mapping panel can stop its connections. Disclose that
+dependency before selecting it as a default. Do not silently route through a
+third computer or start a reconnect daemon merely because a diagnostic passed.
+The return path and file transfer need their own acceptance checks.
+
+An earlier native Mac TerminalWindow opened successfully but produced no new
+native Ubuntu broker event. A window may be a session picker, so that alone
+does not prove a shell request failed. Likewise, local-only CLI tests from
+both the home directory and the UU binary directory hung before a broker
+session appeared: there was no evidence for a working-directory patch.
+
 ## Durable agent messages without another service
 
 The bridge now includes `uu-link`, a private inbox/outbox over the existing
