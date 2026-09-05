@@ -41,6 +41,13 @@ service and server PIDs did not change. The reverse SSH process exited with
 that lost path. Do not hide this limitation behind an always-retrying loop or
 interpret binary `.slog` growth as a decoded cause.
 
+The recovered path then passed **30/30 bidirectional SSH rounds with zero
+failures over 348 seconds**, keeping the same owned reverse process. A known
+237568-byte multilingual UTF-8 fixture was echoed byte-exactly through both
+paths. This verifies current usable transport; it does not establish reboot
+persistence or simultaneous direct-desktop-control acceptance. The latter
+still awaited a real client connection.
+
 ## Quick use
 
 On the controller, after installing `scripts/uu-ssh` to `~/.local/bin/uu-ssh`:
