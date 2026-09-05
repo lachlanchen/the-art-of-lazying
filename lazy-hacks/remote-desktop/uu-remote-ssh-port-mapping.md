@@ -2,7 +2,40 @@
 
 ## Result and limitation
 
-**Latest controlled result (5 September2026, around20:00 local time):** direct
+**Current operating route (later on 5 September 2026):** reverse the native UU
+mapping direction. The workstation where the user normally attaches a viewer
+originates the mapping to the peer, whose device card showed no other controller.
+Reuse one mapping and one owned SSH return; don't create competing UU sessions:
+
+```text
+workstation 127.0.0.1:22709 -- UU --> peer 127.0.0.1:22
+one SSH return: peer 127.0.0.1:22022 --> workstation 127.0.0.1:22
+```
+
+Both existing shell aliases stayed unchanged. Strict identities, UTF-8,
+exit-status and independent SCP round trips passed; 15 fresh peer checks and
+six local bidirectional rounds passed. No Windows/Mac hop, overlay, new login,
+keyboard change, or desktop/service restart was needed.
+
+Actual incoming-viewer coexistence remains a separate acceptance check. A
+peer report initially misread its **local incoming-control panel** as proof
+of a viewer on the workstation; that interpretation was corrected. A selected
+remote device name is not sufficient to identify which host a status panel
+describes. Test the user's real UU connection to the workstation while both
+shell directions remain usable. Taking over the mapping's target peer may
+still disconnect the shared transport. Reversing direction is not proof that
+UU now supports arbitrary simultaneous controllers.
+
+There was intermittent initial/new-channel delay despite existing listeners.
+An eager nested bulk-input test also timed out; ordinary SSH/SCP and a binary
+transfer begun after inner-shell readiness passed. No broad network or timeout
+patch was justified. A bounded temporary multiplexing test improved reused
+commands to 54–160 ms, but no production sharing change was deployed. Keep these
+caveats distinct from the earlier ownership-related listener disappearance.
+
+### Earlier direction: controlled takeover failure
+
+**Earlier controlled result (5 September2026, around20:00 local time):** direct
 Ubuntu-to-Ubuntu UU mapping worked, and both SSH directions passed identity,
 UTF-8, exit-status and file-transfer checks. Windows/Mac are no longer needed
 for this topology. But when the user took direct UU desktop control, the
