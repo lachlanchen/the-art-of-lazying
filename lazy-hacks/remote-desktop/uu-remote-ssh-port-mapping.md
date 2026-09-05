@@ -120,9 +120,25 @@ The resumed recovery later passed the peer's **36/36 strict two-way checks over
 255 at 15:23:01 HKT and its UU mapping listener vanished. The local bridge,
 controller and server processes remained alive with unchanged identities.
 This happened before the intended idle acceptance, so that idle test could
-not be called a pass. The evidence establishes a vendor connection/mapping
-lifetime problem beyond SSH authentication; its precise trigger remained
-unconfirmed at this point. No `.bashrc` reload can restore a missing listener.
+not be called a pass. The observed failure was loss of the UU connection and
+mapping, not bad SSH authentication. The user later reported that some UU
+connections may have been closed manually, so this is **not proof of a
+spontaneous timeout or a bridge bug**. No `.bashrc` reload can restore a missing
+listener.
+
+The actual Port Mapping panel was then inspected: its saved rule was correct
+and enabled, but the connection had failed. Clicking its Retry Connection
+button once displayed a modal saying the target was already controlled and
+required takeover before port mapping could be used. Cancel preserved that
+controller. This is evidence of the **current ownership conflict**, not proof
+that it caused every historical disconnection. Distinguish closing a viewer,
+disconnecting a device, closing the mapping panel, and simply minimizing it.
+The panel's minimize/close lifetime behavior still needs controlled acceptance.
+
+Prefer the direct UU route when that is the user's choice. A cloud jump host
+must not silently replace it. A possible direct-only alternative is to reverse
+which host owns the native mapping, then use one SSH return forward; validate
+the chosen direction and avoid a second native rule on the return port.
 
 The companion peer's separate `error=1113` Chinese input fault was repaired
 through a semantic clipboard route while preserving its RDP desktop and
