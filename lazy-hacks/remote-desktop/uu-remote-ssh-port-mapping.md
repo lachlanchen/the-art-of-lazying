@@ -2,6 +2,33 @@
 
 ## Result and limitation
 
+**Later real-use failure:** the Windows-assisted path described below dropped
+on5 September2026 while the user was taking control of the Windows neighbor.
+The peer recorded reverse-SSH exit255 at19:19:18 and disappearance of its UU
+carrier listener; the return listener disappeared as well. Native Windows SSH
+and its existing UU processes stayed alive. The exact vendor disconnect reason
+was not decoded, but this demonstrates why earlier successful shell/file tests
+must not be presented as takeover-safe, unattended availability.
+
+Removing that Windows hop and making SSH independent of UU desktop ownership
+are different objectives. A direct Ubuntu-to-Ubuntu mapping may satisfy the
+first while still failing the second. Test both, cancel ownership prompts,
+and never add a reconnect loop that competes with the user's desktop. A native
+private network independent of UU is a separate user-approved option, not a
+silent cloud/VPN fallback.
+
+The coordinated follow-up tested **Port Mapping directly to the Ubuntu UU
+endpoint**, not Windows. Its page reported another controller and UU displayed
+an explicit takeover requirement for port mapping. The operator canceled;
+the rule editor never opened and no scratch listener appeared. Existing
+desktop focus and services were preserved. This establishes an ownership gate
+in the tested state, not proof that port mapping is generally unsupported.
+
+Keeping RDP/VNC open while voluntarily disconnecting only the direct UU viewer
+would allow a coordinated test with the slot free. It would not prove that a
+later direct-UU takeover leaves SSH alive. Do not confuse freeing a UU control
+slot with logging out of Ubuntu; no logout or application closure is needed.
+
 On 2026-09-05, UU's built-in TCP port mapping was tested from a Wine-hosted
 Ubuntu controller to another Wine-hosted Ubuntu computer. A loopback port on
 the controller reached the destination's native OpenSSH server, and a
