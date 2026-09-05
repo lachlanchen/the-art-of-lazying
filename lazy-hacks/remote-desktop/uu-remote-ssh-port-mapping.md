@@ -119,6 +119,26 @@ The SSH/ConPTY command returned zero despite the explicit error, so acceptance
 must require actual remote identity/output, not just the wrapper's exit code.
 The test left no CLI child and did not update or restart Windows or UU.
 
+The useful Windows result came from **Port Mapping**, not native Terminal. A
+Wine-hosted 4.39 controller opened one loopback-only rule through the already
+authorized native Windows host to an SSH server reachable on that host's LAN:
+
+```text
+Ubuntu controller:127.0.0.1:22023
+    -> native Windows UU host
+    -> Windows-side LAN target:22
+```
+
+The controller recorded the real remote-side target with `--mapping-target`
+and selected OpenSSH explicitly with `--shell-transport ssh`. Five fresh
+shells preserved exit statuses `0, 7, 0, 17, 0`; a 237638-byte random/UTF-8
+fixture made a byte-identical upload/download round trip. One reverse SSH
+forward then passed an independent host/user check, real PTY, multilingual
+UTF-8, exit status `17`, and byte-exact file transfer in the other direction.
+Another 18 shell checks passed over about three minutes. This was the accepted
+route: it removed the failed Mac hop, but it still depends on the native
+Windows host and its one live UU mapping. It was not a reboot test.
+
 An earlier native Mac TerminalWindow opened successfully but produced no new
 native Ubuntu broker event. A window may be a session picker, so that alone
 does not prove a shell request failed. Likewise, local-only CLI tests from
@@ -230,8 +250,9 @@ stable; see [the semantic-text diagnosis](https://github.com/lachlanchen/uu-remo
 
 ## Quick use
 
-For the native UU Terminal path, both Ubuntu bridges can use the same short
-entry point with their configured peer name:
+Both Ubuntu bridges can use the same short entry point. Its behavior comes
+from the peer profile: `terminal` selects native UU Terminal, while `ssh`
+selects the strict `uu-PEER` OpenSSH alias. It never guesses or falls back:
 
 ```bash
 uu-shell lab
@@ -239,12 +260,12 @@ uu-shell lab --session-id SESSION_ID
 uu-shell --help
 ```
 
-`uu-shell` asks for a fresh shell by default and never silently runs desktop
-connect, mapping recovery, or a cloud fallback. It preserves arguments and exit
-status. **An alias is not a transport fix**: the native Terminal compatibility
-failure above still needs live acceptance, and this helper does not claim
-working file transfer. The existing mapped SSH/scp route handles files when
-available. See the bridge's [native terminal guide](https://github.com/lachlanchen/uu-remote-ubuntu-bridge/blob/main/docs/native-ubuntu-terminal.md).
+With a `terminal` profile, `uu-shell` asks for a fresh native shell by default.
+With an `ssh` profile, arguments and exit status pass through to OpenSSH.
+Neither mode silently runs desktop connect, mapping recovery, a retry loop, or
+a cloud fallback. **An alias is not a transport fix**: the selected transport
+still needs live identity and file-transfer acceptance. See the bridge's
+[native terminal guide](https://github.com/lachlanchen/uu-remote-ubuntu-bridge/blob/main/docs/native-ubuntu-terminal.md).
 
 On the controller, after installing `scripts/uu-ssh` to `~/.local/bin/uu-ssh`:
 
@@ -252,6 +273,19 @@ On the controller, after installing `scripts/uu-ssh` to `~/.local/bin/uu-ssh`:
 uu-ssh add lab --port 22709 --user YOUR_REMOTE_USER
 uu-ssh key
 ```
+
+When a native UU host forwards to a different SSH server on its own LAN, make
+the route and shell choice explicit. The example address is documentation-only:
+
+```bash
+uu-ssh add lab --port 22023 --user YOUR_REMOTE_USER --direct \
+  --mapping-target 192.0.2.25 --shell-transport ssh
+uu-ssh check lab
+uu-shell lab 'hostname; id -un'
+```
+
+`--direct` removes an old SSH jump host from that profile. The mapping target
+is diagnostic metadata; `add` does not create or modify the UU rule.
 
 Open UU -> destination -> **Port mapping / 端口映射**. Add local TCP `22709`
 to target `127.0.0.1:22`. Target localhost means the remote Ubuntu, not the
@@ -298,6 +332,20 @@ was introduced. Keep one named tmux session for the forward if it must remain
 running after closing the launching terminal. Record its owner, ports, and
 command in the private handoff; never start a competing native UU mapping on
 the return port.
+
+For a persistent owner during the current login session, use one deliberate
+tmux name and preserve a failed pane for inspection:
+
+```bash
+tmux new-session -d -s uu-ssh-lab-return \
+  uu-ssh reverse lab --listen-port 22999
+tmux set-option -w -t uu-ssh-lab-return:0 remain-on-exit on
+tmux capture-pane -p -t uu-ssh-lab-return:0.0 -S -20
+```
+
+This owner survives closing the launching terminal but does not retry and is
+not boot autostart. A missing listener therefore remains visible instead of
+triggering hidden UU reconnect or takeover behavior.
 
 After a transport drop, restore the native mapping first, inspect the owned
 reverse process and listener, and restart only that forward if it exited.
