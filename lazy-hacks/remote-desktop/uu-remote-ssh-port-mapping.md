@@ -7,6 +7,10 @@ Ubuntu controller to another Wine-hosted Ubuntu computer. A loopback port on
 the controller reached the destination's native OpenSSH server, and a
 dedicated Ed25519 key successfully authenticated as its Linux user.
 
+Later the same day, both hosts independently verified **SSH in both
+directions**, using one native UU mapping plus one reverse SSH forward. Each
+host used its own key; neither private key was copied to the other machine.
+
 No new network/Wine patch was required. The improvement is a small `uu-ssh`
 helper in the [UU bridge repository](https://github.com/lachlanchen/uu-remote-ubuntu-bridge),
 with persistent aliases, public-key setup, diagnostics, native UU Terminal
@@ -18,6 +22,24 @@ one service. The live mapping later disappeared; reopening it prompted for
 takeover of an already-controlled device. The prompt was canceled to preserve
 that controller. The initial listener loss was not definitively explained.
 Do not automate takeover or promise coexistence without testing it.
+
+An observed recovery on the tested 4.39.2 pair was to query native terminal
+sessions. This initialized the vendor connection and reopened its existing
+saved mapping, without a GUI takeover or bridge restart:
+
+```bash
+# Store the peer device ID locally first if not already configured:
+uu-ssh add lab --port 22709 --user YOUR_REMOTE_USER --device-id UU_DEVICE_ID
+timeout 15 uu-ssh terminal lab --list-sessions
+ss -ltn '( sport = :22709 )'
+uu-ssh check lab
+```
+
+This worked twice, but **does not create a missing rule or guarantee sustained
+connectivity**. A recovered mapping later dropped even though the local UU
+service and server PIDs did not change. The reverse SSH process exited with
+that lost path. Do not hide this limitation behind an always-retrying loop or
+interpret binary `.slog` growth as a decoded cause.
 
 ## Quick use
 
@@ -66,10 +88,19 @@ command is ordinary `ssh -NT -R 127.0.0.1:22999:127.0.0.1:22 uu-lab`.
 Ctrl+C closes the forward without changing either desktop. See
 [OpenSSH's forwarding documentation](https://man.openbsd.org/ssh).
 
-This return topology was documented but not verified between both live hosts:
-we deferred further testing when it would have required taking over the peer.
-It still depends on UU and the SSH process. No new monitoring loop, automatic
-restart service, router rule, or general VPN was introduced.
+This return topology was subsequently verified between both live hosts after
+the existing mapping recovered. It still depends on UU and the SSH process.
+No new monitoring loop, automatic restart service, router rule, or general VPN
+was introduced. Keep one named tmux session for the forward if it must remain
+running after closing the launching terminal. Record its owner, ports, and
+command in the private handoff; never start a competing native UU mapping on
+the return port.
+
+After a transport drop, restore the native mapping first, inspect the owned
+reverse process and listener, and restart only that forward if it exited.
+`tmux set-option -w -t SESSION:0 remain-on-exit on` can retain its exit message
+for diagnosis; it is not an automatic reconnect service. The full bridge guide
+includes copy-safe tmux examples and the loopback/forwarding policy checks.
 
 ## Native UU Terminal is different
 
@@ -98,6 +129,22 @@ global Bash, input sources, RDP, or physical keyboard mappings for this.
 - Check for control-takeover prompts and release temporary management-window
   focus before handing back. Preserve all active desktop windows.
 - Test reboot persistence separately; this task did not reboot either host.
+
+### Why configuring mapping temporarily affected input
+
+On the peer using the RDP relay, its agent had intentionally focused UU's
+management window. During that interval mouse events logged
+`route=rdp focus=timeout result=0 error=21`: the broker could not safely deliver
+them to `Ubuntu-Desktop-Relay`. Releasing that management-focus lease restored
+the expected foreground window in both X11 and Wine. There was no reason to
+change global keyboard layouts or restart the desktop for this evidence.
+
+The log samples were historical, so they did not prove failure continued
+after release. Isolated mouse, physical-symbol, phone-text, Chinese/emoji, and
+long-text tests passed, and read-only foreground checks agreed. Actual user
+click/typing acceptance was still pending at the time of this note. A working
+SSH connection, a green verifier, and silence in an old log are not substitutes
+for that real-client check.
 
 Validation included six isolated helper tests (with real OpenSSH config
 parsing) and the existing terminal acceptance test: token rejection, native
