@@ -48,6 +48,22 @@ paths. This verifies current usable transport; it does not establish reboot
 persistence or simultaneous direct-desktop-control acceptance. The latter
 still awaited a real client connection.
 
+Longer monitoring then caught another mapping loss, so the short pass must
+not be read as uninterrupted reliability. The retained forward exited 255
+with `Connection to 127.0.0.1 closed by remote host.` A one-time native
+terminal attempt failed with vendor `Streamer error: 9012` before any shell
+opened, despite the device still being listed online. The meaning of that
+code was not established; the agents stopped additional connection attempts
+to check controller ownership instead of guessing at a reset. In particular,
+`uu-agent status` lists outgoing connections and cannot alone prove there is
+no inbound desktop controller.
+
+For a refused port with a saved device ID, the updated `uu-ssh check` prints
+the optional bounded session-list query. It does not execute it automatically
+or start/restart services. Eight isolated helper tests cover this behavior,
+including not offering that hint for a missing device ID or a non-SSH service
+already occupying the port.
+
 ## Quick use
 
 On the controller, after installing `scripts/uu-ssh` to `~/.local/bin/uu-ssh`:
