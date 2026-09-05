@@ -2,6 +2,44 @@
 
 ## Result and limitation
 
+**Latest controlled result (5 September2026, around20:00 local time):** direct
+Ubuntu-to-Ubuntu UU mapping worked, and both SSH directions passed identity,
+UTF-8, exit-status and file-transfer checks. Windows/Mac are no longer needed
+for this topology. But when the user took direct UU desktop control, the
+mapping disconnected and both SSH directions disappeared. RDP/VNC and all
+existing Linux applications stayed intact. This is an observed UU ownership
+conflict, not something a different SSH alias or keepalive can repair.
+
+The user first released only the direct UU viewer while staying connected by
+another method. The peer then reused an existing saved mapping without a
+takeover prompt: `B:127.0.0.1:22022 -> UU -> A:127.0.0.1:22`, plus one SSH
+return forward at `A:127.0.0.1:22709 -> B:22`. Each side retained its own key
+and the known peer host key. Five fresh commands preserved requested statuses
+`0, 7, 0, 17, 0`; the workstation independently verified237610 bytes of
+binary/Unicode data and a real SCP upload/download. No duplicate mapping,
+network patch, desktop restart, or new authentication was needed.
+
+The later takeover test is the important limit: the mapping panel remained
+open but disconnected, the peer's return SSH process exited after a remote
+close, and the device page reported the new controller. The user confirmed
+that he had taken over. Both UU services and both desktops remained running.
+There was no visible simultaneous-controller switch in the inspected General
+or Security settings. Therefore:
+
+- RDP/VNC desktop plus direct UU-backed SSH worked during the test.
+- Independent direct UU desktop control plus the same device's mapping did not.
+- Saved aliases survive, but the live carrier and both shell directions do not
+  survive that takeover in this configuration.
+
+Do not fight the viewer with automatic reconnects or restart a working desktop.
+After an explicit viewer release, coordinate one mapping reconnect and replace
+only the confirmed-dead owned return forward. That restores ordinary use, not
+concurrent control. A separate private network or isolated second UU endpoint
+needs a new, explicit design decision; no overlay or duplicate login/prefix was
+installed during this test.
+
+### Earlier observations and why the test was needed
+
 **Later real-use failure:** the Windows-assisted path described below dropped
 on5 September2026 while the user was taking control of the Windows neighbor.
 The peer recorded reverse-SSH exit255 at19:19:18 and disappearance of its UU
