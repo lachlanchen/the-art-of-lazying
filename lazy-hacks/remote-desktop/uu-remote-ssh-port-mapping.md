@@ -17,14 +17,19 @@ exit-status and independent SCP round trips passed; 15 fresh peer checks and
 six local bidirectional rounds passed. No Windows/Mac hop, overlay, new login,
 keyboard change, or desktop/service restart was needed.
 
-Actual incoming-viewer coexistence remains a separate acceptance check. A
-peer report initially misread its **local incoming-control panel** as proof
-of a viewer on the workstation; that interpretation was corrected. A selected
-remote device name is not sufficient to identify which host a status panel
-describes. Test the user's real UU connection to the workstation while both
-shell directions remain usable. Taking over the mapping's target peer may
-still disconnect the shared transport. Reversing direction is not proof that
-UU now supports arbitrary simultaneous controllers.
+The user completed the actual incoming-viewer acceptance on 5 September 2026.
+While the intended UU desktop remained usable, `ssh-uu-lachlanserver` from
+7090 reached LACHLANSERVER and `ssh uu-7090` inside that shell returned to
+OptiPlex-7090. This accepts both shell directions alongside the real viewer for
+the retained session; it does not prove arbitrary simultaneous-controller or
+reboot behavior.
+
+The **under control** state on 7090 is the expected incoming state created by
+LACHLANSERVER's UU mapping to `7090:22`, not evidence of a hidden desktop
+viewer. The panel may be minimized, but do not click **Disconnect** while SSH
+is needed. Doing so removes the `22709` mapping and its dependent `22022`
+return path; existing shells then close once TCP detects the loss. Taking over
+the mapping's target peer from another controller can have the same effect.
 
 There was intermittent initial/new-channel delay despite existing listeners.
 An eager nested bulk-input test also timed out; ordinary SSH/SCP and a binary
