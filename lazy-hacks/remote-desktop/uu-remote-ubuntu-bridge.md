@@ -30,6 +30,15 @@ one-way `CLIPBOARD` synchronization toward Ubuntu, while the target semantic
 helper owns both `CLIPBOARD` and `PRIMARY` before pasting so VTE cannot consume
 an older selection. Video remains on the established local relay.
 
+On 2026-09-05 the default Wayland/RDP track gained the same semantic-text
+coverage without moving routine input away from RDP. The native helper owns
+the physical Xwayland clipboard, but injects only a paced paste chord into the
+private FreeRDP window. A two-display acceptance delivered
+`UU broker 中文 123` exactly on `route=rdp-clipboard-text`, while a separate
+ASCII batch remained on `route=rdp`. The guarded live deployment runs audited
+UU `4.39.2.1561`, preserves its prior login state, and verifies the helper at
+cold start.
+
 The implementation is kept in the
 [public submodule](../../code/uu-remote-ubuntu-bridge). It can be fetched
 without a GitHub account:
@@ -66,14 +75,17 @@ UU controller
              -> authenticated bounded UTF-16 request
              -> verified target X11 CLIPBOARD + PRIMARY owners
              -> one Shift+Insert paste
+                  | direct X11: inject on the target
+                  | default RDP: inject into the private FreeRDP relay
 ```
 
 UU captures the FreeRDP window as a normal Windows application. GNOME Remote
 Desktop performs the normal final capture and input integration. The local RDP
 hop pins the SHA-256 fingerprint of GNOME's configured TLS certificate. The
 direct X11 route changes keyboard delivery only; it does not replace the
-working capture or pointer path. The compatible default remains the RDP route,
-including on Wayland systems where XTEST cannot target the desktop directly.
+working capture or pointer path. The compatible default remains the RDP route.
+On Wayland, XTEST still does not carry routine physical input into the target;
+it is used only on the private relay display for the semantic paste chord.
 
 ## Why the Bridge Is Needed
 
@@ -212,6 +224,30 @@ blocks the reverse direction with `ServerCutText=0`; x11vnc independently uses
 target semantic helper still owns both target selections. See
 [Preserve multiline dictation and clipboard text](./uu-remote-multiline-dictation-and-clipboard.md).
 
+### Default RDP and Wayland semantic text
+
+The direct helper was originally started only when `keyboard-route=x11`.
+Consequently, default RDP accepted ASCII but returned `1113` for CJK because
+`VkKeyScanW` has no physical key chord for those characters. Passing raw
+`KEYEVENTF_UNICODE` into SDL FreeRDP was already disproved: Wine accepted the
+call but the nested relay interpreted it as unsuitable physical input.
+
+The accepted design splits ownership from injection. `uu-x11-input` opens two
+authorized displays: the selected physical X11/Xwayland display for lazy
+`CLIPBOARD` and `PRIMARY` ownership, and the private Xvfb display for a paced
+`Shift+Insert`. The already-connected FreeRDP window carries that ordinary
+chord to the focused physical app. Broker semantic-only mode deliberately
+refuses to send routine keyboard or mouse records to this helper, so their
+known-good RDP route is unchanged. Focus, ownership, post-paste selection
+request, and full response count must all succeed; an ambiguous request is
+never replayed.
+
+Startup order matters. The first guarded live deployment correctly reported
+the helper unavailable because it ran before private Xvfb/Xauthority creation.
+The final launcher starts it only after the private display is ready, and a
+source assertion protects that ordering. This is why an isolated component
+test and a real cold-start verifier are both required.
+
 ## Root Cause and Final Fix
 
 The useful comparison was not “UU versus the network.” It was the same live
@@ -228,6 +264,7 @@ desktop through two paths:
 | Phone text through isolated X11 route | 52/52 transitions in exact order | Complete normalization and helper submission were lossless |
 | Live phone text through X11 | First 72 calls exact, `error=0`, 0–2 ms; visible typing complete | The same narrow bypass resolved the phone native-keyboard loss |
 | Semantic text through isolated clipboard route | Exact Chinese, two lines, and an emoji split across requests | Multiline and arbitrary Unicode no longer depend on keyboard-layout chords |
+| Semantic text through split RDP route | Exact `UU broker 中文 123`; separate ASCII stayed on RDP | Default Wayland/RDP can preserve CJK without rerouting routine input |
 | Mouse through isolated X11 route | 6/6 movement, click, and wheel records; exact final coordinates | The native VNC relay no longer depends on a Wine foreground window |
 
 The final design is deliberately narrow:
@@ -358,7 +395,7 @@ Available route modes are:
 
 | Mode | Behavior |
 | --- | --- |
-| `rdp` | Compatible default; all input uses the established local relay |
+| `rdp` | Compatible default; routine input uses the established local relay, while semantic phone text uses the split clipboard/paste helper when available |
 | `x11` | Require direct X11 input for mouse and physical keys; representable phone text uses keys while semantic Unicode/multiline text uses clipboard paste |
 | `auto` | Select direct input only when the discovered live target is X11 |
 
@@ -537,6 +574,8 @@ The public submodule contains the complete source and operational record:
   exact-order acceptance test
 - `scripts/test-x11-clipboard-text.sh`: exact Chinese, multiline, and
   split-surrogate clipboard-paste acceptance without touching the live desktop
+- `scripts/test-rdp-semantic-text.sh`: two-display default-RDP acceptance with
+  exact Chinese delivery and an independent assertion that ASCII stays on RDP
 - `scripts/upgrade-uu-remote.sh`: reusable source pull, accepted product
   promotion, bridge refresh, verification, and rollback-safe entry point
 - `docs/reusable-upgrade.md`: exact command contract, snapshots, persistent
@@ -573,6 +612,13 @@ PASS  input broker uses a 0 ms physical-key delay
 PASS  input broker uses the auto phone-text mode
 PASS  direct X11 physical-key helper is active
 PASS  semantic Unicode and multiline clipboard text is available
+```
+
+For the default Wayland/RDP track, the corresponding boundary is:
+
+```text
+PASS  compatible RDP physical-key route is active
+PASS  RDP semantic Unicode clipboard relay is active
 ```
 
 After reconnecting the UU controller, fresh content-free physical-key records
@@ -616,6 +662,12 @@ The semantic-text follow-up adds:
   input regressions; and
 - a bridge-only live deployment that preserved the XRDP logind leader and
   Xorg process.
+
+The default-RDP semantic follow-up adds a separate private-relay window probe,
+exact two-display Chinese acceptance, a cold-start ordering regression, 111
+passing unit tests, matching installed/source digests, and exact pre/post
+account-state comparison. Live phone-controller content remains a separate
+acceptance boundary; do not infer it from component tests alone.
 
 The wording is intentionally “strong practical acceptance,” not a universal
 zero-loss promise. The bounded diagnostics cannot reconstruct typed content,

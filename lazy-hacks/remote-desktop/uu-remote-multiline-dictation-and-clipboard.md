@@ -48,6 +48,10 @@ Content-free broker metadata confirmed two separate defects:
 The old route was therefore suitable for physical keys and representable
 characters, but not for semantic text.
 
+The same defect remained on the bridge's default Wayland/RDP profile after it
+was fixed for the opt-in direct-X11 profile: no helper was started on `rdp`, so
+CJK still fell through to `VkKeyScanW` and returned `1113`.
+
 ## Adaptive Design
 
 The default is now:
@@ -72,6 +76,14 @@ newline / tab / CJK / emoji / other non-representable Unicode
 
 Backspace remains an editing key. The helper also joins a UTF-16 surrogate
 pair when a controller sends its high and low units in separate calls.
+
+On the default RDP track, ownership and injection intentionally use different
+displays. The helper owns both selections on the physical X11/Xwayland
+display, then injects only `Shift+Insert` into the private Xvfb display where
+`Ubuntu-Desktop-Relay` is focused. FreeRDP carries that ordinary chord to the
+physical application. Semantic-only broker mode keeps normal ASCII, physical
+keys, and mouse events on RDP, so enabling CJK does not replace the stable
+routine-input path.
 
 The two owners are not redundant. GTK and many graphical editors may read
 `CLIPBOARD`, while GNOME Terminal/VTE reads `PRIMARY` for `Shift+Insert`. The
@@ -185,6 +197,7 @@ Run these before changing the live bridge:
 ```bash
 cd ~/ProjectsLFS/uu-remote-ubuntu-bridge
 
+./scripts/test-rdp-semantic-text.sh
 ./scripts/test-x11-clipboard-text.sh
 ./scripts/test-vnc-clipboard-relay.sh
 ./scripts/test-x11-phone-text.sh
@@ -204,6 +217,12 @@ ordering regressions without typing into the logged-in desktop or reading its
 clipboard. Failed runs preserve their isolated artifacts for diagnosis;
 successful runs clean them. The scripts use a shared display-allocation lock
 so parallel runs cannot choose the same X socket.
+
+The RDP semantic test creates two X displays and a Wine relay window. It proves
+that `UU broker 中文 123` is exposed exactly on the physical clipboard only
+after the paste chord reaches the private relay, reports
+`route=rdp-clipboard-text`, and separately proves 52 ASCII events remain on
+`route=rdp`.
 
 The VNC clipboard test proves that client cut text reaches the isolated relay,
 the target Unicode paste is exact, and target clipboard data cannot feed back
@@ -259,6 +278,18 @@ PASS  input broker uses the auto phone-text mode
 PASS  direct X11 physical-key helper is active
 PASS  semantic Unicode and multiline clipboard text is available
 ```
+
+A healthy default Wayland/RDP deployment instead reports:
+
+```text
+PASS  compatible RDP physical-key route is active
+PASS  RDP semantic Unicode clipboard relay is active
+```
+
+Do not start the dual-display helper before private Xvfb and its Xauthority
+are ready. The first live rollout caught that ordering error even though the
+isolated components passed. Current source asserts the order and the quick
+verifier fails if the broker says `semantic-clipboard=unavailable`.
 
 For this incident, live verification additionally showed two scoped `xclip`
 processes—one owning `CLIPBOARD` and one owning `PRIMARY`—and fresh
