@@ -379,6 +379,46 @@ semantic paste without disturbing the desktop. It may temporarily lose CJK or
 multiline semantics, but it cannot paste an unrelated selection. Return to
 `auto` after the two-owner helper and its regression test are installed.
 
+## Follow-up: mixed-language revisions can silently erase earlier text
+
+On 5 September 2026, a new isolated regression reproduced lost text even with
+the GNOME clipboard-handoff and long-revision timeout fixes installed. The
+broker reported success for every request, but a previous four-character
+Chinese phrase disappeared from the editor.
+
+The key detail was an English replacement inside a dictation revision. It
+took the ASCII fast path and bypassed the deletion limit used for Chinese.
+Its Backspaces also failed to reduce the remaining composition allowance.
+A separate insert/delete sequence within one request credited new characters
+too late, leading to incorrect edits and inflated allowance for the next call.
+
+The bridge now routes Unicode batches containing editing Backspaces through
+the same bounded semantic path regardless of replacement language, and counts
+insertions in event order. Physical typing and ordinary ASCII insertion keep
+their existing paths. No global keyboard, input-method, network, or desktop
+configuration change is needed.
+
+The regression checks complete editor contents after Chinese → English →
+Chinese revisions, interleaved edits, and stale excess Backspaces. Earlier
+messages must remain exact. A broker response of `error=0` alone is not enough
+evidence. The test uses a disposable desktop, not the user's typing field:
+
+```bash
+bash scripts/test-x11-clipboard-text.sh
+```
+
+Actual phone/controller acceptance remains a separate check. Arbitrary focus,
+selection, or external clipboard changes cannot be made atomic by sending
+synthetic keys, and ambiguous input is never automatically replayed.
+
+The fix is in bridge commit `65524cc`. The workstation received only the new
+broker, with a rollback copy and an UU-only restart; its existing desktop and
+applications were preserved. All138 unit tests and five isolated input/
+clipboard suites passed. The service remains enabled for boot. The quick
+verifier still reports an unrelated, pre-existing hash mismatch for an unused
+Windows FreeRDP executable on this VNC profile; it was not replaced merely to
+silence that check.
+
 ## Reusable Lesson
 
 Keyboard keys, IME/dictation commits, mouse events, and clipboard updates are
