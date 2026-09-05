@@ -191,6 +191,22 @@ stable; see [the semantic-text diagnosis](https://github.com/lachlanchen/uu-remo
 
 ## Quick use
 
+For the native UU Terminal path, both Ubuntu bridges can use the same short
+entry point with their configured peer name:
+
+```bash
+uu-shell lab
+uu-shell lab --session-id SESSION_ID
+uu-shell --help
+```
+
+`uu-shell` asks for a fresh shell by default and never silently runs desktop
+connect, mapping recovery, or a cloud fallback. It preserves arguments and exit
+status. **An alias is not a transport fix**: the native Terminal compatibility
+failure above still needs live acceptance, and this helper does not claim
+working file transfer. The existing mapped SSH/scp route handles files when
+available. See the bridge's [native terminal guide](https://github.com/lachlanchen/uu-remote-ubuntu-bridge/blob/main/docs/native-ubuntu-terminal.md).
+
 On the controller, after installing `scripts/uu-ssh` to `~/.local/bin/uu-ssh`:
 
 ```bash
