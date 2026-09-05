@@ -27,6 +27,10 @@ An observed recovery on the tested 4.39.2 pair was to query native terminal
 sessions. This initialized the vendor connection and reopened its existing
 saved mapping, without a GUI takeover or bridge restart:
 
+This is historical evidence, **not an automatic recovery recipe**: even a
+session-list query can initialize a UU controller connection. Only try it in
+a coordinated test window, never while another agent owns connection recovery.
+
 ```bash
 # Store the peer device ID locally first if not already configured:
 uu-ssh add lab --port 22709 --user YOUR_REMOTE_USER --device-id UU_DEVICE_ID
@@ -58,11 +62,29 @@ to check controller ownership instead of guessing at a reset. In particular,
 `uu-agent status` lists outgoing connections and cannot alone prove there is
 no inbound desktop controller.
 
-For a refused port with a saved device ID, the updated `uu-ssh check` prints
-the optional bounded session-list query. It does not execute it automatically
-or start/restart services. Eight isolated helper tests cover this behavior,
-including not offering that hint for a missing device ID or a non-SSH service
-already occupying the port.
+The latest `uu-ssh check` no longer suggests that session-list warm-up. It
+checks only the configured TCP/SSH path, cancels nothing, and says to preserve
+active desktops and cancel takeover prompts. A five-second timeout applies to
+each socket stage; the strict key-only SSH diagnostic has its own 15-second
+timeout and disables agent/configured forwarding. Nine isolated helper tests
+cover failure, timeout cleanup, config preservation, and no UU recovery action.
+
+SSH itself does not acquire a UU desktop-control slot. But **the native UU
+mapping carrying it may be takeover-gated**. One mapping plus a reverse SSH
+forward avoids a second UU connection; it does not prove that the first can
+coexist with an active inbound viewer. Ordinary SSH, diagnostics, and agent
+messages must consume an existing mapping and fail/queue if it is unavailable,
+not silently open Terminal or steal control. Bulk file transfers still share
+network bandwidth even when session ownership is independent.
+
+Native UU Terminal is also worth testing separately when a remote shell, not
+specifically SSH, is sufficient. In one direction a bounded fresh-session test
+failed before shell creation with 9012; in the other it reached terminal startup
+but reported an upgrade requirement despite both product versions being
+4.39.2.1561. Static inspection found that error1004 covers both payload-version
+and controller-platform compatibility rejection. The exact live branch remains
+unproven, so do not reinstall or patch a working desktop merely from that generic
+message. A terminal UI is not automatically a binary-safe file-transfer channel.
 
 ## Durable agent messages without another service
 
