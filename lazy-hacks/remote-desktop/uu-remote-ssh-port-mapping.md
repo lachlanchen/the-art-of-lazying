@@ -105,6 +105,20 @@ dependency before selecting it as a default. Do not silently route through a
 third computer or start a reconnect daemon merely because a diagnostic passed.
 The return path and file transfer need their own acceptance checks.
 
+The native Mac mapping subsequently returned to **Connection failed** and its
+listener disappeared. One explicit reconnect also failed, without a takeover
+prompt. The earlier five passing commands are historical evidence, not current
+availability or proof of stability. No exact disconnect cause was recovered;
+do not assume a vendor timeout or exclude a controller/panel lifecycle event.
+
+A newly authorized nearby Windows client offered another comparison. Existing
+key-only LAN SSH worked; native UU 4.38.3 saw both Ubuntu devices online. One
+fresh native-Windows Terminal request reached terminal startup but reported
+that the client was too old for the 4.39.2 host. No native broker session opened.
+The SSH/ConPTY command returned zero despite the explicit error, so acceptance
+must require actual remote identity/output, not just the wrapper's exit code.
+The test left no CLI child and did not update or restart Windows or UU.
+
 An earlier native Mac TerminalWindow opened successfully but produced no new
 native Ubuntu broker event. A window may be a session picker, so that alone
 does not prove a shell request failed. Likewise, local-only CLI tests from
