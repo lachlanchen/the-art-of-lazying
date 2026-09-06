@@ -1,5 +1,10 @@
 # Keep UU Remote on the Same Existing XRDP Desktop
 
+If the **physical console** is the workspace you want all clients to share,
+use [RDP, RealVNC and UU on the physical desktop](rdp-realvnc-uu-shared-physical-desktop.md).
+This page instead describes preserving an existing separately managed XRDP
+workspace.
+
 ## Problem
 
 A Linux workstation can have more than one live GNOME desktop for the same
