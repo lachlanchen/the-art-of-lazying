@@ -1,5 +1,32 @@
 # Native UU Remote in a Windows KVM guest
 
+## Update: two-way SSH verified on 2026-09-08
+
+The ordinary UU account login was completed. A native mapping in the Windows
+guest now reaches the other Ubuntu machine through a dedicated Mac on its LAN:
+
+```text
+Ubuntu A -> Windows VM SSH -> VM localhost:23709 -> UU -> Mac -> Ubuntu B:22
+Ubuntu B localhost:22440 -> SSH return on that carrier -> Ubuntu A:22
+```
+
+This separates the carrier's UU device ownership from both Ubuntu desktops.
+One existing return unit was reused, and existing host-key pins and user keys
+were retained. The familiar `ssh-uu-*` aliases now use the verified route;
+cloud routes remain independently named. The signed UU application's Windows
+Firewall prompt was accepted inside the guest, with no host firewall changes.
+
+Both hostnames and Chinese/Japanese shell output passed. A 42496-byte binary
+and Unicode file survived an SCP round trip, and the peer initiated its own
+successful return transfer. Exact command exit statuses were preserved.
+Restarting only the return SSH service with no active return clients restored
+the listener and login. Existing desktops and UU processes stayed running.
+
+UU's normal Windows auto-start switch was already enabled. This is not a
+reboot-reconnection test: the guest, dedicated Mac, logged-in UU clients and
+saved mapping remain dependencies. The SSH unit retries only its own channel;
+it never takes over a desktop or opens a vendor connection automatically.
+
 An existing Windows guest can provide a separate native UU identity alongside
 an Ubuntu Wine bridge. Install the official Windows client normally; preserve
 the Ubuntu desktop, input broker, dictation, clipboard, RDP, and VNC settings.
@@ -59,10 +86,10 @@ unattended reconnection. Keep working LazyTunnel SSH aliases intact; test
 the new path before considering any switch. Port mapping forwards TCP services,
 not an entire LAN.
 
-At this checkpoint, installation, an SSH jump through Windows to a LAN peer,
-and the host SSH banner from the guest were verified. The guest's UU login,
-mapping creation, SSH through the UU carrier, and reboot reconnection were
-still pending. Automatic Windows service startup alone does not verify these.
+At the initial installation checkpoint the guest login and UU mapping were
+pending. The acceptance update above supersedes that status for the tested
+two-way route. Reboot reconnection and arbitrary takeover survival still need
+their own tests; automatic Windows service startup alone does not prove them.
 
 If a Windows virtual display is active, a QEMU physical-console screenshot may
 show an old frame. Use the guest's existing live VNC view instead of rebooting
