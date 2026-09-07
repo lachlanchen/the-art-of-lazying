@@ -1,5 +1,19 @@
 # Native UU Remote in a Windows KVM guest
 
+## Availability follow-up — 2026-09-08
+
+The two-way tests below passed, but a final check found the dedicated Mac relay
+offline in UU and the mapping interrupted. The Windows guest remained reachable
+and logged in. The separate cloud SSH route reached the Ubuntu peer and initially
+the Mac; the Mac reported no active UU connections. Restarting only its UU user
+agent did not restore the mapping, and later LAN SSH and ping to the Mac failed.
+The underlying reason for the relay's later unreachability remains unknown.
+
+The setup is saved, but this UU route cannot currently be called stable or
+available. Restore the relay before repeating both-direction SSH tests. The one
+return unit retries its own SSH channel; it cannot make an offline UU device
+available. Ubuntu desktops and input settings were preserved throughout.
+
 ## Update: two-way SSH verified on 2026-09-08
 
 The ordinary UU account login was completed. A native mapping in the Windows
