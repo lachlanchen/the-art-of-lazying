@@ -1,6 +1,50 @@
 # Native UU Remote in a Windows KVM guest
 
-## Availability follow-up — 2026-09-08
+## Final setup: Tiny11 replaces the extra relay computer
+
+Use the existing native Windows VM as the **controlled UU endpoint**. On the
+other Ubuntu machine (7090), select `TINY11-KVM` and add one Port Mapping rule:
+local port `22440`, target address `10.0.2.2`, target port `22`. In the tested
+QEMU user network, that target is the Ubuntu workstation's SSH server.
+
+```text
+7090 -> UU mapping -> Tiny11 -> workstation SSH
+workstation -> SSH reverse tunnel on that connection -> 7090 SSH
+```
+
+There is no 3040/Mac hop and no cloud VPS in this SSH data path. Cloud SSH was
+used for initial administration only. Both Ubuntu desktop UU identities stay
+outside the mapping's target role. Keep Tiny11's identity reserved for this
+carrier; use its existing noVNC page for management rather than taking it over
+from another UU controller.
+
+On 7090, one enabled `uu-tiny11-return.service` connects through
+`uu-lachlanserver` and requests `-R 127.0.0.1:22709:127.0.0.1:22`. The workstation
+then reaches 7090 using local loopback22709, without an SSH jump host.
+
+```bash
+# On the workstation:
+ssh-uu-7090
+# On 7090:
+ssh-uu-lachlanserver
+```
+
+Existing commands need no `.bashrc` reload. Host-key pins and dedicated user
+keys are retained. The old 3040 return service is disabled. Both SSH directions,
+Chinese/Japanese output, command exit statuses and a byte-exact 65569-byte file
+transfer with peer-initiated return passed. The Ubuntu desktops and input
+patches were unchanged.
+
+The [setup guide and reusable service example](https://github.com/lachlanchen/kvm-qemu-workstation/blob/main/docs/uu-native-relay.md#current-setup-tiny11-is-the-relay-target)
+show where to install the unit and which ports belong to which machine. The
+guest's existing auto-start setting and peer unit are enabled; actual vendor
+mapping reconnection after an OS reboot remains untested.
+
+## Historical Mac-relay availability — 2026-09-08
+
+The route below was retired after the user clarified that Tiny11 should
+replace the extra computer entirely. It is retained only as troubleshooting
+history; the working setup above does not depend on recovering that Mac.
 
 The two-way tests below passed, but a final check found the dedicated Mac relay
 offline in UU and the mapping interrupted. The Windows guest remained reachable
