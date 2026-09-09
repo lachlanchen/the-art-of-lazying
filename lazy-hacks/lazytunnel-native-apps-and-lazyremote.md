@@ -24,6 +24,10 @@ RDP and VNC services keep their own ownership and desktop sessions.
 [Download the preview](https://github.com/lachlanchen/LazyTunnel/releases/tag/v0.2.0)
 or read the [complete setup/build/signing guide](https://github.com/lachlanchen/LazyTunnel/blob/main/docs/native-apps.md).
 
+The server and fleet CLI are also available through
+[npm installation and publishing](lazytunnel-npm-installation.md), independently
+of the native application bundles.
+
 ## Independent layers
 
 | Layer | Implementation | Depends on an open GUI? |
