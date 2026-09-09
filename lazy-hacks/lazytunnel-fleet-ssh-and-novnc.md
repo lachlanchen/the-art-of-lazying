@@ -10,6 +10,10 @@ for the complete scripts, server/client lifecycle, enrollment and rollback.
 Machine addresses, account names, host keys and credentials stay in private
 operator records rather than this public note.
 
+An [optional local GUI](lazytunnel-optional-gui.md) now provides device cards,
+on-demand SSH checks and saved noVNC controls without changing the relay or
+existing desktop services.
+
 ## Architecture
 
 Each enrolled device has its own keys. New devices establish one native,
