@@ -5,6 +5,10 @@ available as [@lazyingart/lazytunnel](https://www.npmjs.com/package/@lazyingart/
 The first stable npm release is **0.2.1**, published on 2026-09-09 through
 GitHub Actions with npm provenance. Native Flutter apps remain separate downloads.
 
+CLI 0.3.0 adds [independent accounts on one relay](lazytunnel-independent-accounts.md)
+for personal use or invited users of your own service. Existing fleets require
+an explicit operator migration; an npm update does not change their live policy.
+
 ## Install and use
 
 Use Node.js 22+ and npm. Linux/macOS clients also need Python 3.9+ and OpenSSH;
