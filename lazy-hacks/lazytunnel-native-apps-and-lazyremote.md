@@ -215,6 +215,7 @@ responsive widths and keyboard navigation were checked on the public site.
 - [Website maintenance and screenshot reproduction](https://github.com/lachlanchen/LazyTunnel/blob/main/website/README.md)
 - [Existing fleet setup](lazytunnel-fleet-ssh-and-novnc.md)
 - [Optional browser console](lazytunnel-optional-gui.md)
+- [Apple publication lessons from EchoMind](lazytunnel-apple-publication.md)
 
 Private credentials, signing material, browser profiles, build SDKs and raw
 session logs stay outside public repositories. Temporary review desktops and
