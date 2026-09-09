@@ -177,7 +177,11 @@ resolution. The build retains lint and loopback-only cleartext exceptions.
 Apple build success is separate from device signing and simulator rendering.
 The current Mac's security settings prevented remote screen capture and
 command-line signing with its existing identities. Its simulator also reported
-a screen-surface timeout during initial review. No keychain ACL, screen privacy
+a screen-surface timeout during initial review. A later Flutter-debugger launch
+returned the native widget/render trees and acknowledged first-frame
+rasterization, while captures of both LazyTunnel and Apple's Safari were
+entirely black. This points to that host's simulator display/capture path;
+it is not a verified interactive iOS visual test. No keychain ACL, screen privacy
 setting or graphics driver was weakened to turn those into a success claim.
 See the [detailed verification record](https://github.com/lachlanchen/LazyTunnel/blob/main/docs/native-verification-2026-09-09.md)
 for the current result and distribution limits.
@@ -199,6 +203,13 @@ desktop and Android screenshots are actual application captures using a
 read-only sample fleet; no real endpoint or credential information is shown.
 The site labels the sample data explicitly. The full website was reviewed at
 phone, tablet and desktop sizes.
+
+The [0.2.0 preview release](https://github.com/lachlanchen/LazyTunnel/releases/tag/v0.2.0)
+includes full-page [desktop](https://github.com/lachlanchen/LazyTunnel/releases/download/v0.2.0/LazyRemote-website-desktop.png)
+and [mobile](https://github.com/lachlanchen/LazyTunnel/releases/download/v0.2.0/LazyRemote-website-mobile.png)
+website screenshots. All ten published assets matched their local SHA-256
+digests and sizes. GitHub Pages is live with HTTPS enforced; image loading,
+responsive widths and keyboard navigation were checked on the public site.
 
 - [Brand and generation prompt](https://github.com/lachlanchen/LazyTunnel/blob/main/docs/lazyremote-brand.md)
 - [Website maintenance and screenshot reproduction](https://github.com/lachlanchen/LazyTunnel/blob/main/website/README.md)
