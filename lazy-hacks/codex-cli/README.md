@@ -3,6 +3,9 @@
 This folder stores practical Codex CLI workflow tweaks used on this machine.
 
 ## Files
+- [linux-desktop-accounts.md](./linux-desktop-accounts.md)
+  - official Linux ChatGPT/Codex package, ordinary APT updates, and named desktop shortcuts
+  - company/personal/lab windows reusing AgentShell authentication with separate GUI profiles
 - [codex-and-codexr.md](./codex-and-codexr.md)
   - current Linux/WSL behavior for `codex`, `codexr`, `codexfork`, and `cr`
   - fast SQLite picker with saved `/rename` names and arrow-key navigation

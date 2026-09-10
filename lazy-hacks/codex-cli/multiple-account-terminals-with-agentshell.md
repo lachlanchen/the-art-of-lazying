@@ -1,5 +1,7 @@
 # Separate Codex accounts by terminal with AgentShell
 
+For graphical Linux windows using these same account logins, see [Codex desktop accounts](linux-desktop-accounts.md): `agent-desktop company`, `agent-desktop personal`, and `agent-desktop lab`.
+
 ## Goal
 
 Use personal, lab, and company AI accounts in different terminals while every terminal works on the same real project folder.
