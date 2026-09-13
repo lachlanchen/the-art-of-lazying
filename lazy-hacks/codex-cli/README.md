@@ -3,6 +3,9 @@
 This folder stores practical Codex CLI workflow tweaks used on this machine.
 
 ## Files
+- [7090-native-alias-permission-defaults.md](./7090-native-alias-permission-defaults.md)
+  - native `codex`, `codexr`, and `codexmv` audit on the 7090
+  - persistent permission defaults in ordinary and AgentShell shared/private configurations
 - [linux-desktop-accounts.md](./linux-desktop-accounts.md)
   - official Linux ChatGPT/Codex package, ordinary APT updates, and named desktop shortcuts
   - company/personal/lab windows reusing AgentShell authentication with separate GUI profiles
