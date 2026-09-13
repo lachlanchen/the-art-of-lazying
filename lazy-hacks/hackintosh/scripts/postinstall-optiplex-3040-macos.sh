@@ -289,6 +289,10 @@ if [ "$set_legacy_vnc" -eq 1 ]; then
   unset legacy_vnc_password
 fi
 
+# Keep VNC on the physical Aqua desktop, not a second remote login window.
+sudo defaults write /Library/Preferences/com.apple.RemoteManagement \
+  VNCAlwaysStartOnConsole -bool true
+
 sudo "$kickstart" -restart -agent
 sudo launchctl enable system/com.apple.screensharing
 sudo launchctl kickstart -k system/com.apple.screensharing

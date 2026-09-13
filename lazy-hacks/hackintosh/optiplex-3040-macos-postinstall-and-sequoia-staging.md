@@ -265,6 +265,11 @@ Operational details and reboot checks are in
 
 ## Apple Remote Desktop and VNC
 
+For the 2026-09-13 repair of VNC opening a second login window, see
+[3040 Remmina physical-console sharing](../remote-desktop/3040-remmina-physical-console.md).
+The key persistent preference is `VNCAlwaysStartOnConsole=true`; a successful
+VNC password challenge alone does not verify that the existing desktop is shared.
+
 The post-install script configures Apple's native Remote Management service
 with observe and control privileges for `lachlan`. Monterey's bundled
 `kickstart` can fail after activation while authorizing a specific user, so

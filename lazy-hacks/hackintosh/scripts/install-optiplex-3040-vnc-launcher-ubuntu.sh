@@ -4,7 +4,7 @@ set -euo pipefail
 
 readonly PROFILE_NAME="optiplex-3040-macos-screen-sharing.remmina"
 readonly APP_NAME="optiplex-3040-macos-screen-sharing.desktop"
-readonly SERVER="192.168.1.209:5900"
+readonly SERVER="OptiPlex-3040-macOS.local:5900"
 
 [ "$(uname -s)" = "Linux" ] || {
   printf 'error: run this script on Ubuntu\n' >&2
@@ -20,7 +20,22 @@ profile_dir="$HOME/.local/share/remmina"
 app_dir="$HOME/.local/share/applications"
 profile="$profile_dir/$PROFILE_NAME"
 app="$app_dir/$APP_NAME"
+connector="$HOME/.local/share/host-connectors/connect-to-3040"
+connector_source="$(dirname -- "${BASH_SOURCE[0]}")/connect-to-optiplex-3040-macos.sh"
+[ -r "$connector_source" ] || {
+  printf 'error: missing companion connector: %s\n' "$connector_source" >&2
+  exit 1
+}
 mkdir -p "$profile_dir" "$app_dir"
+
+# Remmina can rename its profile file after an edit. Reuse that profile so
+# reinstalling does not create a second connection with competing credentials.
+if saved_profile=$(sh "$connector_source" --profile); then
+  profile="$saved_profile"
+else
+  status=$?
+  [ "$status" -eq 1 ] || exit "$status"
+fi
 
 password="${VNC_PASSWORD:-}"
 if [ -z "$password" ]; then
@@ -77,13 +92,15 @@ EOF
 unset encrypted_output encrypted_password
 chmod 600 "$profile"
 
+install -Dm755 "$connector_source" "$connector"
+
 cat > "$app" <<EOF
 [Desktop Entry]
 Type=Application
 Name=OptiPlex 3040 macOS
 Comment=Control the OptiPlex 3040 Monterey desktop
 Icon=org.remmina.Remmina
-Exec=remmina -c $profile
+Exec="$connector" --vnc
 Terminal=false
 Categories=Network;RemoteAccess;
 StartupNotify=true
