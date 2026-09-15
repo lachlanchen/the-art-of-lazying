@@ -6,6 +6,11 @@ private keys, and complete EFI trees outside this public repository.
 
 ## Files
 
+- [UU recovery after a router outage](./uuremote-router-outage-recovery.md)
+  - separate LAN recovery, main-app connectivity, and controlled-host status;
+  - fix a watchdog stuck waiting for an already logged-in primary console;
+  - restart only the inactive vendor agent and verify online state from a peer.
+
 - [Isolated Sequoia KVM on an Ubuntu Z790 workstation](./z790-sequoia-kvm-on-ubuntu.md)
   - keep a 512 GiB qcow2 disk sparse on private SATA storage;
   - distinguish demand-backed 16 GiB memory from unsupported RAM ballooning;

@@ -5,6 +5,12 @@ desktop stalls on the OptiPlex 3040 Monterey and OptiPlex 7050 Sequoia
 Hackintoshes. It separates a real macOS crash from an alive but overloaded
 desktop before changing OpenCore.
 
+September 15 follow-up: [router-outage recovery and console-user watchdog
+fix](uuremote-router-outage-recovery.md). Both Macs retained long uptimes; a
+router power cycle recovered the LAN, and the 3040 also needed its stuck UU
+host agent restarted. The unattended installer now includes a companion
+`macos-console-user.js` helper.
+
 ## Conclusion
 
 The initial audit found no conventional kernel, GPU-restart, power, or memory

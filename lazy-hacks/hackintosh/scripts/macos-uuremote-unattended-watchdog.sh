@@ -6,6 +6,7 @@ umask 077
 
 readonly APP="/Applications/UURemote.app"
 readonly CLI="$APP/Contents/Helpers/uuyc-cli"
+readonly CONSOLE_HELPER="/usr/local/libexec/macos-console-user.js"
 readonly EXPECTED_TEAM_ID="PU9BNSBJW7"
 readonly DAEMON_LABEL="com.netease.uuremote.daemon"
 readonly DAEMON_PLIST="/Library/LaunchDaemons/${DAEMON_LABEL}.plist"
@@ -378,7 +379,10 @@ if [ -z "$daemon_pids" ] && [ "$boot_age" -ge 30 ]; then
   fi
 fi
 
-console_user=$(stat -f '%Su' /dev/console 2>/dev/null || printf none)
+console_user=$(
+  run_with_timeout 5 /usr/bin/osascript -l JavaScript "$CONSOLE_HELPER" \
+    2>/dev/null || printf none
+)
 case "$console_user" in
   '' | root | loginwindow | _mbsetupuser | none)
     write_counter "$FAILURE_FILE" 0
@@ -405,6 +409,7 @@ case "$user_id" in
   '' | *[!0-9]* | 0) exit 0 ;;
 esac
 [ "$user_id" -ge 500 ] || exit 0
+launchctl print "gui/${user_id}" >/dev/null 2>&1 || exit 0
 
 home_dir=$(dscl . -read "/Users/${console_user}" NFSHomeDirectory 2>/dev/null |
   awk '{ print $2 }')
@@ -473,6 +478,7 @@ shutdown_runaway_simulator \
 
 if [ -n "$agent_pids" ] &&
    [ -n "$server_pids" ] &&
+   [ "$connection_count" -gt 0 ] &&
    [ "$cli_network" = connected ] &&
    [ "$cli_xpc" = running ] &&
    [ "$cli_logged_in" = true ]; then

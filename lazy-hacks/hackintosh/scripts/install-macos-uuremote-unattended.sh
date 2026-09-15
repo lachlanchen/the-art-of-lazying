@@ -6,6 +6,7 @@ export PATH="/usr/bin:/bin:/usr/sbin:/sbin:${PATH:-}"
 readonly LABEL="com.lachlan.macos-uuremote-unattended"
 readonly PLIST="/Library/LaunchDaemons/${LABEL}.plist"
 readonly HELPER="/usr/local/libexec/macos-uuremote-unattended-watchdog.sh"
+readonly CONSOLE_HELPER="/usr/local/libexec/macos-console-user.js"
 readonly LOG="/var/log/macos-uuremote-unattended.log"
 readonly STATE_DIR="/var/db/$LABEL"
 readonly APP="/Applications/UURemote.app"
@@ -25,6 +26,7 @@ mode="${1:-audit}"
 confirmation="${2:-}"
 script_dir=$(cd -P -- "$(dirname -- "$0")" && pwd)
 source_helper="$script_dir/macos-uuremote-unattended-watchdog.sh"
+source_console_helper="$script_dir/macos-console-user.js"
 temporary_plist=""
 
 fail() {
@@ -87,7 +89,8 @@ audit() {
   local user_id
 
   verify_vendor
-  console_user=$(stat -f '%Su' /dev/console 2>/dev/null || printf none)
+  console_user=$(/usr/bin/osascript -l JavaScript "$source_console_helper" \
+    2>/dev/null || printf none)
   auto_login=$(
     defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser \
       2>/dev/null ||
@@ -169,7 +172,7 @@ if [ "$mode" = uninstall ]; then
     fail "uninstall requires literal confirmation $REMOVE_CONFIRMATION"
   sudo -v
   sudo launchctl bootout "system/$LABEL" 2>/dev/null || true
-  sudo rm -f "$PLIST" "$HELPER"
+  sudo rm -f "$PLIST" "$HELPER" "$CONSOLE_HELPER"
   printf 'Removed the unattended watchdog. Vendor UU jobs were unchanged.\n'
   exit 0
 fi
@@ -177,9 +180,11 @@ fi
 [ "$confirmation" = "$CONFIRMATION" ] ||
   fail "install requires literal confirmation $CONFIRMATION"
 [ -x "$source_helper" ] || fail "companion watchdog script is missing"
+[ -r "$source_console_helper" ] || fail "companion console-user helper is missing"
 verify_vendor
 
-console_user=$(stat -f '%Su' /dev/console 2>/dev/null || printf none)
+console_user=$(/usr/bin/osascript -l JavaScript "$source_console_helper" \
+  2>/dev/null || printf none)
 [ "$console_user" = "$(id -un)" ] ||
   fail "install from the logged-in Aqua console user"
 user_id=$(id -u)
@@ -189,7 +194,7 @@ timestamp=$(date -u '+%Y%m%dT%H%M%SZ')
 backup_dir="/var/backups/macos-uuremote-unattended-${timestamp}"
 sudo mkdir -p "$backup_dir"
 sudo chmod 700 "$backup_dir"
-for existing in "$PLIST" "$HELPER" "$OLD_PLIST" "$OLD_HELPER"; do
+for existing in "$PLIST" "$HELPER" "$CONSOLE_HELPER" "$OLD_PLIST" "$OLD_HELPER"; do
   if sudo test -e "$existing"; then
     sudo cp -p "$existing" "$backup_dir/"
   fi
@@ -228,6 +233,7 @@ PLIST
 plutil -lint "$temporary_plist"
 
 sudo install -d -o root -g wheel -m 755 /usr/local/libexec
+sudo install -o root -g wheel -m 644 "$source_console_helper" "$CONSOLE_HELPER"
 sudo install -o root -g wheel -m 755 "$source_helper" "$HELPER"
 sudo install -o root -g wheel -m 644 "$temporary_plist" "$PLIST"
 
