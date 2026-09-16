@@ -145,3 +145,17 @@ Validated results:
 - `claude auth status` reported not logged in. No model request or billed test
   was made. A real authenticated session move remains an end-to-end check for
   after login; the tests validate the wrapper arguments, not the provider UI.
+
+## Workstation Wrapper Variant
+
+A second, codex-style implementation lives in this folder for machines that
+want the same behavior as `codex`/`codexr`/`codexmv`: enforced full access,
+a fast folder-scoped resume picker, and bulk session migration with rollback.
+It defines the same `claude`, `clauder`, and `claudemv` names, so install only
+one variant per machine.
+
+- [claude-clauder-claudemv-wrappers.md](./claude-clauder-claudemv-wrappers.md): behavior, storage layout, `claudemv OLD [NEW]` migration and rollback, AgentShell `--account` routing, verification, failure modes
+- [install-wrappers.sh](./install-wrappers.sh): one-shot Linux/WSL installer (copies the scripts below into `~/scripts`, writes `~/bin` shims, adds a guarded `~/.bashrc` block, sets `skipDangerousModePermissionPrompt`)
+- [claude_wrapper.sh](./claude_wrapper.sh): shared dispatcher for the three commands
+- [claude_session_tool.py](./claude_session_tool.py): session listing, numbered picker, `move`, `rollback`
+- [sourced_claude_wrappers.sh](./sourced_claude_wrappers.sh): shell functions and the `clr` alias
