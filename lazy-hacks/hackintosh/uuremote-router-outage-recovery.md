@@ -4,6 +4,21 @@ Verified on 2026-09-15: OptiPlex 3040 on Monterey, with a 7050 peer on Sequoia.
 UU Remote on the 3040 was version 4.35.0. This is a network/service repair,
 not an EFI, graphics, or macOS upgrade procedure.
 
+## September 16: Check Campus Authentication First
+
+A later outage had a different cause: the router was responsive, associated to
+its Wi-Fi uplink, and held a valid WAN lease, while both Macs remained reachable
+by LAN SSH. HTTP connectivity probes from the router and both Macs returned the
+campus login portal; external HTTPS timed out. Neither Mac had rebooted.
+
+Do not treat a captive portal as a frozen Mac or stuck UU host. Complete the
+campus login through a browser on the affected LAN, verify HTTP returns the
+expected content and HTTPS succeeds, then assess UU. A browser on a workstation
+that has already failed over to another router may authenticate the wrong
+uplink. Router admin credentials are not campus credentials. Rebooting does not
+replace authentication; no router, Mac, or UU restart was performed for this
+second incident. The specific reason campus authentication was lost is unknown.
+
 ## What Failed
 
 The shared router answered ping but stopped serving DHCP and completing SSH
