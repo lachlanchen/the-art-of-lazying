@@ -22,6 +22,55 @@ cd ~/ProjectsLFS/uu-remote-ubuntu-bridge
 The repair is idempotent and transactional. It restarts only
 `uu-remote-bridge.service`; it does not restart, reload, or reconfigure XRDP.
 
+## September 2026 recurrence on Wine 11
+
+The original registry-only Bluetooth setting was insufficient on the affected
+Wine 11 installation. On September 19, UU 4.39.2.1561 stalled at startup with
+approximately 55,557 Bluetooth device records and an 80 MB `system.reg`.
+The server consumed about one CPU core for several minutes, although
+`Services\winebth` already had `Start=4`.
+
+The decisive evidence was in the UU-owned `winedevice.exe` process maps:
+both `winebth.sys` and `winebth.so` were still loaded. A registry cleanup alone
+allowed about 95 Bluetooth records to return immediately. A disabled service
+value therefore did not mean the driver was absent.
+
+The bridge launcher and transactional registry cleaner now prepend
+`winebth.sys=d;` to their existing `WINEDLLOVERRIDES` values. Preserve the
+remaining overrides, including optional `winepulse.drv=d` audio isolation.
+Apply this only inside the dedicated UU runtime; do not export it globally or
+disable Ubuntu Bluetooth. Run `uu-remote repair-registry` after deploying the
+two narrow script changes to remove existing records and restart that prefix.
+
+After this repair:
+
+- the registry was 3,979,849 bytes and Bluetooth device counts stayed zero;
+- UU-owned device processes no longer loaded either Bluetooth driver module;
+- the server settled to low single-digit CPU usage and retained the same PID;
+- local version and device-list IPC worked;
+- the existing physical desktop was visible through the private relay at
+  1920×1080, with its open windows preserved;
+- patched binaries, keyboard/input broker, Unicode/multiline support, native
+  terminal bridge, and login-state checks passed.
+
+The existing enabled user service and unattended startup retain this loader
+override across service restarts and reboots. No new monitoring loop was
+introduced. Only those two runtime scripts were narrowly patched on the live
+machine, preserving unrelated input/clipboard behavior. Source verification
+used `--allow-runtime-drift` for that deliberate partial deployment; it did not
+pretend the whole runtime had been upgraded to the newest source revision.
+
+Check the actual `/proc/PID/maps` of the **UU-prefix-owned** `winedevice.exe`
+processes as well as registry counts over time. `Start=4` plus a momentarily
+clean registry is not a prevention test. Never stop another project's Wine
+processes during this check.
+
+The log examples below describe the original plaintext-log releases. UU
+4.39.x uses structured `.slog` files; its verifier checks a fresh log signature
+and exact local version IPC instead. Host checks and a stable server PID do
+not prove remote video or input delivery. A real controller reconnect remains
+the final acceptance check.
+
 ## What “Finding Routes” Meant in This Incident
 
 The controller wording suggested DNS, Ethernet, Wi-Fi, firewall, NAT, or relay
@@ -226,4 +275,3 @@ after the exact release carries complete, hash-bound acceptance evidence.
   rollback reproduces the same failure.
 - Keep unrelated remote access alive during repair. Here XRDP was the control
   path and was never restarted.
-
