@@ -2,6 +2,14 @@
 
 This note records the current useful behavior when dragging an image into Codex.
 
+**2026-09-20 update:** Codex CLI 0.155.1 still auto-attaches pasted existing
+image paths. Model-side metadata is not the same as a visible, copyable path
+in the input composer. For an installed path-only helper, file-manager menu,
+and the upstream request, see
+[Selectable input and optional image paths](input-selection-and-image-paths.md).
+This also explains why a bitmap-only clipboard cannot reveal its original
+source filename.
+
 ## Current Behavior
 
 Dragging an image into Codex can include both:
@@ -38,4 +46,3 @@ The shell wrappers still handle:
 - default sandbox/approval flags
 - resume picker behavior
 - cwd migration through `codexmv`
-
