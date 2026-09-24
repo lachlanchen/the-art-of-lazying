@@ -35,6 +35,19 @@ Router DNS, Google DNS-over-HTTPS and Cloudflare DNS-over-HTTPS agreed on the re
 
 **Confirmed:** native discovery can time out independently of AgentShell, and HTTPS transport was intermittently stalling. **Not proven:** which router/upstream component or service caused each stall, or that every native timeout came from the same transport event. The guard is recovery, not proof that the underlying network/service issue has been permanently fixed. No global DNS/route changes, proxy daemon or persistent CDN-IP pinning were introduced.
 
+### Wired versus Wi-Fi follow-up
+
+Three rounds explicitly bound `curl` to each interface and tested both DNS-returned addresses. The endpoint and TLS verification remained unchanged; no account token was sent.
+
+| Path | Successful probes | Observed timings |
+| --- | ---: | --- |
+| wired, also the default route | 4/6 | 0.77–2.28 s; both addresses hit the 4-second TCP connection deadline in round 3 |
+| Wi-Fi | 6/6 | 0.30–0.49 s |
+
+These sequential, closely spaced comparisons point toward the **wired upstream path**. The problem was not consistently tied to just one CDN address. Local wired RX errors/drops and TX errors were zero at inspection, but interface counters cannot rule out an upstream gateway, VPN router or ISP fault.
+
+This is a better-supported diagnosis than blaming AgentShell, account sharing or DNS. It is not proof of which physical hop is at fault. Fixing that path permanently requires gateway/upstream investigation; changing global routes during active remote and Codex sessions could interrupt unrelated work, so that was not done as part of the wrapper repair.
+
 At the time checked, npm and the latest stable GitHub release both reported 0.156.1; no newer stable release was available to test as a fix. No speculative downgrade, binary patch or global network change was made.
 
 ## Installed improvement
