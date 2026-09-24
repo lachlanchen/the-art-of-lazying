@@ -1,5 +1,7 @@
 # Separate Codex accounts by terminal with AgentShell
 
+For intermittent `account/read` → `workspace routing discovery timed out` errors, see [safe startup recovery](account-routing-timeout.md). The Linux/WSL retry guard keeps the same selected account and session; it does not reset credentials or claim to fix an unproven underlying network/service delay.
+
 For graphical Linux windows using these same account logins, see [Codex desktop accounts](linux-desktop-accounts.md): `agent-desktop company`, `agent-desktop personal`, and `agent-desktop lab`.
 
 ## Goal

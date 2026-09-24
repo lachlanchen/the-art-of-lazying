@@ -3,6 +3,9 @@
 This folder stores practical Codex CLI workflow tweaks used on this machine.
 
 ## Files
+- [account-routing-timeout.md](./account-routing-timeout.md)
+  - intermittent Codex account bootstrap timeout, evidence and remaining uncertainty
+  - bounded Linux/WSL retries that preserve separate logins and selected history
 - [7090-native-alias-permission-defaults.md](./7090-native-alias-permission-defaults.md)
   - native `codex`, `codexr`, and `codexmv` audit on the 7090
   - persistent permission defaults in ordinary and AgentShell shared/private configurations
