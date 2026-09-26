@@ -3,6 +3,9 @@
 This folder stores practical Codex CLI workflow tweaks used on this machine.
 
 ## Files
+- [daemon-socket-path-limit.md](./daemon-socket-path-limit.md)
+  - Codex 0.157 `SUN_LEN` failure with long named-account home paths
+  - automatic native `--no-daemon` fallback without moving account data
 - [account-routing-timeout.md](./account-routing-timeout.md)
   - intermittent Codex account bootstrap timeout, evidence and remaining uncertainty
   - bounded Linux/WSL retries that preserve separate logins and selected history
