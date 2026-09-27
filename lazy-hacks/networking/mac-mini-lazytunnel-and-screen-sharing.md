@@ -140,9 +140,11 @@ Left/right Ctrl, left/right Alt,
 left/right Super, and F5 each produced the expected macOS state and returned to
 all-false on release on the Mac mini, 7050 and 3040. The observer records no typed
 text and installs no background service. This does not test every application
-shortcut or an upstream phone/UU client's hardware-key interception. Native
-Wayland was subsequently verified for desktop display; repeat the physical-key
-test there when changing GNOME shortcut-inhibition settings.
+shortcut or an upstream phone/UU client's hardware-key interception. The Mac mini
+then also passed the same modifier/F5 check with native Wayland, using a bounded
+Linux uinput test keyboard (python-evdev) rather than X11-only synthetic events.
+The temporary test devices were closed, not installed as background services.
+Repeat the physical-key test when changing GNOME shortcut-inhibition settings.
 
 ```sh
 ssh YOUR-MAC /path/to/working/python3 - < scripts/networking/macos-modifier-probe.py
