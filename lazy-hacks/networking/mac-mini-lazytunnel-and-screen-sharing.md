@@ -118,13 +118,14 @@ This workstation uses **Pause** instead (`hostkey=65299` and
 record the original values before changing them. Pause+Pause toggles grabbing;
 the toolbar remains available on keyboards without Pause.
 
-For this Ubuntu Wayland workstation, the application launcher and tray autostart
-now launch Remmina with `GDK_BACKEND=x11`. The existing GNOME session stays on
-Wayland. The exact XWayland resource class `org.remmina.Remmina` was added to
-`org.gnome.mutter.wayland xwayland-grab-access-rules`; no wildcard grab permission
-or global Ubuntu shortcut remapping was used. Preserve existing entries if
-applying this elsewhere. GTK warnings alone do not prove the cause of a blank
-screen. This is the tested local viewer configuration, not a universal requirement.
+Keep the normal desktop backend by default. `GDK_BACKEND=x11` was useful for
+injecting diagnostic test keys, but a later cold-start check on this Ubuntu
+Wayland workstation left X11 connection windows unmapped before VNC even opened
+a socket. Native Wayland promptly connected and displayed the Mac mini desktop.
+The temporary X11 launcher/autostart overrides and XWayland grab allowlist entry
+were therefore removed. The keymap and Pause host-key fixes remain. Do not make
+an X11 workaround permanent without testing repeated cold launches. GTK warnings
+alone do not prove the cause of a blank screen.
 
 Back up profiles first. Reconnect to load profile changes; restart Remmina when
 convenient if its keymap table was already loaded. Do not terminate an active
@@ -134,11 +135,14 @@ documented by [Remmina](https://remmina.gitlab.io/remminadoc.gitlab.io/md__build
 
 Acceptance on September 27 used the bounded
 [modifier observer](../../../scripts/networking/macos-modifier-probe.py) over SSH
-while a saved Remmina profile had focus. Left/right Ctrl, left/right Alt,
+while a saved Remmina profile had focus under the diagnostic X11 backend.
+Left/right Ctrl, left/right Alt,
 left/right Super, and F5 each produced the expected macOS state and returned to
 all-false on release on the Mac mini, 7050 and 3040. The observer records no typed
 text and installs no background service. This does not test every application
-shortcut or an upstream phone/UU client's hardware-key interception.
+shortcut or an upstream phone/UU client's hardware-key interception. Native
+Wayland was subsequently verified for desktop display; repeat the physical-key
+test there when changing GNOME shortcut-inhibition settings.
 
 ```sh
 ssh YOUR-MAC /path/to/working/python3 - < scripts/networking/macos-modifier-probe.py
