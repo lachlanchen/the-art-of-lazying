@@ -3,6 +3,9 @@
 This folder stores practical Codex CLI workflow tweaks used on this machine.
 
 ## Files
+- [session-owner-and-default-login.md](./session-owner-and-default-login.md)
+  - `--where` owner discovery, opt-in `--kill` takeover, and native task-manager distinction
+  - ordinary-account return and stale daemon identity after changing logins
 - [daemon-socket-path-limit.md](./daemon-socket-path-limit.md)
   - Codex 0.157 `SUN_LEN` failure with long named-account home paths
   - automatic native `--no-daemon` fallback without moving account data
