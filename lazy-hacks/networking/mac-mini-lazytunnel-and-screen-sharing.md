@@ -71,6 +71,23 @@ even though the generic forwarding helper prints an HTTP-shaped address.
 Keep VNC authentication. A saved profile and listening forward do not prove
 that Screen Sharing is enabled or that the desktop can be controlled.
 
+When both computers are on the same LAN, avoid sending desktop traffic through
+the Internet relay unnecessarily. Keep the fleet profile as an away-from-LAN
+fallback, and add a direct SSH forward using the Mac's pinned mDNS SSH alias:
+
+```sh
+lazy-web start mac-mini-vnc-lan mac-mini 5900 \
+  --ssh-config "$HOME/.ssh/config" --local-port 15909
+```
+
+Use a second Remmina VNC profile for `127.0.0.1:15909`. Both forwards remain
+loopback-only and encrypted; neither requires public VNC. The local shortcut now
+prefers this LAN profile. On September 27, the relay profile had long black or
+stale-frame intervals despite successful authentication; the direct LAN profile
+displayed and controlled the desktop promptly. This isolates a useful workaround,
+not a proven underlying relay-network diagnosis. Do not reset the Mac's privacy
+permissions, log out its console, or restart working UU just for that symptom.
+
 ## Modifier keys in Remmina
 
 For Ubuntu viewing a Mac, configure `~/.config/remmina/remmina.keymap`:
@@ -79,8 +96,6 @@ For Ubuntu viewing a Mac, configure `~/.config/remmina/remmina.keymap`:
 [Mac Physical Keyboard]
 Alt_L = Meta_L
 Alt_R = Meta_R
-Super_L = Alt_L
-Super_R = Alt_R
 ```
 
 In only the Mac VNC profiles, set `keymap=Mac Physical Keyboard` and
@@ -89,11 +104,49 @@ leaves Ctrl as Control. macOS application copy/paste generally uses Command,
 not Control. Ctrl-C remains appropriate for terminal interrupts. F1-F12 are not
 remapped. Physical Fn/media-key handling can still be intercepted locally.
 
+**September 27 correction:** the original example additionally mapped
+`Super_L = Alt_L` and `Super_R = Alt_R`. Remove those two lines. In
+[Remmina 1.4.43's VNC key handler](https://gitlab.com/Remmina/Remmina/-/blob/v1.4.43/plugins/vnc/vnc_plugin.c),
+the saved, already-mapped key value can be mapped a second time on release.
+`Super -> Alt -> Meta` therefore risks releasing a different key from the one
+pressed. The two-entry map above is idempotent and leaves Super's native Command
+behavior intact. Avoid reciprocal maps that have the same double-mapping problem.
+
+Remmina's default host key is Right Ctrl, which it reserves for its own commands.
+This workstation uses **Pause** instead (`hostkey=65299` and
+`shortcutkey_grab=65299` in `remmina.pref`). This changes all Remmina connections;
+record the original values before changing them. Pause+Pause toggles grabbing;
+the toolbar remains available on keyboards without Pause.
+
+For this Ubuntu Wayland workstation, the application launcher and tray autostart
+now launch Remmina with `GDK_BACKEND=x11`. The existing GNOME session stays on
+Wayland. The exact XWayland resource class `org.remmina.Remmina` was added to
+`org.gnome.mutter.wayland xwayland-grab-access-rules`; no wildcard grab permission
+or global Ubuntu shortcut remapping was used. Preserve existing entries if
+applying this elsewhere. GTK warnings alone do not prove the cause of a blank
+screen. This is the tested local viewer configuration, not a universal requirement.
+
 Back up profiles first. Reconnect to load profile changes; restart Remmina when
 convenient if its keymap table was already loaded. Do not terminate an active
 desktop connection merely to apply this preference. Verify shortcuts interactively
 before claiming every modifier or function key works. The mapping mechanism is
 documented by [Remmina](https://remmina.gitlab.io/remminadoc.gitlab.io/md__builds__remmina_remmina-ci__remmina_8wiki_vnc-key-mapping-configuration.html).
+
+Acceptance on September 27 used the bounded
+[modifier observer](../../../scripts/networking/macos-modifier-probe.py) over SSH
+while a saved Remmina profile had focus. Left/right Ctrl, left/right Alt,
+left/right Super, and F5 each produced the expected macOS state and returned to
+all-false on release on the Mac mini, 7050 and 3040. The observer records no typed
+text and installs no background service. This does not test every application
+shortcut or an upstream phone/UU client's hardware-key interception.
+
+```sh
+ssh YOUR-MAC /path/to/working/python3 - < scripts/networking/macos-modifier-probe.py
+```
+
+Focus a harmless window in the VNC desktop and press/release the test keys during
+the 25-second observation. Do not test shortcuts against unsaved work. In Mac
+applications, Windows/Super+C is Command+C; Ctrl+C is still Control+C.
 
 ## Native UU on Apple Silicon
 
@@ -111,3 +164,28 @@ The installer supplies the native app, launch agent, daemon and CLI. Login,
 Accessibility and Screen Recording consent are still required. Never copy another
 Mac's login database or edit TCC to bypass consent. A running XPC service and
 `networkStatus=connected` prove app startup, not end-to-end screen/control success.
+
+## Keep a development Mac's iCloud footprint restrained
+
+Check **System Settings > Apple Account > iCloud > Drive > Optimize Mac Storage**
+and, separately, **Photos > Settings > iCloud > Optimize Mac Storage**. Avoid
+**Download Originals to this Mac** for a development-only workstation unless an
+offline photo library is intentional. Both optimization settings were already
+enabled on the new Mac; inspection did not require changing or deleting cloud data.
+
+Optimization is not a strict disk quota or bandwidth cap. Apple can still retain
+local content and download thumbnails, metadata and recently used items. A strict
+no-photo-download policy requires turning off **Sync this Mac** for Photos on
+this Mac only after confirming the user's preference. Do not use **Turn Off and
+Delete from iCloud**. Do not sign out of the Apple Account or disable Passwords,
+Find My, App Store or developer account access as a storage workaround.
+
+Keep source checkouts, robot datasets, build products and virtual environments in
+local folders such as `~/Projects` and `~/RobotData`, outside iCloud Drive and any
+synced Desktop/Documents folders. Do not automatically move existing projects.
+Use Finder's **Remove Download** for verified cloud-backed files rather than
+deleting them; cloud deletion propagates. Do not kill cloud daemons or repeatedly
+scan the whole iCloud tree while its initial metadata sync is in progress.
+
+References: [Apple Photos optimization](https://support.apple.com/guide/photos/phta9b4673b4/mac),
+[iCloud Drive downloads](https://support.apple.com/guide/mac-help/mchl1a02d711/mac).
