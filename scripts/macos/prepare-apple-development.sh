@@ -24,6 +24,17 @@ if [ ! -x "$DEVELOPER_DIR/usr/bin/xcodebuild" ]; then
     exit 1
 fi
 
+runtime_available() {
+    /usr/bin/xcrun simctl list runtimes -j | /usr/bin/xcrun python3 -c '
+import json, sys
+prefix = "com.apple.CoreSimulator.SimRuntime." + sys.argv[1] + "-"
+ready = any(r.get("isAvailable") and r.get("version") == sys.argv[2]
+            and r.get("identifier", "").startswith(prefix)
+            for r in json.load(sys.stdin)["runtimes"])
+sys.exit(0 if ready else 1)
+' "$1" "$2"
+}
+
 if [ "$mode" = --install ]; then
     # Use full Xcode, not the standalone Command Line Tools directory.
     /usr/bin/sudo /usr/bin/xcode-select --switch "$DEVELOPER_DIR"
@@ -33,10 +44,15 @@ if [ "$mode" = --install ]; then
 
     # Apple handles existing downloads; retries are bounded, not a watchdog.
     download() {
-        local attempt
+        local attempt result
         for attempt in 1 2 3; do
             if /usr/bin/xcrun python3 "$script_dir/xcode-component-download.py" "$@"; then
                 return 0
+            else
+                result=$?
+            fi
+            if [ "$result" -eq 130 ] || [ "$result" -eq 143 ]; then
+                return "$result"
             fi
             if [ "$attempt" -lt 3 ]; then
                 printf 'Download failed; retry %s/3 in 20 seconds.\n' "$((attempt + 1))" >&2
@@ -47,9 +63,20 @@ if [ "$mode" = --install ]; then
     }
     # Explicit SDK versions avoid ambiguous catalog matching after a partial download.
     # Leave architecture selection to Xcode's native host detection.
-    download -downloadPlatform iOS -buildVersion "$(/usr/bin/xcrun --sdk iphoneos --show-sdk-version)"
-    download -downloadPlatform watchOS -buildVersion "$(/usr/bin/xcrun --sdk watchos --show-sdk-version)"
-    download -downloadComponent metalToolchain
+    for entry in iOS:iphoneos watchOS:watchos; do
+        platform=${entry%%:*}
+        version=$(/usr/bin/xcrun --sdk "${entry#*:}" --show-sdk-version)
+        if runtime_available "$platform" "$version"; then
+            printf '%s %s runtime already available.\n' "$platform" "$version"
+        else
+            download -downloadPlatform "$platform" -buildVersion "$version"
+        fi
+    done
+    if /usr/bin/xcrun metal --version >/dev/null 2>&1; then
+        printf 'Metal toolchain already available.\n'
+    else
+        download -downloadComponent metalToolchain
+    fi
 fi
 
 /usr/bin/xcodebuild -version
@@ -65,17 +92,13 @@ fi
 printf '\nmacOS SDK: '
 /usr/bin/xcrun --sdk macosx --show-sdk-path
 /usr/bin/xcrun metal --version
-/usr/bin/xcrun simctl list runtimes -j | /usr/bin/xcrun python3 -c '
-import json, sys
-runtimes = json.load(sys.stdin)["runtimes"]
-missing = []
-for platform, version in zip(("iOS", "watchOS"), sys.argv[1:]):
-    prefix = "com.apple.CoreSimulator.SimRuntime." + platform + "-"
-    if not any(r.get("isAvailable") and r.get("version") == version
-               and r.get("identifier", "").startswith(prefix) for r in runtimes):
-        missing.append(platform + " " + version)
-if missing:
-    raise SystemExit("Missing available runtime(s): " + ", ".join(missing))
-print("Required iOS and watchOS runtimes are available.")
-' "$(/usr/bin/xcrun --sdk iphoneos --show-sdk-version)" "$(/usr/bin/xcrun --sdk watchos --show-sdk-version)"
+for entry in iOS:iphoneos watchOS:watchos; do
+    platform=${entry%%:*}
+    version=$(/usr/bin/xcrun --sdk "${entry#*:}" --show-sdk-version)
+    if ! runtime_available "$platform" "$version"; then
+        printf 'Missing available runtime: %s %s\n' "$platform" "$version" >&2
+        exit 1
+    fi
+done
+printf '\nRequired iOS and watchOS runtimes are available.\n'
 printf '\nNo OS upgrade, account sign-in, simulator boot or project migration was performed.\n'

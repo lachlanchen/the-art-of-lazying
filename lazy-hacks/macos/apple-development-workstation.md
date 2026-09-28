@@ -39,7 +39,9 @@ otherwise can report `Zero kB of -1 byte` indefinitely. Output goes to private
 logs under `~/Library/Logs/DeveloperSetup`; inspect the newest component log for
 progress. The wrapper stops its own downloader on timeout, not Apple's shared
 network services. Rerun after fixing network errors. Apple handles components
-already present. It requests the installed iOS/watchOS SDK versions explicitly
+partially downloaded; the script skips runtimes already available and a working
+Metal installation. Cancellation exits instead of triggering another attempt.
+It requests the installed iOS/watchOS SDK versions explicitly
 and leaves architecture selection to Xcode (arm64 on this Apple-silicon machine).
 After an interrupted transfer, an explicit `-architectureVariant arm64` request
 reported no matching downloadable, while `-buildVersion 27.0` with automatic
@@ -66,6 +68,27 @@ Watch simulator with `xcrun simctl boot` and wait with `xcrun simctl bootstatus
 Use `~/Projects`, `~/RobotData` and the normal `~/Library/Developer` paths. Do not
 place simulator disks, build caches or robot datasets in synced Desktop/Documents.
 Real-device provisioning and App Store signing are separate per-project steps.
+
+## September 28 acceptance
+
+On the Apple-silicon Mac mini, installed release Xcode 27.0 (27A266a), iOS 27.0
+runtime 24A434, watchOS 27.0 runtime 24R362, and Metal Toolchain 27A266a.
+
+- SwiftUI typechecks passed against macOS, iOS Simulator and watchOS Simulator.
+- A native Swift program ran under LLDB and exited zero; a Metal shader compiled
+  and linked into a library.
+- iPhone 18 Pro and iPad Pro 11-inch M5 completed first boot. The default Watch
+  Series 12 46mm / iPhone 18 Pro Max pair booted and reported active/connected.
+  Screenshots showed the phone home screen and Watch face, not a blank renderer.
+- All test devices were shut down individually afterward, preserving their data
+  and Xcode's automatically generated pairs. No user tests were interrupted.
+- `--check` passed, and repeating `--install` passed while skipping all three
+  already-installed components. Six downloader unit tests passed on both Linux
+  and macOS; shell syntax and ShellCheck passed.
+
+The Xcode welcome window was verified over the existing VNC desktop. No reboot,
+OS upgrade, app publication, project migration or real-device provisioning was
+performed. These are toolchain/runtime smoke tests, not the user's app test suite.
 
 References: [Apple component installation](https://developer.apple.com/documentation/xcode/downloading-and-installing-additional-xcode-components),
 [Xcode requirements](https://developer.apple.com/xcode/system-requirements).
