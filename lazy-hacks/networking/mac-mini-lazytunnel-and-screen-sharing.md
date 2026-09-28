@@ -171,6 +171,16 @@ Accessibility and Screen Recording consent are still required. Never copy anothe
 Mac's login database or edit TCC to bypass consent. A running XPC service and
 `networkStatus=connected` prove app startup, not end-to-end screen/control success.
 
+## Multi-interface hostname caveat
+
+Multi-interface caveat: a `.local` name can resolve to a Wi-Fi address on a subnet
+the viewer cannot reach, even while wired SSH works. This occurred later during
+Mac mini setup. The LAN forward now uses `mac-mini-wired`, an explicit current-LAN
+Ethernet alias with the same identity and strict host-key pin; port 15909 and the
+Remmina profile did not change. Keep the hostname and relay aliases, but do not
+claim an IP-based alias follows DHCP changes. Revalidate the address after a
+router move. No default routes or Mac remote-access services were modified.
+
 ## Keep a development Mac's iCloud footprint restrained
 
 Check **System Settings > Apple Account > iCloud > Drive > Optimize Mac Storage**
@@ -178,6 +188,16 @@ and, separately, **Photos > Settings > iCloud > Optimize Mac Storage**. Avoid
 **Download Originals to this Mac** for a development-only workstation unless an
 offline photo library is intentional. Both optimization settings were already
 enabled on the new Mac; inspection did not require changing or deleting cloud data.
+
+Later on September 27, the user explicitly chose to disable Photos on this Mac.
+In **Photos > Settings > iCloud**, unchecked **iCloud Photos**, selected
+**Remove from Mac**, and confirmed the removal of local low-resolution copies.
+The confirmation explicitly said full-resolution versions remain in iCloud.
+Also unchecked **Shared Albums** locally to stop that separate photo feed.
+Both checkboxes were visually verified off. No cloud library was deleted, no
+Apple Account was signed out, and Drive optimization and other iCloud services
+were left unchanged. Existing local cache files may take time to be reclaimed;
+do not delete the library manually or promise a zero-byte Photos footprint.
 
 Optimization is not a strict disk quota or bandwidth cap. Apple can still retain
 local content and download thumbnails, metadata and recently used items. A strict
@@ -194,4 +214,5 @@ deleting them; cloud deletion propagates. Do not kill cloud daemons or repeatedl
 scan the whole iCloud tree while its initial metadata sync is in progress.
 
 References: [Apple Photos optimization](https://support.apple.com/guide/photos/phta9b4673b4/mac),
+[turn off Photos on one device](https://support.apple.com/en-ie/102179),
 [iCloud Drive downloads](https://support.apple.com/guide/mac-help/mchl1a02d711/mac).
