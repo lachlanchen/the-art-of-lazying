@@ -5,6 +5,11 @@ This is the short operational runbook for updating an already working
 login, the host-specific keyboard route, XRDP, or the last known-good Wine
 prefix.
 
+For the 1 October 2026 shared X11 workstation update to UU 4.42, including
+the expired FreeRDP download fix and optional text clipboard return path, see
+[the current upgrade record](./uu-remote-4.42-x11-upgrade.md). The July release
+state below is historical; inspect the installed manifest for today's version.
+
 The bridge source and the proprietary UU product are two separate layers:
 
 | Layer | Normal update | Safety boundary |
