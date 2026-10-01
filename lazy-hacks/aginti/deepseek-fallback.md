@@ -90,6 +90,10 @@ session. Input files stayed unchanged, and the documentation follow-up preserved
 implementation/test bytes. All task execution used DeepSeek; no external Codex
 agent wrapper ran.
 
+After installation, a second fresh-workspace run using the globally installed
+CLI passed all three cases again. The installed package also passed all 13
+focused lifecycle and CLI-policy regressions.
+
 One earlier code patch passed its supplied tests but missed another rounding
 case. AgInTi repaired it after a normal follow-up. Review changes and test useful
 edge cases; this workflow still benefits from human judgment.
