@@ -76,6 +76,11 @@ The `uu-shell` helper was also exercised from every source. Each source reached
 the intended workstation and preserved both successful exit zero and deliberate
 `exit 7`. Native UU tests were recorded separately:
 
+The final post-update `uu-shell` sweep subsequently passed all 64 directed
+hostname checks without retry. Most Linux/macOS/Tiny11 routes took 0.8–4.3
+seconds; routes involving the physical Windows computer took roughly 10–25
+seconds. That startup delay remains a performance limitation.
+
 - One current Mac installation accepted a real fresh vendor terminal. A later
   attempt also encountered Streamer error 9012.
 - Two older Mac installations returned `invalid open response`.
