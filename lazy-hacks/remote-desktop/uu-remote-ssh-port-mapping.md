@@ -1,5 +1,9 @@
 # SSH through UU Remote between Ubuntu hosts
 
+For the October fleet verification and the independent, now-deployed SSH
+transport, see [fleet shell checks and explicit shortcuts](fleet-shell-checks.md).
+The dated observations below describe the earlier UU port-mapping experiments.
+
 ## Result and limitation
 
 Convenience commands: `ssh-uu-7090` on the workstation and
