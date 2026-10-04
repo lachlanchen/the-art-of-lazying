@@ -54,6 +54,47 @@ sleep. Never silently replace a running carrier during configuration migration.
 
 ## Sharing the existing Mac desktop
 
+### October 4: lower source resolution and adjustable viewer quality
+
+The working Mac mini desktop was reduced from **1920×1080 to 1600×900 at
+60 Hz**. This is a real framebuffer reduction, not browser zoom: there are
+30.6% fewer pixels in a full frame. Actual traffic depends on encoding and
+screen changes, so this is not a measured 30.6% bandwidth reduction. The
+supported mode was enumerated first, the original mode recorded, and the
+new pixel dimensions verified. macOS saved the setting; no logout, reboot,
+Screen Sharing restart, or application closure was performed. The existing
+Remmina viewer and SSH carrier remained running. Boot persistence was not
+tested with a reboot.
+
+This changes the physical/shared Mac display for all its viewers. Restore
+1920×1080 in **System Settings → Displays** when full resolution is wanted.
+The operator also retains a private, host-scoped restore helper. Do not add a
+background resolution enforcer: respect later manual display choices.
+
+LazyTunnel 0.3.3 additionally supplies **Data saver / Balanced / Sharper /
+noVNC settings** presets in its optional noVNC data-saver bar. They negotiate
+JPEG quality and compression on the existing socket, remember a browser's
+selection, and preserve advanced settings. The default is Balanced (quality
+5, compression 6); Data saver uses 2/7, and Sharper uses 8/2. The native Remmina
+viewer does not acquire these browser controls; its source pixel reduction
+above is independent of them.
+
+The managed Mi10 noVNC web root was updated in place without restarting its
+websockify process or phone desktop. An old browser tab needs one reload to
+load the new controls. Hidden and idle pause remain available, with explicit
+Resume; the viewer can always reconnect. Existing remote keyboard, mouse and
+clipboard code was not modified.
+
+Validation included a real noVNC client negotiating encoding requests against
+a disposable RFB server, preference persistence, custom advanced settings,
+idle/hidden socket closure, and a read-only live Mi10 connection that was
+closed after verification. All eight client code updates and repeated
+self-updates passed identity checks; the server code update preserved SSH
+policy and its running daemon. No unrelated browser or desktop was closed.
+
+See [LazyTunnel bandwidth guidance](https://github.com/lachlanchen/LazyTunnel/blob/main/docs/bandwidth.md)
+for encoding limits, source-resolution tradeoffs, installation and rollback.
+
 Enable **System Settings > General > Sharing > Screen Sharing**, permitting only
 the intended user. Current macOS requires that initial GUI consent for control;
 starting a service through SSH is not equivalent. Keep the original console and
