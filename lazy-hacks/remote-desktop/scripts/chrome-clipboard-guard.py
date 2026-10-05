@@ -168,10 +168,17 @@ class Guard:
                 self.expire()
         finally:
             self.stopping.set()
-            self.control.record_disable_context(self.context)
-            self.control.flush()
+            try:
+                self.control.record_disable_context(self.context)
+                self.control.flush()
+            except (error.ConnectionClosedError, OSError):
+                # The desktop may close the X server before stopping its helpers.
+                pass
             worker.join(timeout=2)
-            self.control.close()
+            try:
+                self.control.close()
+            except (error.ConnectionClosedError, OSError):
+                pass
 
 
 def main():

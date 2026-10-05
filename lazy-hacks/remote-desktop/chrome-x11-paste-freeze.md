@@ -138,6 +138,7 @@ The guard's test deadline was two seconds; production uses eight seconds.
 | External PNG | `Files`, `image/png`, correct 99-byte test image; 0.007 s |
 | External local file URI | `Files`, correct filename and 36-byte size; 0.008 s |
 | Python window impersonating the Chrome window title | Ignored; no cancellation and ownership unchanged |
+| Guard stop while its disposable X server closes | Clean exit; no broken-pipe traceback |
 
 The large-payload test initially rendered the entire payload into the diagnostic
 page's status log, causing a renderer/layout stall. Bounding that diagnostic
