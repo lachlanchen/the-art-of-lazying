@@ -1,0 +1,18 @@
+[Unit]
+Description=Bound unanswered Chrome X11 clipboard requests
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+# This example targets the shared physical GDM X11 desktop. Adjust both paths
+# together for another desktop; never point this at an unrelated noVNC display.
+ExecStart=/usr/bin/python3 %h/scripts/chrome-clipboard-guard.py --display :0 --xauthority %t/gdm/Xauthority
+Restart=on-failure
+RestartSec=15
+TimeoutStopSec=5
+UMask=0077
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=graphical-session.target

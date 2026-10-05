@@ -4,6 +4,11 @@ A shared desktop does not imply a shared clipboard. A nested connection can
 have four boundaries: the VM clipboard, the noVNC page, Ubuntu's clipboard,
 and the outer remote client's clipboard. Diagnose each boundary separately.
 
+If Ctrl+V freezes Chrome even with a local copy source, see the
+[Chrome X11 missing-reply diagnosis and timeout guard](chrome-x11-paste-freeze.md).
+Do not compensate for a browser queue failure by converting the entire desktop
+clipboard to plain text; that would discard HTML, images and files.
+
 ## noVNC inside an Ubuntu browser
 
 Stock noVNC has a Clipboard panel; received text appears in its text box.

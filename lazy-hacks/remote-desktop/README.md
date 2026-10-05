@@ -4,6 +4,11 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
 
 ## Files
 
+- [Chrome X11 paste freezes](./chrome-x11-paste-freeze.md)
+  - reproduce a missing selection reply and recover Chrome without restarting
+  - install a metadata-only timeout guard, preserve rich/file formats, and roll back
+  - separate browser queue failures from website permissions and remote clipboard limits
+
 - [uu-remote-ssh-port-mapping.md](./uu-remote-ssh-port-mapping.md)
   - use UU TCP forwarding with native OpenSSH, dedicated keys, and simple aliases
   - distinguish native UU Terminal from port-mapped SSH and a full virtual LAN
