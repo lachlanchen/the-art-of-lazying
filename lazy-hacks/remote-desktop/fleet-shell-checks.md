@@ -138,11 +138,14 @@ encountered intermittent connection delays and timeouts, then succeeded again.
 The cause of those delays was not established. Healthy services and successful
 rechecks are point-in-time evidence, not a promise of uninterrupted access.
 
-Native UU session listing succeeded, but opening the terminal on the second
+Native UU session listing from the Linux/Wine CLI succeeded, but opening the
+terminal on the second
 Ubuntu failed with `Client version too low` (status 6). Both installations
 reported 4.42.0.2770. Each local Linux terminal adapter passed its separate
 UTF-8/symbol test. The rejection therefore preceded the working Linux shell;
-the exact vendor compatibility condition remains unresolved. Keep the explicit
+the exact vendor compatibility condition remains unresolved. This CLI result
+does not establish failure of every Windows/macOS/mobile GUI terminal client.
+Keep the explicit
 LazyTunnel default for ordinary shell work instead of restarting a healthy
 desktop or treating that message as proof that the app must be upgraded.
 
