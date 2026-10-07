@@ -127,3 +127,52 @@ desktop input patches were not replaced as part of this shell-tool update.
 
 See the implementation and deployment notes in
 [LazyTunnel](https://github.com/lachlanchen/LazyTunnel/blob/main/docs/fleet-shell-checks.md).
+
+## Recheck and safer diagnostics — 7 October 2026
+
+The Ubuntu controller reached all eight enrolled endpoints in the first sweep;
+the second Ubuntu also reached it in return. An interactive SSH PTY preserved
+Chinese, Japanese, punctuation and an intentional `exit 7`. Later SSH probes
+completed a binary SCP upload/download with matching SHA-256 checksums and
+encountered intermittent connection delays and timeouts, then succeeded again.
+The cause of those delays was not established. Healthy services and successful
+rechecks are point-in-time evidence, not a promise of uninterrupted access.
+
+Native UU session listing succeeded, but opening the terminal on the second
+Ubuntu failed with `Client version too low` (status 6). Both installations
+reported 4.42.0.2770. Each local Linux terminal adapter passed its separate
+UTF-8/symbol test. The rejection therefore preceded the working Linux shell;
+the exact vendor compatibility condition remains unresolved. Keep the explicit
+LazyTunnel default for ordinary shell work instead of restarting a healthy
+desktop or treating that message as proof that the app must be upgraded.
+
+The Linux/macOS shell tools now include:
+
+```sh
+uu-shell --list
+uu-shell lab                 # selected profile transport
+uu-shell --lazy lab          # explicitly choose enrolled LazyTunnel SSH
+uu-shell --check lab         # bounded, noninteractive SSH health check
+uu-shell --native lab        # explicitly choose the vendor terminal
+scp-lazy ./example.txt lazy-lab:example.txt
+scp-lazy lazy-lab:example.txt ./returned-example.txt
+```
+
+Replace `lab` with the enrolled peer name. Run `uu-ssh check lab` as an equivalent
+health check. No `.bashrc` reload is required when installed helpers are updated.
+The health check now handles timeout and Ctrl+C without a traceback or abandoned
+nested SSH proxies. It stops only its own process group; interactive shells,
+carriers and desktops stay running. This corrects diagnostic cleanup, not the
+underlying network or vendor compatibility gate. Tests cover a child ignoring
+SIGTERM, an unrelated process that must survive, cancellation and SSH status 7.
+
+Refresh only the shell tools from the reviewed bridge checkout:
+
+```sh
+python3 scripts/install-shell-tools.py
+```
+
+Private backups are under `~/.local/state/uu-shell-tools/backups/`. This installer
+does not restart UU, alter accounts or input patches, or rewrite the accepted
+desktop runtime's source fingerprint. Native vendor terminal and local Linux
+adapter acceptance must still be tested separately.
