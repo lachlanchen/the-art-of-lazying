@@ -4,6 +4,7 @@ Practical small-networking notes for workstation and home-lab reliability.
 
 ## Notes
 
+- [Recover internet access after a FortiGate session quota block](./fortigate-session-quota-recovery.md): identify concurrent-session pressure, stop only owned idle runtimes, preserve browser logins and verify recovery without bypassing the network policy.
 - [Astrill Lazy Router Native Windows Setup](./astrill-lazy-router-native-windows.md):
   build, key onboarding, Ubuntu-aligned Windows controls, persistent-core and
   source-scoped RAM-overlay policy storage, bounded atomic overlay loading,
