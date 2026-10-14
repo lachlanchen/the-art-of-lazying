@@ -16,6 +16,7 @@ Small, practical workflows and shell tricks that improve daily engineering speed
 - [remote-desktop](./remote-desktop/README.md): Windows access bootstrapping with RDP/OpenSSH/UU Remote, a Wine-to-GNOME UU control bridge, GNOME automatic-login Desktop Sharing, and native RDP vs XRDP stability notes for Ubuntu 24.04.
 - [reload-bashrc-in-open-tmux-panes-safely.md](./reload-bashrc-in-open-tmux-panes-safely.md): validate `.bashrc`, reload only demonstrably idle tmux shells, and avoid disturbing running apps or unfinished commands.
 - [storage](./storage/README.md): large-first workstation cleanup, exact Downloads deduplication, and cloud-side iCloud cleanup without materializing the full Drive on a Mac.
+- [spie-student-registration](./spie-student-registration/README.md): apply the SPIE student registration rate using the separate student declaration, with screenshots that exclude account details.
 - [uuremote-mouse-axis.md](./uuremote-mouse-axis.md): quick fix for GameViewer/UURemote reversed horizontal mouse movement.
 - [virtualization](./virtualization/README.md): KVM/QEMU Windows Tiny11 and macOS workstation architecture, verified installer lessons, private runtime boundaries, and links to reusable tooling.
 - [windows-upgrade](./windows-upgrade/README.md): stage a verified Windows 11 ISO and readiness report on a non-system disk without scheduling or starting Setup.
