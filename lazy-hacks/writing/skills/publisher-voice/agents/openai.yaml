@@ -1,0 +1,4 @@
+interface:
+  display_name: "Publisher Voice"
+  short_description: "Reader-first writing without internal discussion leaks"
+  default_prompt: "Use $publisher-voice to revise this text for its intended readers, keeping verified facts and the author's voice while removing internal discussion and generic filler."
