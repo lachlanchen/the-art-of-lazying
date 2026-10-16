@@ -257,6 +257,8 @@ This was the initial offline repair command, shown as a historical execution exa
 ```bash
 # SOURCE_LV must be unmounted. HEALTHY_RECORD must be on another disk.
 # This command writes filesystem repairs; it is not a diagnostic-only scan.
+HEALTHY_RECORD=/path/on/healthy-storage/filesystem-repair
+test -d "$HEALTHY_RECORD" || exit 1
 sudo e2fsck -f -p -v -C 1 \
   -E fixes_only,nodiscard \
   -z "$HEALTHY_RECORD/metadata.e2undo" "$SOURCE_LV"
