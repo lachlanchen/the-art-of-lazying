@@ -124,6 +124,38 @@ the actual phone remains a separate acceptance step.
 
 ## Routine checks and persistence
 
+### Preserve a Wayland host's RDP route
+
+The same release was subsequently installed on a second Ubuntu 24.04/Wine 11
+host using GNOME Wayland. Its original outage was caused by a full filesystem:
+the bridge could not write its native-terminal startup handoff and repeatedly
+exited. Clearing download-cache and archived-journal space restored the old
+release before the upgrade. Older generated UU staging trees were compressed
+and compared against their archives to provide room for a stopped-prefix copy.
+
+The upgrade retained that host's Windows FreeRDP relay and RDP keyboard route,
+including its semantic phone-text helper, cursor settings and audio isolation.
+The native-X11 profile from the first workstation was not copied onto Wayland.
+The outgoing mobile Unicode guard was enabled through the existing service
+opt-in; FreeRDP retained its clipboard channel.
+
+The candidate's saved account digests matched before its first launch. After
+qualification it was promoted to the normal prefix, with independent remote
+services and the physical login session preserved. Native clipboard and input
+checks, rapid and editing keys, multiline Unicode/dictation, mouse and the
+authenticated terminal adapter passed. The normal-prefix service also passed
+the 270-second stability check. Actual phone acceptance and reboot testing
+remain separate. See
+[the Wayland qualification and test correction](https://github.com/lachlanchen/uu-remote-ubuntu-bridge/pull/34).
+
+The isolated injector fixture exposed another useful distinction: a Wine
+service could keep an anonymous output pipe open after the tested process
+finished. Capturing into temporary regular files eliminated that timeout
+without changing test deadlines or production input code. A missing ripgrep
+test dependency was installed before repeating the editing check.
+
+### Check the installed service
+
 From the bridge checkout:
 
 ```bash
