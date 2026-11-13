@@ -4,6 +4,11 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
 
 ## Files
 
+- [UU Remote 4.47 X11 upgrade](./uu-remote-4.47-x11-upgrade.md)
+  - verify the real installer version and reject rolling-download drift
+  - retain Unicode clipboard conversion and target the correct GUI at startup
+  - preserve login and desktop windows with staged checks and private rollback
+
 - [UU Remote outbound Unicode clipboard repair](./uu-remote-outbound-unicode-clipboard.md)
   - trace Ubuntu-to-phone question marks and mojibake across three encoding boundaries
   - match queued copies across threads while preserving incoming dictation and desktop access

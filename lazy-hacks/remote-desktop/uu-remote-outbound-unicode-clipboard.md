@@ -6,7 +6,7 @@ An incomplete correction changed the result to garbled strings such as
 `ä¸­` instead of `中`.
 
 The final correction was confirmed on a phone on **13 November 2026**, using
-UU **4.44.1.3978**, Wine 10 and the shared X11/VNC desktop relay. The existing
+UU **4.44.1.3978**, Wine 11 and the shared X11/VNC desktop relay. The existing
 desktop, terminals, UU connection, independent RDP and RealVNC remained running.
 
 ## Cause
@@ -92,9 +92,12 @@ updates, including the independent incoming clipboard and dictation routes.
 
 ## Future upgrades and rollback
 
-The guard recognizes **4.44.1.3978 only**. Unknown builds are left unmodified
-and reported by verification. A later UU upgrade needs its export/decoder paths
-reviewed and the phone test repeated; offsets must not be reused blindly.
+The original repair recognized **4.44.1.3978**. The subsequent
+[4.47 upgrade](uu-remote-4.47-x11-upgrade.md) adds separately reviewed signatures
+and fixes startup attachment to the identically named outer launcher. Unknown
+builds are left unmodified and reported by verification. Later upgrades need
+their export/decoder paths reviewed and the phone test repeated; offsets must
+not be reused blindly.
 
 To restore inbound-only behavior, remove the outbound opt-in override and
 restart only the UU bridge during a reconnect window, with independent remote
