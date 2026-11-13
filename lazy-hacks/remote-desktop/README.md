@@ -4,6 +4,11 @@ Practical notes for keeping Ubuntu remote access usable when GNOME native RDP, R
 
 ## Files
 
+- [UU Remote outbound Unicode clipboard repair](./uu-remote-outbound-unicode-clipboard.md)
+  - trace Ubuntu-to-phone question marks and mojibake across three encoding boundaries
+  - match queued copies across threads while preserving incoming dictation and desktop access
+  - retain the correction at startup and verify the actual mobile paste result
+
 - [Chrome X11 paste freezes](./chrome-x11-paste-freeze.md)
   - reproduce a missing selection reply and recover Chrome without restarting
   - install a metadata-only timeout guard, preserve rich/file formats, and roll back

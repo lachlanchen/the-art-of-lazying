@@ -11,6 +11,9 @@ The exact hashes, patch offsets and test results are in the bridge's
 This record covers an operator-requested upgrade; it does not enable automatic
 promotion or replace the fresh-install default.
 
+For the later Ubuntu-to-phone Unicode clipboard repair, see
+[question marks, ANSI conversion and queued callbacks](uu-remote-outbound-unicode-clipboard.md).
+
 ## Verify the download and patch locations
 
 The official release endpoint advertised 4.44.1 through HEAD while GET still
