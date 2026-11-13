@@ -88,6 +88,40 @@ remain unverified. Audio stays disabled on this host. Port-mapped SSH also
 depends on its carrier and peer. See the
 [feature matrix](https://github.com/lachlanchen/uu-remote-ubuntu-bridge/blob/main/docs/features.md).
 
+## Backspace and selection: test the route from the input hook
+
+A phone connection exposed a failure after the upgrade: text arrived, but
+Backspace and Shift+Left did not. The server hook reported physical keys as
+`route=direct result=1 error=0`, while the native broker received only text.
+Wine accepted the keys on its private desktop without delivering them to the
+visible native desktop. A successful SendInput return value was insufficient.
+
+[Bridge PR #33](https://github.com/lachlanchen/uu-remote-ubuntu-bridge/pull/33)
+corrects this boundary. An active native-input broker advertises its route
+through a prefix-local Windows event. The input hook then routes ordinary keys
+and mouse events through that broker. Unicode keeps its existing route;
+RDP-only and RDP semantic-only installations retain their direct/fallback path.
+The marker disappears when its broker exits, and readers close their handles
+immediately. A broker rejection does not trigger a second direct-input attempt.
+
+An environment variable alone was insufficient: the Windows service-created
+server did not inherit the launcher's custom environment. The event crosses
+that service boundary without changing the client's keyboard layout.
+
+Earlier input fixtures called the broker directly and missed this defect.
+The regression now starts at the actual SendInput hook. It checks 46 ordered
+transitions covering deletion, arrows, navigation, Return, Tab, Escape,
+Shift+Left, Ctrl+A, Ctrl+Left, Shift+A and scan-code Backspace. The mouse test
+also crosses the hook. A separate fixture makes Wine report success without
+delivering input, then checks native routing, marker expiry and RDP behavior.
+
+The corrected runtime passed these checks, the existing rapid-input and
+dictation fixtures, 267 unit tests with eight optional integrations skipped,
+and another 270-second live stability check. All 65 original windows remained
+present, and independent RDP, RealVNC and SSH processes were unchanged. The
+native-route regression was also run explicitly under Wine. Confirmation on
+the actual phone remains a separate acceptance step.
+
 ## Routine checks and persistence
 
 From the bridge checkout:
@@ -101,7 +135,9 @@ uu-agent cli status
 
 Use `./scripts/verify.sh` for the longer stability check. After an update, copy
 `中文测试 日本語 😀 “引号”` freshly in both directions and test rapid typing,
-mouse clicks and continuous dictation from the actual client.
+Backspace, Shift+Left, Ctrl+A, mouse clicks and continuous dictation from the
+actual client. For a native X11 deployment, verification must report that the
+native input route is advertised to the service-created UU process.
 
 The normal prefix, enabled services and user lingering preserve the deployment
 across restart. An operating-system reboot was not performed during this review.
